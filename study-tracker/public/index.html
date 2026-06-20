@@ -452,7 +452,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:var(--cal-inv);cursor
 @media (max-width: 640px) {
   /* Base */
   body { padding: 14px 12px 40px; font-size: .95rem; overflow-x: hidden; }
-  .page-wrap { max-width: 100%; overflow: hidden; }
+  .page-wrap { max-width: 100%; overflow-x: hidden; }
 
   /* Header */
   .header-row { flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
@@ -511,11 +511,10 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:var(--cal-inv);cursor
   .timer-notes-wrap { margin-top: 6px; }
 
   /* ROW 2 — stack, fix countdown height */
-  .row2 { grid-template-columns: 1fr !important; gap: 10px; margin-bottom: 10px; }
-  .countdown-box { padding: 10px; min-height: unset !important; height: auto !important; }
+  .row2 { grid-template-columns: 1fr !important; gap: 10px; margin-bottom: 10px; align-items: start !important; }
+  .countdown-col { display: block !important; overflow: visible; }
+  .countdown-box { padding: 10px; min-height: unset !important; height: auto !important; flex: unset !important; }
   .countdown-list { max-height: 160px; overflow-y: auto; }
-  .row2 > .countdown-col { overflow: visible; }
-  .row2 > .countdown-col .countdown-box { flex: unset; min-height: unset; }
   .cd-name { font-size: .82rem; }
   .cd-badge { font-size: .72rem; }
 
@@ -553,13 +552,14 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:var(--cal-inv);cursor
 
   /* Heatmap — contained horizontal scroll, no page scroll */
   .charts-row { margin-bottom: 10px; }
-  .charts-row .card { padding: 14px 10px; overflow: hidden; }
+  .charts-row .card { padding: 14px 10px; overflow: visible; }
   .heatmap-scroll {
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     width: 100%;
     max-width: 100%;
+    display: block;
   }
   .heatmap-inner {
     display: flex;
