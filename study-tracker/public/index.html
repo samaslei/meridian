@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Study Tracker</title>
+<title>Meridian</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&family=Outfit:wght@700&display=swap" rel="stylesheet">
 <style>
 /* ── Variables ────────────────────────────────────── */
@@ -447,120 +447,162 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:var(--cal-inv);cursor
 .sett-input:focus{border-color:var(--accent);}
 
 /* ══════════════════════════════════════════════════
-   MOBILE RESPONSIVE — max-width: 600px
+   MOBILE RESPONSIVE — max-width: 640px
    ══════════════════════════════════════════════════ */
-@media (max-width: 600px) {
-  body { padding: 14px 14px 80px; font-size: .95rem; }
-  .page-wrap { max-width: 100%; }
+@media (max-width: 640px) {
+  /* Base */
+  body { padding: 14px 12px 40px; font-size: .95rem; overflow-x: hidden; }
+  .page-wrap { max-width: 100%; overflow: hidden; }
 
   /* Header */
-  .header-row { flex-wrap: wrap; gap: 8px; }
-  h1 { font-size: 1.4rem; }
-  .subtitle { font-size: .65rem; }
-  .header-btns { gap: 6px; flex-wrap: wrap; }
-  .scheme-trigger { font-size: .7rem; padding: 5px 9px; }
-  .scheme-trigger span#schemeName { display: none; }
+  .header-row { flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+  h1 { font-size: 1.3rem; }
+  .subtitle { font-size: .62rem; margin-bottom: 10px; }
+  .header-btns { gap: 5px; flex-wrap: wrap; }
+  .scheme-trigger { font-size: .68rem; padding: 5px 8px; }
+  #schemeName { display: none; }
+  .accent-bar { margin-bottom: 10px; }
 
-  /* Glance bar */
-  .glance-bar { gap: 2px; margin-bottom: 14px; }
-  .glance-greeting { font-size: 1.1rem; }
-  .glance-date, .glance-today { font-size: .68rem; }
+  /* Glance */
+  .glance-bar { gap: 2px; margin-bottom: 12px; }
+  .glance-greeting { font-size: 1.05rem; }
+  .glance-date, .glance-today { font-size: .65rem; }
 
-  /* ROW 1: stack vertically */
-  .row1 { grid-template-columns: 1fr !important; gap: 10px; }
+  /* ROW 1 — stack */
+  .row1 { grid-template-columns: 1fr !important; gap: 10px; margin-bottom: 10px; }
 
-  /* Streak box */
+  /* Streak */
+  .stats-col { gap: 10px; }
   .streak-box { padding: 12px 10px; }
-  .flame-svg { width: 38px; height: 42px; }
-  .streak-number { font-size: 2.4rem; }
-  .streak-label { font-size: .75rem; }
-  .streak-week-row { gap: 4px; flex-wrap: wrap; justify-content: center; }
+  .flame-svg { width: 36px; height: 40px; }
+  .streak-number { font-size: 2.2rem; }
+  .streak-label { font-size: .72rem; }
+  .streak-week-row { gap: 4px; flex-wrap: wrap; justify-content: center; margin: 4px 0; }
   .streak-day-check { width: 18px; height: 18px; font-size: .55rem; }
-  .streak-day-lbl { font-size: .42rem; }
+  .streak-day-lbl { font-size: .4rem; }
 
-  /* Weekly chart card */
-  .chart-card { padding: 10px 10px; }
-  .week-label { font-size: .72rem; }
-  .bar-chart { height: 100px; }
+  /* Weekly chart */
+  .chart-card { padding: 10px; }
+  .week-label { font-size: .7rem; }
+  .bar-chart { height: 90px; }
 
-  /* Timer card */
-  .timer-card { padding: 12px 10px; }
-  .timer-body { flex-direction: column; gap: 12px; }
-  .timer-pane { width: 100% !important; min-width: 0 !important; }
-  .timer-pane-main { align-items: center; }
-  .ring-svg { width: 130px !important; height: 130px !important; }
-  .timer-display { font-size: 1.4rem !important; }
-  .t-btn { font-size: .8rem; padding: 7px 14px; }
-  .timer-controls { gap: 6px; }
-  .t-stats-row { gap: 12px; }
-  .t-stat-val { font-size: .95rem; }
-  .pm-bottom-row { flex-direction: column; gap: 8px; }
-  .pomo-settings { flex-wrap: wrap; gap: 8px; }
-  .timer-notes-wrap { margin-top: 8px; }
-  .timer-card-title { font-size: .78rem; }
-  .manual-toggle { font-size: .62rem; }
+  /* Timer card — full width, panes stacked */
+  .timer-card { padding: 12px 10px; overflow: hidden; }
+  .timer-card-header { flex-wrap: wrap; gap: 4px; }
+  .timer-card-title { font-size: .76rem; }
+  .manual-toggle { font-size: .6rem; }
   .manual-row { flex-wrap: wrap; gap: 6px; }
   .manual-row input[type=number] { min-width: 80px; flex: 1; }
-  .date-display { min-width: 120px !important; font-size: .75rem; }
+  .date-display { min-width: 110px !important; font-size: .72rem; }
+  .timer-body { flex-direction: column !important; gap: 14px; }
+  .timer-pane { width: 100% !important; min-width: 0 !important; max-width: 100% !important; box-sizing: border-box; }
+  .timer-pane-main { align-items: center; width: 100%; }
+  .ring-wrap { width: 120px; height: 120px; }
+  .ring-svg { width: 120px !important; height: 120px !important; }
+  .timer-display { font-size: 1.3rem !important; }
+  .t-btn { font-size: .78rem; padding: 7px 12px; }
+  .timer-controls { gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .t-stats-row { gap: 10px; justify-content: center; }
+  .t-stat-val { font-size: .9rem; }
+  .pm-bottom-row { flex-direction: column; gap: 8px; align-items: center; }
+  .pomo-settings { flex-wrap: wrap; gap: 6px; justify-content: center; }
+  .pomo-row { flex-wrap: wrap; justify-content: center; }
+  .timer-pane-tags { width: 100%; box-sizing: border-box; }
+  .timer-notes-wrap { margin-top: 6px; }
 
-  /* ROW 2: stack */
-  .row2 { grid-template-columns: 1fr !important; gap: 10px; }
+  /* ROW 2 — stack, fix countdown height */
+  .row2 { grid-template-columns: 1fr !important; gap: 10px; margin-bottom: 10px; }
+  .countdown-box { padding: 10px; min-height: unset !important; height: auto !important; }
+  .countdown-list { max-height: 160px; overflow-y: auto; }
+  .row2 > .countdown-col { overflow: visible; }
+  .row2 > .countdown-col .countdown-box { flex: unset; min-height: unset; }
+  .cd-name { font-size: .82rem; }
+  .cd-badge { font-size: .72rem; }
+
+  /* Calendar + progress bars — stack */
   .row2-right .input-card { flex-direction: column !important; gap: 10px; }
-  .mini-cal { width: 100% !important; }
+  .mini-cal { width: 100% !important; flex-shrink: unset !important; }
   .mini-cal-grid { gap: 3px; }
-  .mini-cal-cell { font-size: .72rem; border-radius: 5px; }
-  .time-progress { min-width: 0; width: 100%; }
+  .mini-cal-cell { font-size: .7rem; border-radius: 5px; }
+  .mini-cal-month-label { font-size: .95rem; }
+  .time-progress { min-width: 0; width: 100%; flex-direction: column; }
 
-  /* Countdown */
-  .countdown-box { padding: 10px; }
-  .cd-name { font-size: .85rem; }
-  .cd-badge { font-size: .75rem; }
-
-  /* ROW 3: quick stats */
-  .row3 { grid-template-columns: 1fr !important; gap: 10px; }
-  .qs-grid { flex-wrap: wrap; gap: 6px; }
-  .qs-item { flex: 1 1 calc(50% - 6px); border-right: none; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
-  .qs-val { font-size: .9rem; }
-  .ms-stats-side { flex-wrap: wrap; gap: 8px; }
-  .ms-col { flex: 1 1 30%; }
+  /* ROW 3 — stack, fix stat cards */
+  .row3 { grid-template-columns: 1fr !important; gap: 10px; margin-bottom: 10px; }
+  .quick-stats-card { padding: 10px 10px; }
+  .ms-stats-side { flex-wrap: wrap; gap: 6px; padding: 0 0 8px !important; }
+  .ms-col { flex: 1 1 30%; min-width: 60px; }
   .ms-sep { display: none; }
+  .ms-val { font-size: .82rem; }
+  .ms-label { font-size: .42rem; }
+  .ms-bar-title { font-size: .58rem; }
+  .qs-grid { flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+  .qs-item {
+    flex: 1 1 calc(50% - 3px);
+    border-right: none !important;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    min-width: 0;
+  }
+  .qs-val { font-size: .88rem; }
+  .qs-label { font-size: .48rem; }
+  .qs-icon { width: 24px; height: 24px; font-size: .65rem; }
+  .radar-pane { padding: 10px; }
+  .radar-body { gap: 6px; }
 
-  /* Radar */
-  .radar-pane { padding: 8px; }
+  /* Heatmap — contained horizontal scroll, no page scroll */
+  .charts-row { margin-bottom: 10px; }
+  .charts-row .card { padding: 14px 10px; overflow: hidden; }
+  .heatmap-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-width: 100%;
+  }
+  .heatmap-inner {
+    display: flex;
+    align-items: flex-start;
+    width: max-content;
+    min-width: unset;
+  }
+  .hcell { width: 11px; height: 11px; }
+  .lc { width: 11px; height: 11px; }
+  .dow-lbl { font-size: .46rem; height: 11px; line-height: 11px; width: 11px; }
+  .month-name { font-size: .46rem; }
+  .month-weeks { gap: 2px; }
+  .week-col { gap: 2px; }
 
-  /* ROW 4: charts */
-  .charts-row { grid-template-columns: 1fr !important; }
-  .heatmap-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .heatmap-inner { min-width: 500px; }
+  /* Dropdowns */
+  .dd-panel { min-width: 155px !important; right: 0; left: auto; }
+  .tag-dd { min-width: 155px; }
 
-  /* Dropdowns — keep them readable */
-  .dd-panel { min-width: 160px !important; right: 0; left: auto; }
-  .tag-dd { min-width: 160px; }
-
-  /* Modals */
-  .modal { width: 96%; padding: 18px 14px; }
+  /* Modal */
+  .modal { width: 95%; padding: 16px 12px; }
 
   /* Toast */
-  .toast { font-size: .72rem; padding: 8px 16px; bottom: 16px; }
-
-  /* Notes */
-  .notes-area { min-height: 60px; max-height: 100px; }
+  .toast { font-size: .7rem; padding: 8px 14px; bottom: 14px; max-width: 90vw; white-space: normal; text-align: center; }
 
   /* Tag pills */
   .tag-pill-row { flex-wrap: wrap; }
+  .top-tags { flex-wrap: wrap; }
 }
 
-/* ── Slightly wider mobile (601–768px) ─────────────── */
-@media (min-width: 601px) and (max-width: 768px) {
-  body { padding: 18px 20px 60px; }
+/* ── Tablet (641–900px) ────────────────────────────── */
+@media (min-width: 641px) and (max-width: 900px) {
+  body { padding: 18px 20px 40px; overflow-x: hidden; }
   .row1 { grid-template-columns: 1fr !important; }
   .row2 { grid-template-columns: 1fr !important; }
   .row2-right .input-card { flex-direction: row !important; }
   .mini-cal { width: 200px !important; flex-shrink: 0; }
   .timer-body { flex-direction: row; flex-wrap: wrap; }
   .timer-pane { flex: 1 1 calc(50% - 8px); min-width: 0 !important; }
+  .row3 { grid-template-columns: 1fr !important; }
   .qs-grid { flex-wrap: wrap; }
   .qs-item { flex: 1 1 calc(50% - 6px); border-right: none; border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+  .heatmap-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .heatmap-inner { width: max-content; }
 }
 </style>
 </head>
@@ -572,7 +614,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:var(--cal-inv);cursor
 <!-- HEADER -->
 <div class="header-row">
   <div>
-    <h1>🌱 Study Tracker</h1>
+    <h1>🌱 Meridian</h1>
     <div class="subtitle">Track · Reflect · Grow</div>
   </div>
   <div class="header-btns">
