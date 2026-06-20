@@ -89,7 +89,7 @@ h1{font-size:1.8rem;font-weight:800;letter-spacing:-.5px;}
 .row2{display:grid;grid-template-columns:1fr 380px;gap:12px;margin-bottom:12px;align-items:start;}
 @media(max-width:700px){.row2{grid-template-columns:1fr;}}
 .row2 > .countdown-col{display:flex;flex-direction:column;overflow:hidden;}
-.row2 > .countdown-col .countdown-box{flex:1;min-height:0;}
+.row2 > .countdown-col .countdown-box{flex:1;min-height:200px;}
 .row2-right{display:flex;flex-direction:column;gap:12px;}
 .row2-right .input-card{width:100%;}
 .countdown-col{display:flex;flex-direction:column;overflow:hidden;}
@@ -398,8 +398,8 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:var(--cal-inv);cursor
 .bar-day.today{color:var(--accent);}
 .line-chart-wrap{height:130px;flex:1;overflow:hidden;}
 .line-chart-wrap svg{overflow:visible;width:100%;height:100%;}
-.heatmap-scroll{padding-bottom:6px;}
-.heatmap-inner{display:flex;align-items:flex-start;width:100%;}
+.heatmap-scroll{padding-bottom:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.heatmap-inner{display:flex;align-items:flex-start;width:max-content;min-width:100%;}
 .dow-axis{display:flex;flex-direction:column;gap:3px;margin-right:8px;padding-top:20px;flex-shrink:0;}
 .dow-lbl{font-family:'Space Mono',monospace;font-size:.54rem;color:var(--muted);height:14px;line-height:14px;text-align:right;width:14px;}
 .months-block{display:flex;gap:0;align-items:flex-start;flex:1;justify-content:space-between;}
@@ -513,8 +513,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:var(--cal-inv);cursor
 
   /* ROW 2 — stack, fix countdown height */
   .row2 { grid-template-columns: 1fr !important; gap: 10px; margin-bottom: 10px; align-items: start !important; }
-  .countdown-col { display: block !important; overflow: visible; }
-  .countdown-box { padding: 10px; min-height: unset !important; height: auto !important; flex: unset !important; }
+  .countdown-col { display: block !important; overflow: visible; height: auto !important; }
+  .row2 > .countdown-col .countdown-box { flex: unset !important; min-height: unset !important; height: auto !important; }
+  .countdown-box { padding: 10px; min-height: unset !important; height: auto !important; }
   .countdown-list { max-height: 160px; overflow-y: auto; }
   .cd-name { font-size: .82rem; }
   .cd-badge { font-size: .72rem; }
@@ -551,15 +552,14 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:var(--cal-inv);cursor
   .radar-pane { padding: 10px; }
   .radar-body { gap: 6px; }
 
-  /* Heatmap — contained horizontal scroll, no page scroll */
+  /* Heatmap — contained horizontal scroll */
   .charts-row { margin-bottom: 10px; }
-  .charts-row .card { padding: 14px 10px; overflow: visible; }
+  .charts-row .card { padding: 14px 10px; overflow: hidden; }
   .heatmap-scroll {
     overflow-x: auto;
     overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
     width: 100%;
-    max-width: 100%;
     display: block;
   }
   .heatmap-inner {
