@@ -22,14 +22,18 @@
   --heat0-bg:#e4e8f2;--heat0-bdr:#b8c0d4;--cal-inv:invert(0) brightness(0.3);--tip-bg:#ffffff;
   --heat1:#a7f3d0;--heat2:#6ee7b7;--heat3:#10b981;--heat4:#065f46;
 }
-:root[data-scheme="purple"]       {--accent:#a78bfa;--accent2:#818cf8;--heat1:#1e1035;--heat2:#3b1f6e;--heat3:#5b21b6;--heat4:#7c3aed;}
-:root.light[data-scheme="purple"] {--accent:#5b21b6;--accent2:#4338ca;--heat1:#c4b5fd;--heat2:#8b5cf6;--heat3:#6d28d9;--heat4:#4c1d95;}
-:root[data-scheme="ocean"]        {--accent:#22d3ee;--accent2:#38bdf8;--heat1:#082f3e;--heat2:#0e4d66;--heat3:#0369a1;--heat4:#0ea5e9;}
-:root.light[data-scheme="ocean"]  {--accent:#0369a1;--accent2:#0284c7;--heat1:#a5f3fc;--heat2:#22d3ee;--heat3:#0891b2;--heat4:#0369a1;}
-:root[data-scheme="rose"]         {--accent:#fb7185;--accent2:#f43f5e;--heat1:#2d0a12;--heat2:#5b1222;--heat3:#9f1239;--heat4:#e11d48;}
-:root.light[data-scheme="rose"]   {--accent:#9f1239;--accent2:#be123c;--heat1:#fda4af;--heat2:#fb7185;--heat3:#e11d48;--heat4:#9f1239;}
-:root[data-scheme="amber"]        {--accent:#94a3b8;--accent2:#64748b;--heat1:#0f172a;--heat2:#1e293b;--heat3:#334155;--heat4:#64748b;}
-:root.light[data-scheme="amber"]  {--accent:#334155;--accent2:#1e293b;--heat1:#cbd5e1;--heat2:#94a3b8;--heat3:#64748b;--heat4:#334155;}
+:root[data-scheme="indigo"]       {--accent:#6366f1;--accent2:#38bdf8;--heat1:#0f0f1a;--heat2:#1e1b4b;--heat3:#3730a3;--heat4:#4f46e5;}
+:root.light[data-scheme="indigo"] {--accent:#4338ca;--accent2:#0284c7;--heat1:#e0e7ff;--heat2:#a5b4fc;--heat3:#6366f1;--heat4:#4338ca;}
+:root[data-scheme="ember"]        {--accent:#f97316;--accent2:#fb7185;--heat1:#12090a;--heat2:#431407;--heat3:#9a3412;--heat4:#ea580c;}
+:root.light[data-scheme="ember"]  {--accent:#c2410c;--accent2:#e11d48;--heat1:#ffedd5;--heat2:#fed7aa;--heat3:#f97316;--heat4:#c2410c;}
+:root[data-scheme="arctic"]       {--accent:#38bdf8;--accent2:#22d3ee;--heat1:#090e14;--heat2:#0c1929;--heat3:#0369a1;--heat4:#0ea5e9;}
+:root.light[data-scheme="arctic"] {--accent:#0369a1;--accent2:#0891b2;--heat1:#e0f2fe;--heat2:#7dd3fc;--heat3:#38bdf8;--heat4:#0369a1;}
+:root[data-scheme="sakura"]       {--accent:#e879f9;--accent2:#f472b6;--heat1:#100810;--heat2:#2e1065;--heat3:#7e22ce;--heat4:#a855f7;}
+:root.light[data-scheme="sakura"] {--accent:#a21caf;--accent2:#be185d;--heat1:#fae8ff;--heat2:#f0abfc;--heat3:#e879f9;--heat4:#a21caf;}
+:root[data-scheme="matcha"]       {--accent:#4ade80;--accent2:#facc15;--heat1:#090f0a;--heat2:#0d1f10;--heat3:#166534;--heat4:#16a34a;}
+:root.light[data-scheme="matcha"] {--accent:#15803d;--accent2:#ca8a04;--heat1:#dcfce7;--heat2:#86efac;--heat3:#4ade80;--heat4:#15803d;}
+:root[data-scheme="gold"]         {--accent:#f59e0b;--accent2:#d97706;--heat1:#0d0b08;--heat2:#1a1508;--heat3:#92400e;--heat4:#b45309;}
+:root.light[data-scheme="gold"]   {--accent:#b45309;--accent2:#92400e;--heat1:#fef3c7;--heat2:#fcd34d;--heat3:#f59e0b;--heat4:#b45309;}
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:16px;}
@@ -679,27 +683,31 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:var(--cal-inv);cursor
         <span id="schemeName">Emerald</span>
         <span class="scheme-arrow">▾</span>
       </button>
-      <div class="dd-panel" id="schemePanel" style="min-width:180px;">
+      <div class="dd-panel" id="schemePanel" style="min-width:200px;">
         <div class="dd-title">Color Scheme</div>
-        <div class="scheme-row active" data-scheme="green" onclick="setScheme('green')">
-          <div class="srp-dots"><div class="srp-dot" style="background:#5eead4"></div><div class="srp-dot" style="background:#818cf8;opacity:.7"></div><div class="srp-dot" style="background:#0f766e;opacity:.45"></div></div>
-          <span class="scheme-row-name">Emerald</span><span class="scheme-check">✓</span>
+        <div class="scheme-row active" data-scheme="indigo" onclick="setScheme('indigo')">
+          <div class="srp-dots"><div class="srp-dot" style="background:#6366f1"></div><div class="srp-dot" style="background:#38bdf8;opacity:.7"></div><div class="srp-dot" style="background:#1e1b4b;opacity:.45"></div></div>
+          <span class="scheme-row-name">Midnight Indigo</span><span class="scheme-check">✓</span>
         </div>
-        <div class="scheme-row" data-scheme="purple" onclick="setScheme('purple')">
-          <div class="srp-dots"><div class="srp-dot" style="background:#a78bfa"></div><div class="srp-dot" style="background:#818cf8;opacity:.7"></div><div class="srp-dot" style="background:#5b21b6;opacity:.45"></div></div>
-          <span class="scheme-row-name">Lavender</span><span class="scheme-check">✓</span>
+        <div class="scheme-row" data-scheme="ember" onclick="setScheme('ember')">
+          <div class="srp-dots"><div class="srp-dot" style="background:#f97316"></div><div class="srp-dot" style="background:#fb7185;opacity:.7"></div><div class="srp-dot" style="background:#431407;opacity:.45"></div></div>
+          <span class="scheme-row-name">Sunset Ember</span><span class="scheme-check">✓</span>
         </div>
-        <div class="scheme-row" data-scheme="ocean" onclick="setScheme('ocean')">
-          <div class="srp-dots"><div class="srp-dot" style="background:#22d3ee"></div><div class="srp-dot" style="background:#38bdf8;opacity:.7"></div><div class="srp-dot" style="background:#0369a1;opacity:.45"></div></div>
-          <span class="scheme-row-name">Ocean</span><span class="scheme-check">✓</span>
+        <div class="scheme-row" data-scheme="arctic" onclick="setScheme('arctic')">
+          <div class="srp-dots"><div class="srp-dot" style="background:#38bdf8"></div><div class="srp-dot" style="background:#22d3ee;opacity:.7"></div><div class="srp-dot" style="background:#0c1929;opacity:.45"></div></div>
+          <span class="scheme-row-name">Arctic Frost</span><span class="scheme-check">✓</span>
         </div>
-        <div class="scheme-row" data-scheme="rose" onclick="setScheme('rose')">
-          <div class="srp-dots"><div class="srp-dot" style="background:#fb7185"></div><div class="srp-dot" style="background:#f43f5e;opacity:.7"></div><div class="srp-dot" style="background:#9f1239;opacity:.45"></div></div>
-          <span class="scheme-row-name">Rose</span><span class="scheme-check">✓</span>
+        <div class="scheme-row" data-scheme="sakura" onclick="setScheme('sakura')">
+          <div class="srp-dots"><div class="srp-dot" style="background:#e879f9"></div><div class="srp-dot" style="background:#f472b6;opacity:.7"></div><div class="srp-dot" style="background:#2e1065;opacity:.45"></div></div>
+          <span class="scheme-row-name">Sakura</span><span class="scheme-check">✓</span>
         </div>
-        <div class="scheme-row" data-scheme="amber" onclick="setScheme('amber')">
-          <div class="srp-dots"><div class="srp-dot" style="background:#94a3b8"></div><div class="srp-dot" style="background:#64748b;opacity:.7"></div><div class="srp-dot" style="background:#334155;opacity:.45"></div></div>
-          <span class="scheme-row-name">Slate</span><span class="scheme-check">✓</span>
+        <div class="scheme-row" data-scheme="matcha" onclick="setScheme('matcha')">
+          <div class="srp-dots"><div class="srp-dot" style="background:#4ade80"></div><div class="srp-dot" style="background:#facc15;opacity:.7"></div><div class="srp-dot" style="background:#0d1f10;opacity:.45"></div></div>
+          <span class="scheme-row-name">Matcha</span><span class="scheme-check">✓</span>
+        </div>
+        <div class="scheme-row" data-scheme="gold" onclick="setScheme('gold')">
+          <div class="srp-dots"><div class="srp-dot" style="background:#f59e0b"></div><div class="srp-dot" style="background:#d97706;opacity:.7"></div><div class="srp-dot" style="background:#1a1508;opacity:.45"></div></div>
+          <span class="scheme-row-name">Obsidian Gold</span><span class="scheme-check">✓</span>
         </div>
       </div>
     </div>
@@ -1059,7 +1067,7 @@ const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov',
 
 // ── Init ───────────────────────────────────────────
 function init(){
-  applyScheme(localStorage.getItem('st_scheme')||'green',false);
+  applyScheme(localStorage.getItem('st_scheme')||'indigo',false);
   applyTheme((localStorage.getItem('st_theme')||'dark')==='dark'?'dark':'light',false);
   loadWidth();
   loadNotes();
@@ -1585,9 +1593,9 @@ function loadWidth(){
 // ── Theme / Scheme ─────────────────────────────────
 function toggleTheme(){const l=document.documentElement.classList.contains('light');applyTheme(l?'dark':'light',true);}
 function applyTheme(mode,sv){const light=mode==='light';document.documentElement.classList.toggle('light',light);document.getElementById('themeBtn').textContent=light?'☀️':'🌙';if(sv)localStorage.setItem('st_theme',mode);setTimeout(()=>{renderWeek();renderRadar();renderHeatmap();renderAll();},60);}
-const SCHEMES={green:{name:'Emerald',color:'#5eead4'},purple:{name:'Lavender',color:'#a78bfa'},ocean:{name:'Ocean',color:'#22d3ee'},rose:{name:'Rose',color:'#fb7185'},amber:{name:'Slate',color:'#94a3b8'}};
+const SCHEMES={indigo:{name:'Midnight Indigo',color:'#6366f1'},ember:{name:'Sunset Ember',color:'#f97316'},arctic:{name:'Arctic Frost',color:'#38bdf8'},sakura:{name:'Sakura',color:'#e879f9'},matcha:{name:'Matcha',color:'#4ade80'},gold:{name:'Obsidian Gold',color:'#f59e0b'}};
 function setScheme(s){applyScheme(s,true);closeAllDD();}
-function applyScheme(s,sv){document.documentElement.setAttribute('data-scheme',s);const m=SCHEMES[s]||SCHEMES.green;document.getElementById('schemeDot').style.background=m.color;document.getElementById('schemeName').textContent=m.name;document.getElementById('accentBar').style.background=`linear-gradient(90deg,${m.color} 0%,${m.color}44 100%)`;document.querySelectorAll('.scheme-row').forEach(r=>r.classList.toggle('active',r.dataset.scheme===s));if(sv)localStorage.setItem('st_scheme',s);setTimeout(()=>{if(chartType==='line')renderWeek();renderRadar();},50);}
+function applyScheme(s,sv){document.documentElement.setAttribute('data-scheme',s);const m=SCHEMES[s]||SCHEMES.indigo;document.getElementById('schemeDot').style.background=m.color;document.getElementById('schemeName').textContent=m.name;document.getElementById('accentBar').style.background=`linear-gradient(90deg,${m.color} 0%,${m.color}44 100%)`;document.querySelectorAll('.scheme-row').forEach(r=>r.classList.toggle('active',r.dataset.scheme===s));if(sv)localStorage.setItem('st_scheme',s);setTimeout(()=>{if(chartType==='line')renderWeek();renderRadar();},50);}
 
 // ── Toast ───────────────────────────────────────────
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2600);}
