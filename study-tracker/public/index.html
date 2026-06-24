@@ -248,6 +248,16 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:var(--cal-inv);cursor
 .cd-badge{font-family:'Inter',sans-serif;font-size:.85rem;font-weight:700;color:var(--accent);white-space:nowrap;margin-left:auto;}
 .cd-badge.soon,.cd-date.soon{color:#fb7185;}
 .cd-badge.passed,.cd-date.passed{color:var(--muted);}
+.cd-done-btn{background:none;border:1.5px solid var(--border);border-radius:50%;width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--muted);flex-shrink:0;transition:all .2s;padding:0;}
+.cd-done-btn:hover{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent);}
+.cd-archive-toggle{font-family:'Inter',sans-serif;font-size:.68rem;color:var(--muted);cursor:pointer;text-align:center;padding:6px;border-radius:6px;transition:color .15s,background .15s;border:none;background:none;width:100%;}
+.cd-archive-toggle:hover{color:var(--text);background:var(--surface2);}
+.cd-archive-section{display:flex;flex-direction:column;gap:5px;margin-top:4px;}
+.cd-archive-header{font-family:'Inter',sans-serif;font-size:.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:4px 2px;}
+.countdown-item.archived{opacity:.45;background:transparent;}
+.countdown-item.archived .cd-name{text-decoration:line-through;}
+.cd-unarchive{background:none;border:none;cursor:pointer;font-size:.7rem;color:var(--muted);padding:0;flex-shrink:0;transition:color .15s;}
+.cd-unarchive:hover{color:var(--accent);}
 .cd-edit{background:none;border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:.75rem;padding:3px 6px;border-radius:4px;}
 .cd-edit:hover{color:var(--accent2);border-color:var(--accent2);}
 .cd-empty{font-family:'Inter',sans-serif;font-size:.75rem;color:var(--muted);text-align:center;padding:10px 0;}
@@ -1040,6 +1050,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:var(--cal-inv);cursor
 // ── State ──────────────────────────────────────────
 let studyLog  = JSON.parse(localStorage.getItem('st_log')   ||'{}');
 let events    = JSON.parse(localStorage.getItem('st_events')||'[]');
+let archivedEvents = JSON.parse(localStorage.getItem('st_archived_events')||'[]');
 let sessions  = JSON.parse(localStorage.getItem('st_sess')  ||'[]');
 let allTags   = JSON.parse(localStorage.getItem('st_tags')  ||'[]');
 let goals     = JSON.parse(localStorage.getItem('st_goals') ||'{"week":0,"month":0}');
@@ -1052,7 +1063,7 @@ let weekOff=0,yearOff=0,chartType=localStorage.getItem('st_chart')||'bar';
 let editingId=null,toastTimer,manualOpen=false,calOffset=0;
 const activeTags={sw:[],pm:[]};
 
-function persist(){localStorage.setItem('st_log',JSON.stringify(studyLog));localStorage.setItem('st_events',JSON.stringify(events));localStorage.setItem('st_sess',JSON.stringify(sessions));localStorage.setItem('st_tags',JSON.stringify(allTags));localStorage.setItem('st_goals',JSON.stringify(goals));}
+function persist(){localStorage.setItem('st_log',JSON.stringify(studyLog));localStorage.setItem('st_events',JSON.stringify(events));localStorage.setItem('st_archived_events',JSON.stringify(archivedEvents));localStorage.setItem('st_sess',JSON.stringify(sessions));localStorage.setItem('st_tags',JSON.stringify(allTags));localStorage.setItem('st_goals',JSON.stringify(goals));}
 
 // ── Date helpers ───────────────────────────────────
 function toKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
@@ -1481,10 +1492,64 @@ function openCdModal(ev){editingId=ev?ev.id:null;document.getElementById('cdTitl
 function closeCdModal(){document.getElementById('cdOverlay').classList.remove('open');editingId=null;}
 function saveEvent(){const n=document.getElementById('evName').value.trim(),d=document.getElementById('evDate').value;if(!n||!d)return showToast('Enter name and date!');if(editingId!==null){const ev=events.find(e=>e.id===editingId);if(ev){ev.name=n;ev.date=d;}}else events.push({name:n,date:d,id:Date.now()});events.sort((a,b)=>a.date.localeCompare(b.date));persist();renderCountdowns();renderCal();closeCdModal();showToast(editingId?`Updated!`:`Added!`);}
 function deleteEvent(){if(editingId===null)return;events=events.filter(e=>e.id!==editingId);persist();renderCountdowns();renderCal();closeCdModal();showToast('Deleted.');}
+function markDone(id){
+  const ev=events.find(e=>e.id===id);if(!ev)return;
+  ev.doneAt=new Date().toISOString();
+  archivedEvents.unshift(ev);
+  events=events.filter(e=>e.id!==id);
+  persist();renderCountdowns();renderCal();
+  showToast(`✅ "${ev.name}" archived!`);
+  launchConfetti(50,40);
+}
+function unarchiveEvent(id){
+  const ev=archivedEvents.find(e=>e.id===id);if(!ev)return;
+  delete ev.doneAt;
+  events.push(ev);events.sort((a,b)=>a.date.localeCompare(b.date));
+  archivedEvents=archivedEvents.filter(e=>e.id!==id);
+  persist();renderCountdowns();renderCal();showToast('↩ Restored!');
+}
+function deleteArchived(id){
+  archivedEvents=archivedEvents.filter(e=>e.id!==id);
+  persist();renderCountdowns();showToast('Deleted.');
+}
+let archiveOpen=false;
 function renderCountdowns(){
-  const list=document.getElementById('cdList');if(!events.length){list.innerHTML='<div class="cd-empty">No events yet</div>';return;}
-  const tm=new Date(toKey(today())+'T00:00:00').getTime();list.innerHTML='';
-  events.forEach(ev=>{const diff=Math.round((new Date(ev.date+'T00:00:00').getTime()-tm)/86400000);const passed=diff<0,soon=diff>=0&&diff<=7;const cls=passed?'passed':soon?'soon':'';const badge=passed?`${Math.abs(diff)}d ago`:diff===0?'Today!':`${diff}d`;const dateStr=new Date(ev.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});const item=document.createElement('div');item.className='countdown-item';item.innerHTML=`<div class="cd-left"><div class="cd-name">${ev.name}</div><div class="cd-date ${cls}">${dateStr}</div></div><div class="cd-badge ${cls}">${badge}</div><button class="cd-edit" title="Edit">✎</button>`;item.querySelector('.cd-edit').addEventListener('click',()=>openCdModal(ev));list.appendChild(item);});
+  const list=document.getElementById('cdList');list.innerHTML='';
+  const tm=new Date(toKey(today())+'T00:00:00').getTime();
+  if(!events.length&&!archivedEvents.length){list.innerHTML='<div class="cd-empty">No events yet</div>';return;}
+  events.forEach(ev=>{
+    const diff=Math.round((new Date(ev.date+'T00:00:00').getTime()-tm)/86400000);
+    const passed=diff<0,soon=diff>=0&&diff<=7;
+    const cls=passed?'passed':soon?'soon':'';
+    const badge=passed?`${Math.abs(diff)}d ago`:diff===0?'Today!':`${diff}d`;
+    const dateStr=new Date(ev.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const item=document.createElement('div');item.className='countdown-item';
+    item.innerHTML=`<button class="cd-done-btn" title="Mark done">✓</button><div class="cd-left"><div class="cd-name">${ev.name}</div><div class="cd-date ${cls}">${dateStr}</div></div><div class="cd-badge ${cls}">${badge}</div><button class="cd-edit" title="Edit">✎</button>`;
+    item.querySelector('.cd-done-btn').addEventListener('click',()=>markDone(ev.id));
+    item.querySelector('.cd-edit').addEventListener('click',()=>openCdModal(ev));
+    list.appendChild(item);
+  });
+  if(archivedEvents.length){
+    const toggle=document.createElement('button');
+    toggle.className='cd-archive-toggle';
+    toggle.textContent=archiveOpen?`▲ Hide archive (${archivedEvents.length})`:`▼ Archive (${archivedEvents.length})`;
+    toggle.addEventListener('click',()=>{archiveOpen=!archiveOpen;renderCountdowns();});
+    list.appendChild(toggle);
+    if(archiveOpen){
+      const sec=document.createElement('div');sec.className='cd-archive-section';
+      const hdr=document.createElement('div');hdr.className='cd-archive-header';hdr.textContent='Completed';sec.appendChild(hdr);
+      archivedEvents.forEach(ev=>{
+        const dateStr=new Date(ev.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        const doneStr=ev.doneAt?new Date(ev.doneAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+        const item=document.createElement('div');item.className='countdown-item archived';
+        item.innerHTML=`<div class="cd-left"><div class="cd-name">${ev.name}</div><div class="cd-date">${dateStr}${doneStr?` · done ${doneStr}`:''}</div></div><button class="cd-unarchive" title="Restore">↩</button><button class="cd-unarchive" title="Delete" style="color:#fb7185;">✕</button>`;
+        item.querySelectorAll('.cd-unarchive')[0].addEventListener('click',()=>unarchiveEvent(ev.id));
+        item.querySelectorAll('.cd-unarchive')[1].addEventListener('click',()=>deleteArchived(ev.id));
+        sec.appendChild(item);
+      });
+      list.appendChild(sec);
+    }
+  }
 }
 
 // ── Timer Rings ────────────────────────────────────
