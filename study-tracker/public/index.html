@@ -1454,6 +1454,9 @@ async function doReset(){
 function continueAsGuest(){
   isGuest = true;
   hideLoginScreen();
+  jumpToToday();renderGlance();renderAll();renderCountdowns();renderTagCloud();renderRadar();updateTimerStats();renderPmDots();renderCal();renderTimeProgress();
+  const savedPlan = localStorage.getItem('st_studyplan_html');
+  if(savedPlan) injectStudyPlan(savedPlan);
 }
 
 function setLoginLoading(on){
@@ -1590,13 +1593,16 @@ async function init(){
   loadNotes();
   drawTicks('swTicks');drawTicks('pmTicks');
   setArc('swArc',0);setArc('pmArc',1);
-  // Restore session first, then load data
+  // Restore session first — renders happen after login/guest choice
   await restoreSession();
-  await supaLoad();
-  // Auto-inject saved study plan if present
-  const savedPlan = localStorage.getItem('st_studyplan_html');
-  if (savedPlan) injectStudyPlan(savedPlan);
-  jumpToToday();renderGlance();renderAll();renderCountdowns();renderTagCloud();renderRadar();updateTimerStats();renderPmDots();renderCal();renderTimeProgress();
+  // If session was restored automatically (token still valid), render now
+  if(currentUser){
+    await supaLoad();
+    const savedPlan = localStorage.getItem('st_studyplan_html');
+    if(savedPlan) injectStudyPlan(savedPlan);
+    jumpToToday();renderGlance();renderAll();renderCountdowns();renderTagCloud();renderRadar();updateTimerStats();renderPmDots();renderCal();renderTimeProgress();
+  }
+  // Otherwise wait — renders fire from continueAsGuest / doLogin / doSignup
   const tn=document.getElementById('timerNotes');if(tn)tn.value=localStorage.getItem('st_timernotes')||'';
   setInterval(renderTimeProgress,60000);
   // Add ripple to all buttons
