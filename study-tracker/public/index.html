@@ -1786,7 +1786,7 @@ function closeAllDD(){document.querySelectorAll('.dd-panel').forEach(p=>p.classL
 // ── Glance ─────────────────────────────────────────
 function renderGlance(){
   const h=new Date().getHours();
-  const greetWord = h<12?'Good morning 🌤':h<17?'Good afternoon ☀️':h<21?'Good evening 🌆':'Good night 🌙';
+  const greetWord = h<12?'Good morning':h<17?'Good afternoon':h<21?'Good evening':'Good night';
   const greetName = currentUser ? ', ' + currentUser.email.split('@')[0] : '';
   document.getElementById('glanceGreeting').textContent = greetWord + greetName;
   document.getElementById('glanceDate').textContent=today().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
