@@ -240,7 +240,7 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .row1 { display:grid; grid-template-columns:1fr 2.2fr; gap:14px; margin-bottom:14px; align-items:stretch; }
 @media(max-width:1100px){.row1{grid-template-columns:1fr;}}
 
-.row2 { display:grid; grid-template-columns:1fr 380px; gap:14px; margin-bottom:14px; align-items:stretch; }
+.row2 { display:grid; grid-template-columns:1fr 380px; gap:14px; margin-bottom:14px; align-items:start; }
 @media(max-width:700px){.row2{grid-template-columns:1fr;}}
 .row2 > .countdown-col { display:flex; flex-direction:column; overflow:hidden; }
 .row2 > .countdown-col .countdown-box { flex:1; min-height:200px; }
@@ -312,12 +312,13 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .add-event-btn:hover { background:color-mix(in srgb,var(--accent) 20%,transparent); border-color:var(--accent); }
 .countdown-list { display:flex; flex-direction:column; gap:5px; overflow-y:auto; flex:1; min-height:0; }
 .countdown-item {
-  background:var(--surface2); border:1px solid var(--border);
-  border-radius:var(--radius-sm); padding:8px 12px;
+  background:none; border:none; border-bottom:1px solid var(--border);
+  padding:8px 4px;
   display:flex; align-items:center; gap:10px;
-  transition:border-color .15s;
+  transition:background .15s;
 }
-.countdown-item:hover { border-color:var(--border2); }
+.countdown-item:last-child { border-bottom:none; }
+.countdown-item:hover { background:color-mix(in srgb,var(--accent) 4%,transparent); border-radius:8px; }
 .cd-left { flex:1; min-width:0; display:flex; align-items:baseline; gap:6px; }
 .cd-name { font-family:'Space Grotesk',sans-serif; font-size:.95rem; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
 .cd-date { font-family:'Inter',sans-serif; font-size:.52rem; color:var(--text3); white-space:nowrap; flex-shrink:0; position:relative; top:1px; }
@@ -377,8 +378,17 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .manual-form { background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:10px 12px; display:none; flex-direction:column; gap:6px; }
 .manual-form.open { display:flex; }
 .timer-card-title { font-family:'Inter',sans-serif; font-size:.62rem; text-transform:uppercase; letter-spacing:0.6px; color:var(--text3); }
-.timer-body { display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:stretch; }
+.timer-body { display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:stretch; flex:1; min-height:0; }
 @media(max-width:600px){.timer-body{grid-template-columns:1fr;}}
+
+/* Timer mode toggle */
+.timer-mode-toggle { display:flex; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:3px; gap:2px; }
+.tmr-tab { background:none; border:none; border-radius:7px; color:var(--text3); cursor:pointer; font-family:'Inter',sans-serif; font-size:.65rem; padding:4px 12px; text-transform:uppercase; letter-spacing:.5px; transition:background .15s,color .15s; }
+.tmr-tab.active { background:var(--surface3); color:var(--accent2); }
+
+/* Todo as pane */
+.todo-pane { background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); display:flex; flex-direction:column; overflow:hidden; padding:12px; gap:8px; height:100%; box-sizing:border-box; }
+.todo-pane .todo-list { flex:1; overflow-y:auto; min-height:0; }
 
 /* Ring */
 .ring-wrap { position:relative; display:flex; align-items:center; justify-content:center; width:160px; height:160px; margin:0 auto; }
@@ -386,6 +396,11 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .ring-inner { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; }
 .ring-inner .timer-display { font-size:1.5rem; letter-spacing:0.3px; }
 .ring-inner .timer-phase-lbl { font-size:.52rem; }
+
+/* Larger ring for stopwatch */
+.sw-ring-wrap { width:200px; height:200px; }
+.sw-ring-wrap .ring-svg { width:200px; height:200px; }
+.sw-ring-wrap .ring-inner .timer-display { font-size:1.9rem; }
 
 /* Timer pane */
 .timer-pane { background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:0; display:flex; flex-direction:column; overflow:visible; }
@@ -607,6 +622,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .cal-tooltip.show { opacity:1; }
 
 /* ── Time progress ── */
+.row2-input-card { display:flex; flex-direction:row; gap:16px; align-items:flex-start; }
 .time-progress { display:flex; flex-direction:column; justify-content:center; gap:12px; flex:1; min-width:100px; }
 .tp-row { display:flex; flex-direction:column; gap:5px; }
 .tp-header { display:flex; justify-content:space-between; align-items:baseline; }
@@ -775,6 +791,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
    ══════════════════ */
 .sp-panel { position:fixed; top:0; left:0; height:100vh; width:480px; max-width:95vw; background:var(--surface); border-right:1px solid var(--border); z-index:10000; display:flex; flex-direction:column; transform:translateX(-100%); transition:transform .35s cubic-bezier(.4,0,.2,1); box-shadow:4px 0 40px rgba(0,0,0,.5); }
 .sp-panel.open { transform:translateX(0); }
+.sb-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:199; cursor:pointer; opacity:0; transition:opacity .3s; }
+.sb-mobile-toggle { display:none; position:fixed; top:12px; left:12px; z-index:198; background:var(--surface2); border:1px solid var(--border2); border-radius:8px; padding:7px 10px; cursor:pointer; color:var(--text); font-size:1rem; line-height:1; }
 .sp-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; opacity:0; pointer-events:none; transition:opacity .3s; }
 .sp-overlay.show { opacity:1; pointer-events:all; }
 .sp-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--border); flex-shrink:0; }
@@ -849,7 +867,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
    ══════════════════ */
 @media(max-width:640px){
   body { font-size:.95rem; overflow-x:hidden; }
-  .page-wrap { max-width:100%; overflow-x:hidden; padding:14px 14px 40px; }
+  .page-wrap { max-width:100%; overflow-x:hidden; padding:50px 10px 40px; }
   .header-row { flex-wrap:wrap; gap:8px; margin-bottom:6px; }
   h1 { font-size:1.3rem; }
   .subtitle { font-size:.62rem; margin-bottom:10px; }
@@ -860,8 +878,13 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   .glance-bar { gap:2px; margin-bottom:12px; }
   .glance-greeting { font-size:1.1rem; }
   .glance-date,.glance-today { font-size:.65rem; }
-  .row1 { grid-template-columns:1fr!important; gap:10px; margin-bottom:10px; }
+
+  /* Rows */
+  .row1,.row2,.row3 { grid-template-columns:1fr!important; gap:10px; margin-bottom:10px; }
+  .quick-stats-card { align-self:auto; }
   .stats-col { gap:10px; }
+
+  /* Streak */
   .streak-box { padding:12px 10px; }
   .flame-svg-new { width:90px; height:100px; }
   .streak-flame-wrap { width:90px; height:100px; }
@@ -870,51 +893,81 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   .streak-week-row { gap:4px; flex-wrap:wrap; justify-content:center; margin:4px 0; }
   .streak-day-check { width:9px; height:9px; }
   .streak-day-lbl { font-size:.4rem; }
-  .timer-body { grid-template-columns:1fr; }
+
+  /* Timer */
+  .timer-card { padding:12px; }
+  .timer-card-header { flex-wrap:wrap; gap:6px; }
+  .timer-mode-toggle { order:-1; width:100%; justify-content:center; }
+  .tmr-tab { flex:1; text-align:center; }
+  .timer-body { grid-template-columns:1fr; gap:10px; }
   .ring-wrap { width:130px; height:130px; }
   .ring-svg { width:130px; height:130px; }
+  .sw-ring-wrap { width:160px; height:160px; }
+  .sw-ring-wrap .ring-svg { width:160px; height:160px; }
   .timer-display { font-size:1.8rem; }
-  .row2 { grid-template-columns:1fr; gap:10px; margin-bottom:10px; }
-  .row2-right .input-card { flex-direction:column!important; }
-  .mini-cal { width:100%!important; }
-  .row3 { grid-template-columns:1fr; gap:10px; margin-bottom:10px; }
+  .todo-pane { min-height:180px; }
+
+  /* Manual form */
+  .manual-form .manual-row { flex-wrap:wrap; }
+  .manual-form .date-display { flex:1; min-width:0; }
+  .manual-form #hoursInput { width:100%; flex:1 1 100%; }
+
+  /* Calendar + progress bars stack vertically */
+  .row2-input-card { flex-direction:column!important; gap:10px!important; align-items:stretch!important; }
+  .mini-cal { width:100%!important; flex-shrink:unset!important; }
+  .time-progress { min-width:unset!important; width:100%; }
+
+  /* Milestone */
   .qs-grid { flex-wrap:wrap; }
   .qs-item { flex:1 1 calc(50% - 8px); border-right:none; border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 10px; }
-  .heatmap-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  .heatmap-inner { width:max-content; }
+
+  /* Sidebar - full overlay, hidden by default */
+  .sidebar { width:240px; transform:translateX(-100%); transition:transform .25s cubic-bezier(.4,0,.2,1); }
+  .sidebar.collapsed { width:240px; transform:translateX(-100%); }
+  .sidebar.mobile-open { transform:translateX(0)!important; }
+  .main-content { margin-left:0!important; }
+  .main-content.collapsed { margin-left:0!important; }
+  .sb-mobile-toggle { display:flex!important; }
+  .sb-overlay { display:none; }
+
+  /* Heatmap scroll properly */
+  .charts-row { margin-bottom:10px; }
+  .charts-row .card { padding:10px 8px; overflow:hidden; }
+  .heatmap-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; width:100%; }
+  .heatmap-inner { width:max-content; min-width:unset!important; }
+  .year-nav { padding:4px 6px; }
+  .year-label { font-size:.82rem; }
+  .nav-btn { padding:4px 8px; font-size:.72rem; }
+  .section-title { font-size:.62rem; margin-bottom:8px; }
+
+  /* Misc */
   .modal { width:95%; padding:18px 14px; }
   .toast { font-size:.7rem; padding:8px 16px; bottom:14px; max-width:90vw; white-space:normal; text-align:center; }
   .tag-pill-row { flex-wrap:wrap; }
   .top-tags { flex-wrap:wrap; }
+  .sp-panel { width:100vw; max-width:100vw; }
 }
 
 @media(min-width:641px) and (max-width:900px){
   body { padding:18px 20px 40px; overflow-x:hidden; }
   .row1 { grid-template-columns:1fr!important; }
   .row2 { grid-template-columns:1fr!important; }
-  .row2-right .input-card { flex-direction:row!important; }
+  .row2-input-card { flex-direction:row!important; }
   .mini-cal { width:200px!important; flex-shrink:0; }
-  .timer-body { flex-direction:row; flex-wrap:wrap; }
-  .timer-pane { flex:1 1 calc(50% - 7px); min-width:0!important; }
+  .timer-body { grid-template-columns:1fr 1fr; }
   .row3 { grid-template-columns:1fr!important; }
   .qs-grid { flex-wrap:wrap; }
   .qs-item { flex:1 1 calc(50% - 6px); border-right:none; border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 10px; }
   .heatmap-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .heatmap-inner { width:max-content; }
 }
-
-@media(max-width:640px){
-  .sidebar { width:220px; }
-  .sidebar.collapsed { width:0; border-right:none; }
-  .main-content { margin-left:220px; }
-  .main-content.collapsed { margin-left:0; }
-  .sp-panel { width:100vw; max-width:100vw; }
-}
 </style>
 </head>
 <body>
 <div id="hovTip" class="hov-tip"></div>
 <div id="toast" class="toast"></div>
+<div id="sbOverlay" class="sb-overlay" onclick="closeMobileSidebar()"></div>
+<button id="sbMobileToggle" class="sb-mobile-toggle" onclick="openMobileSidebar()">☰</button>
 <div class="app-layout">
 
 <div id="confirmOverlay" style="display:none;position:fixed;inset:0;z-index:10000;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);">
@@ -1284,10 +1337,13 @@ function injectStudyPlan(htmlStr){
       <div id="weekChart" style="height:130px;overflow:hidden;"></div>
       <div class="week-total" id="weekTotal"></div>
     </div>
-  </div><input type="date" id="dateInput" style="position:absolute;opacity:0;pointer-events:none;width:0;height:0;" onchange="updateDateDisplay(this.value)">
-  <div class="timer-card" style="margin-bottom:0;">
+  </div><div class="timer-card" style="margin-bottom:0;">
     <div class="timer-card-header">
       <span class="timer-card-title">⏱ Live Tracking</span>
+      <div class="timer-mode-toggle">
+        <button class="tmr-tab active" id="tabSw" onclick="setTimerMode('sw')">Stopwatch</button>
+        <button class="tmr-tab" id="tabPm" onclick="setTimerMode('pm')">Pomodoro</button>
+      </div>
       <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
         <span class="manual-date-display" id="manualDateDisplay"></span>
         <button class="manual-toggle" onclick="toggleManual()" id="manualToggleBtn">+ Manual Entry</button>
@@ -1295,21 +1351,30 @@ function injectStudyPlan(htmlStr){
     </div>
     <div class="manual-form" id="manualForm" style="margin-bottom:12px;">
       <div class="manual-row" style="align-items:center;flex-wrap:wrap;gap:6px;">
-        <div class="date-display" id="dateDisplay" onclick="document.getElementById('dateInput').showPicker()" style="flex:none;min-width:140px;cursor:pointer;">
+        <div class="date-display" id="dateDisplay" onclick="document.getElementById('dateInput').showPicker()" style="flex:none;min-width:140px;cursor:pointer;position:relative;">
           <span id="dateDisplayText">—</span><span>📅</span>
+          <input type="date" id="dateInput" style="position:absolute;bottom:0;left:0;opacity:0;pointer-events:none;width:100%;height:100%;" onchange="updateDateDisplay(this.value)">
         </div>
-        <button class="today-btn" onclick="jumpToToday()" style="height:36px;">Today</button>
-        <input type="number" id="hoursInput" min="0" max="24" step="0.5" placeholder="hours, e.g. 2.5" onkeydown="if(event.key==='Enter')logHours()" style="flex:1;min-width:100px;">
+        <input type="number" id="hoursInput" min="0" max="24" step="0.5" placeholder="hours, e.g. 2.5" onkeydown="if(event.key==='Enter')logHours()" style="flex:1;min-width:120px;">
+        <div id="manualPills" style="display:flex;gap:4px;align-items:center;flex-shrink:0;"></div>
+        <div class="tag-dd-wrap">
+          <button class="tag-add-pill" onclick="toggleTagDD('manual')">+ tag</button>
+          <div class="tag-dd" id="manualTagDD">
+            <input class="tag-search" id="manualSearch" placeholder="Search or create…" oninput="filterOpts('manual',this.value)" onkeydown="if(event.key==='Enter')createTag('manual')">
+            <div class="tag-opts" id="manualOpts"></div>
+            <div class="tag-create-row"><button class="tag-create-btn" id="manualCreateBtn" onclick="createTag('manual')">+ Create tag</button></div>
+          </div>
+        </div>
         <button class="log-btn" onclick="logHours()">Log</button>
         <button class="clear-btn" onclick="clearDay()">✕ Clear Day</button>
       </div>
     </div>
     <div class="timer-body">
-      <div class="timer-pane">
+      <div class="timer-pane" id="swPane">
         <div class="timer-pane-main">
           <div class="timer-pane-title">Stopwatch <div class="active-dot" id="swDot"></div></div>
-          <div class="ring-wrap">
-            <svg class="ring-svg" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" id="swRingSvg">
+          <div class="ring-wrap sw-ring-wrap">
+            <svg class="ring-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" id="swRingSvg">
               <defs>
                 <linearGradient id="swGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stop-color="var(--accent2)"/>
@@ -1317,10 +1382,10 @@ function injectStudyPlan(htmlStr){
                 </linearGradient>
               </defs>
               <g id="swTicks"></g>
-              <circle cx="80" cy="80" r="62" fill="none" stroke="var(--surface)" stroke-width="6" opacity="0.5"/>
-              <circle cx="80" cy="80" r="62" fill="none" stroke="url(#swGrad)" stroke-width="6"
-                stroke-linecap="round" stroke-dasharray="389.6" stroke-dashoffset="389.6"
-                transform="rotate(-90 80 80)" id="swArc" style="transition:stroke-dashoffset .9s linear;"/>
+              <circle cx="100" cy="100" r="80" fill="none" stroke="var(--surface)" stroke-width="6" opacity="0.5"/>
+              <circle cx="100" cy="100" r="80" fill="none" stroke="url(#swGrad)" stroke-width="6"
+                stroke-linecap="round" stroke-dasharray="502.7" stroke-dashoffset="502.7"
+                transform="rotate(-90 100 100)" id="swArc" style="transition:stroke-dashoffset .9s linear;"/>
             </svg>
             <div class="ring-inner">
               <div class="timer-display" id="swDisplay">00:00:00</div>
@@ -1332,7 +1397,7 @@ function injectStudyPlan(htmlStr){
             <button class="t-btn stop" id="swStop" onclick="swLog()" style="display:none">Stop &amp; Log</button>
             <button class="t-btn reset" onclick="swReset()">Reset</button>
           </div>
-          <div class="t-stats-row">
+          <div class="t-stats-row" style="margin-top:auto;">
             <div class="t-stat"><div class="t-stat-val" id="swToday">0h</div><div class="t-stat-lbl">Today</div></div>
             <div class="t-stat"><div class="t-stat-val" id="swSessCount">0</div><div class="t-stat-lbl">Sessions</div></div>
           </div>
@@ -1350,7 +1415,7 @@ function injectStudyPlan(htmlStr){
           </div>
         </div>
       </div>
-      <div class="timer-pane">
+      <div class="timer-pane" id="pmPane" style="display:none;">
         <div class="timer-pane-main">
           <div class="timer-pane-title">Pomodoro <div class="active-dot" id="pmDot"></div></div>
           <div class="ring-wrap">
@@ -1404,9 +1469,7 @@ function injectStudyPlan(htmlStr){
           </div>
         </div>
       </div>
-    </div>
-    <div class="timer-notes-wrap">
-      <div class="todo-wrap">
+      <div class="todo-pane">
         <div class="todo-header">
           <span class="todo-title">To-do</span>
           <button class="todo-clear-btn" onclick="todoClearDone()" title="Clear completed">Clear done</button>
@@ -1434,7 +1497,7 @@ function injectStudyPlan(htmlStr){
   </div>
 
   <div class="row2-right">
-    <div class="input-card" style="width:auto;flex-direction:row;gap:16px;align-items:flex-start;">
+    <div class="input-card row2-input-card">
       <div class="mini-cal" style="flex-shrink:0;width:220px;">
         <div class="mini-cal-header">
           <span class="mini-cal-month-label" id="calMonth"></span>
@@ -1587,7 +1650,7 @@ function tagColor(t){if(!tagColors[t]){const used=Object.values(tagColors);tagCo
 
 let weekOff=0,yearOff=0,chartType=localStorage.getItem('st_chart')||'bar';
 let editingId=null,toastTimer,manualOpen=false,calOffset=0;
-const activeTags={sw:[],pm:[]};
+const activeTags={sw:[],pm:[],manual:[]};
 
 // ── Supabase ───────────────────────────────────────
 const SUPA_URL = 'https://vryibxbbzubxbeiyiryt.supabase.co';
@@ -1935,7 +1998,9 @@ function toggleManual(){manualOpen=!manualOpen;document.getElementById('manualFo
 function logHours(){
   const d=document.getElementById('dateInput').value,h=parseFloat(document.getElementById('hoursInput').value);
   if(!d)return showToast('Pick a date!');if(isNaN(h)||h<0)return showToast('Enter valid hours!');
-  studyLog[d]=(studyLog[d]||0)+h;sessions.push({date:d,hours:h,tags:[],ts:Date.now(),source:'manual'});
+  const tags=[...activeTags.manual||[]];
+  studyLog[d]=(studyLog[d]||0)+h;sessions.push({date:d,hours:h,tags,ts:Date.now(),source:'manual'});
+  activeTags.manual=[];renderPills('manual');
   persist();renderAll();renderRadar();renderCal();document.getElementById('hoursInput').value='';
   showToast(`+${fmt(h)} logged!`);
   launchConfetti(50,50);
@@ -2051,15 +2116,19 @@ function filterOpts(w,q){
   cb.style.display=(allTags.filter(t=>t.includes(q)&&!activeTags[w].includes(t)).length===0||v)?'block':'none';
 }
 function createTag(w){const v=document.getElementById(w+'Search').value.trim().toLowerCase();if(!v)return;if(!allTags.includes(v)){allTags.push(v);tagColor(v);persist();}addTagTo(w,v);document.getElementById(w+'Search').value='';filterOpts(w,'');}
-function addTagTo(w,t){if(!activeTags[w].includes(t))activeTags[w].push(t);renderPills(w);}
+function addTagTo(w,t){
+  if(activeTags[w].includes(t))return;
+  if(activeTags[w].length>=2){showToast('Max 2 tags per session');return;}
+  activeTags[w].push(t);renderPills(w);
+}
 function removeTagFrom(w,t){activeTags[w]=activeTags[w].filter(x=>x!==t);renderPills(w);}
 function deleteTag(e,t){
   e.stopPropagation();
   allTags=allTags.filter(x=>x!==t);
   sessions.forEach(s=>{s.tags=(s.tags||[]).filter(x=>x!==t);});
   delete tagColors[t];localStorage.setItem('st_tagcol',JSON.stringify(tagColors));
-  activeTags.sw=activeTags.sw.filter(x=>x!==t);activeTags.pm=activeTags.pm.filter(x=>x!==t);
-  persist();renderPills('sw');renderPills('pm');renderTagCloud();renderRadar();
+  activeTags.sw=activeTags.sw.filter(x=>x!==t);activeTags.pm=activeTags.pm.filter(x=>x!==t);activeTags.manual=activeTags.manual.filter(x=>x!==t);
+  persist();renderPills('sw');renderPills('pm');renderPills('manual');renderTagCloud();renderRadar();
   filterOpts('sw',document.getElementById('swSearch').value);filterOpts('pm',document.getElementById('pmSearch').value);
   showToast(`Tag "${t}" deleted.`);
 }
@@ -2356,16 +2425,20 @@ function renderCountdowns(){
 }
 
 // ── Timer Rings ────────────────────────────────────
-const CIRC=2*Math.PI*62; // circumference
+const CIRC_PM=2*Math.PI*62; // pomodoro circumference (r=62)
+const CIRC_SW=2*Math.PI*80; // stopwatch circumference (r=80)
 function drawTicks(svgId){
   const g=document.getElementById(svgId);if(!g)return;g.innerHTML='';
+  const isSw=svgId==='swTicks';
+  const cx=isSw?100:80, cy=isSw?100:80;
   const total=60;
   for(let i=0;i<total;i++){
     const angle=(i/total)*2*Math.PI-Math.PI/2;
     const isMaj=i%5===0;
-    const r1=isMaj?70:72,r2=isMaj?76:74.5;
-    const x1=80+r1*Math.cos(angle),y1=80+r1*Math.sin(angle);
-    const x2=80+r2*Math.cos(angle),y2=80+r2*Math.sin(angle);
+    const r1=isSw?(isMaj?88:90):( isMaj?70:72);
+    const r2=isSw?(isMaj?96:93):( isMaj?76:74.5);
+    const x1=cx+r1*Math.cos(angle),y1=cy+r1*Math.sin(angle);
+    const x2=cx+r2*Math.cos(angle),y2=cy+r2*Math.sin(angle);
     const line=document.createElementNS('http://www.w3.org/2000/svg','line');
     line.setAttribute('x1',x1);line.setAttribute('y1',y1);
     line.setAttribute('x2',x2);line.setAttribute('y2',y2);
@@ -2376,9 +2449,9 @@ function drawTicks(svgId){
   }
 }
 function setArc(arcId,progress){
-  // progress 0–1; stroke-dashoffset goes from CIRC (empty) to 0 (full)
   const arc=document.getElementById(arcId);if(!arc)return;
-  arc.style.strokeDashoffset=CIRC*(1-Math.min(Math.max(progress,0),1));
+  const circ=arcId==='swArc'?CIRC_SW:CIRC_PM;
+  arc.style.strokeDashoffset=circ*(1-Math.min(Math.max(progress,0),1));
 }
 function updSwRing(){
   // stopwatch: cycle through hours, filling per-minute within a 1h loop
@@ -2389,6 +2462,29 @@ function updPmRing(){
   const total=getPmSecs(),rem=Math.max(total-pmEl,0);
   // fills as time passes (1 = full at start, drains to 0)
   setArc('pmArc',rem/total);
+}
+
+function openMobileSidebar(){
+  document.getElementById('sidebar').classList.add('mobile-open');
+  const ov=document.getElementById('sbOverlay');ov.style.display='block';setTimeout(()=>ov.style.opacity='1',10);
+}
+function closeMobileSidebar(){
+  document.getElementById('sidebar').classList.remove('mobile-open');
+  const ov=document.getElementById('sbOverlay');ov.style.opacity='0';setTimeout(()=>ov.style.display='none',300);
+}
+
+function setTimerMode(mode){
+  const sw = document.getElementById('swPane');
+  const pm = document.getElementById('pmPane');
+  const tabSw = document.getElementById('tabSw');
+  const tabPm = document.getElementById('tabPm');
+  if(mode==='sw'){
+    sw.style.display=''; pm.style.display='none';
+    tabSw.classList.add('active'); tabPm.classList.remove('active');
+  } else {
+    pm.style.display=''; sw.style.display='none';
+    tabPm.classList.add('active'); tabSw.classList.remove('active');
+  }
 }
 
 // ── STOPWATCH ──────────────────────────────────────
