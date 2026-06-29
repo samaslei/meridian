@@ -544,7 +544,7 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 /* ══════════════════
    INPUT / CALENDAR
    ══════════════════ */
-.input-card { padding:10px 12px; display:flex; flex-direction:column; gap:6px; box-sizing:border-box; overflow:hidden; }
+.input-card { padding:10px 12px; display:flex; flex-direction:column; gap:6px; box-sizing:border-box; overflow:visible; }
 .field { display:flex; flex-direction:column; gap:5px; min-width:0; }
 .lbl { font-family:'Inter',sans-serif; font-size:.62rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.3px; }
 input[type=text],input[type=number],input[type=date] {
@@ -952,8 +952,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   body { padding:18px 20px 40px; overflow-x:hidden; }
   .row1 { grid-template-columns:1fr!important; }
   .row2 { grid-template-columns:1fr!important; }
-  .row2-input-card { flex-direction:row!important; }
-  .mini-cal { width:200px!important; flex-shrink:0; }
+  .row2-input-card { flex-direction:column!important; gap:10px!important; }
+  .mini-cal { width:100%!important; flex-shrink:0; }
   .timer-body { grid-template-columns:1fr 1fr; }
   .row3 { grid-template-columns:1fr!important; }
   .qs-grid { flex-wrap:wrap; }
@@ -1995,21 +1995,53 @@ function jumpToToday(){const s=toKey(today());document.getElementById('dateInput
 function updateDateDisplay(v){if(!v)return;const label=new Date(v+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});document.getElementById('dateDisplayText').textContent=label;const mini=document.getElementById('manualDateDisplay');if(mini)mini.textContent=label;}
 function toggleManual(){manualOpen=!manualOpen;document.getElementById('manualForm').classList.toggle('open',manualOpen);if(manualOpen)setTimeout(()=>document.getElementById('hoursInput').focus(),50);}
 
+function closeConfirm(){document.getElementById('confirmOverlay').style.display='none';}
+
+let undoClearData=null;
+
 function logHours(){
   const d=document.getElementById('dateInput').value,h=parseFloat(document.getElementById('hoursInput').value);
   if(!d)return showToast('Pick a date!');if(isNaN(h)||h<0)return showToast('Enter valid hours!');
   const tags=[...activeTags.manual||[]];
-  studyLog[d]=(studyLog[d]||0)+h;sessions.push({date:d,hours:h,tags,ts:Date.now(),source:'manual'});
-  activeTags.manual=[];renderPills('manual');
-  persist();renderAll();renderRadar();renderCal();document.getElementById('hoursInput').value='';
-  showToast(`+${fmt(h)} logged!`);
-  launchConfetti(50,50);
-  const fw=document.querySelector('.streak-flame-wrap');if(fw){fw.classList.remove('flame-pulse');void fw.offsetWidth;fw.classList.add('flame-pulse');setTimeout(()=>fw.classList.remove('flame-pulse'),500);}
+  const doLog=()=>{
+    studyLog[d]=(studyLog[d]||0)+h;sessions.push({date:d,hours:h,tags,ts:Date.now(),source:'manual'});
+    activeTags.manual=[];renderPills('manual');
+    persist();renderAll();renderRadar();renderCal();document.getElementById('hoursInput').value='';
+    showToast(`+${fmt(h)} logged!`);
+    launchConfetti(50,50);
+    const fw=document.querySelector('.streak-flame-wrap');if(fw){fw.classList.remove('flame-pulse');void fw.offsetWidth;fw.classList.add('flame-pulse');setTimeout(()=>fw.classList.remove('flame-pulse'),500);}
+  };
+  if(tags.length===0){
+    showConfirm('No tags selected', 'You\'re logging without any tags. Continue anyway?', 'Log anyway', doLog);
+  } else {
+    doLog();
+  }
 }
+
 function clearDay(){
   const d=document.getElementById('dateInput').value;if(!d||!studyLog[d])return showToast('Nothing to clear.');
-  
-  delete studyLog[d];sessions=sessions.filter(s=>s.date!==d);persist();renderAll();renderCal();showToast(`Cleared.`);
+  const snapLog=JSON.parse(JSON.stringify(studyLog));
+  const snapSess=JSON.parse(JSON.stringify(sessions));
+  delete studyLog[d];sessions=sessions.filter(s=>s.date!==d);
+  persist();renderAll();renderCal();
+  showToastWithUndo(`Cleared.`, ()=>{
+    studyLog=JSON.parse(JSON.stringify(snapLog));
+    sessions=JSON.parse(JSON.stringify(snapSess));
+    persist();renderAll();renderCal();showToast('Restored!');
+  });
+}
+
+let _undoFn = null;
+function showToastWithUndo(msg, onUndo){
+  _undoFn = onUndo;
+  const t=document.getElementById('toast');
+  t.innerHTML=`<span>${msg}</span><span id="undoBtn" style="margin-left:12px;padding:3px 10px;border-radius:6px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);cursor:pointer;font-weight:700;color:#fff;font-size:.75rem;vertical-align:middle;display:inline-block;">UNDO</span>`;
+  t.classList.add('show');
+  setTimeout(()=>{
+    const btn=document.getElementById('undoBtn');
+    if(btn) btn.onclick=()=>{if(_undoFn){_undoFn();_undoFn=null;}t.classList.remove('show');};
+  },0);
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.classList.remove('show');_undoFn=null;},5000);
 }
 
 // ── Mini Calendar ──────────────────────────────────
