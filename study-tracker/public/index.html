@@ -2625,18 +2625,22 @@ function pmPhaseEnd(){
     }
     pmPhase='short';
     soundBreak();
-    sendNotif('☕ Break time!', `Focus session complete — take a ${document.getElementById('pmSMin').value||5} minute break.`);
-    showToast('☕ Break time! You earned it.');
+    sendNotif('☕ Break time!', `Focus session complete — break starting automatically.`);
+    showToast('☕ Break starting in 3s…');
   } else {
     pmPhase='focus';
     soundResume();
-    sendNotif('🔥 Break over!', 'Time to get back to work. Start your next focus session.');
-    showToast('🔥 Break over — back to it!');
+    sendNotif('🔥 Break over!', 'Focus session starting automatically.');
+    showToast('🔥 Focus starting in 3s…');
   }
   pmEl=0;updPM();updPmPhase();
   document.getElementById('pmStart').textContent='Start';
   document.getElementById('pmStart').className='t-btn start';
   document.getElementById('pmDot').classList.remove('show');
+  // Auto-start next phase after 3s
+  setTimeout(()=>{
+    if(!pmRun) pmToggle();
+  }, 3000);
 }
 function pmReset(){clearInterval(pmIv);pmIv=null;pmEl=0;pmFocus=0;pmDone=0;pmPhase='focus';pmRun=false;document.getElementById('pmDisplay').classList.remove('running');document.getElementById('pmStart').textContent='Start';document.getElementById('pmStart').className='t-btn start';document.getElementById('pmStop').style.display='none';document.getElementById('pmDot').classList.remove('show');updPM();updPmPhase();renderPmDots();setArc('pmArc',1);}
 function pmLog(){
