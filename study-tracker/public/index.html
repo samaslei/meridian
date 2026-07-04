@@ -1716,11 +1716,11 @@ function injectStudyPlan(htmlStr){
         <label>Desktop notifications</label>
         <button class="sett-btn" id="notifPermBtn" onclick="handleNotifToggle()">Enable</button>
       </div>
-      <p class="sett-hint">Get notified when a pomodoro session or break ends, even if this tab isn't focused.</p>
+      <p class="sett-hint">Get notified about hourly milestones and pomodoro phase changes, even if this tab isn't focused.</p>
       <div class="sett-divider"></div>
       <div class="sett-row">
-        <label>Pomodoro sound</label>
-        <select id="pomoSoundSelect" onchange="savePomoSound(this.value)" class="sett-select">
+        <label>Timer sound</label>
+        <select id="timerSoundSelect" onchange="saveTimerSound(this.value)" class="sett-select">
           <option value="chime">Chime</option>
           <option value="bell">Bell</option>
           <option value="none">None</option>
@@ -2068,7 +2068,7 @@ async function init(){
   loadNickname();
   loadReduceMotion();
   loadSoundEffects();
-  loadPomoSoundSelect();
+  loadTimerSoundSelect();
   loadNotes();
   drawTicks('swTicks');drawTicks('pmTicks');
   setArc('swArc',0);setArc('pmArc',1);
@@ -2658,7 +2658,7 @@ let swLastHourNotif = 0; // track which hour we last notified
 function swToggle(){
   if(!swRun){
     swRun=true;
-    soundStart();
+    timerSound('start');
     requestNotifPerm();
     document.getElementById('swDisplay').classList.add('running');
     document.getElementById('swStart').textContent='Pause';
@@ -2671,7 +2671,7 @@ function swToggle(){
       const hrs = Math.floor(swEl / 3600);
       if(hrs > 0 && hrs !== swLastHourNotif){
         swLastHourNotif = hrs;
-        soundMilestone();
+        timerSound('milestone');
         sendNotif(`⏱ ${hrs}h milestone!`, `You've been studying for ${hrs} hour${hrs>1?'s':''}. Keep it up!`);
         showToast(`🎯 ${hrs}h milestone!`);
       }
@@ -2681,7 +2681,7 @@ function swToggle(){
   }
   else{
     swRun=false;
-    soundPause();
+    timerSound('pause');
     clearInterval(swIv);swIv=null;
     document.getElementById('swDisplay').classList.remove('running');
     document.getElementById('swStart').textContent='Resume';
@@ -2723,7 +2723,7 @@ let pmPhase='focus',pmEl=0,pmFocus=0,pmDone=0,pmRun=false,pmIv=null;
 function pmToggle(){
   if(!pmRun){
     pmRun=true;
-    soundStart();
+    timerSound('start');
     requestNotifPerm();
     document.getElementById('pmDisplay').classList.add('running');
     document.getElementById('pmStart').textContent='Pause';
@@ -2735,7 +2735,7 @@ function pmToggle(){
   }
   else{
     pmRun=false;
-    soundPause();
+    timerSound('pause');
     clearInterval(pmIv);pmIv=null;
     document.getElementById('pmDisplay').classList.remove('running');
     document.getElementById('pmStart').textContent='Resume';
@@ -2751,18 +2751,18 @@ function pmPhaseEnd(){
   if(pmPhase==='focus'){
     pmDone++;renderPmDots();
     if(pmDone>=maxC){
-      pomoSound('done');
+      timerSound('done');
       sendNotif('🎉 All cycles done!', `You completed ${pmDone} pomodoro cycles. Time to log your session!`);
       showToast('🎉 All cycles done! Amazing work!');
       pmLog();return;
     }
     pmPhase='short';
-    pomoSound('break');
+    timerSound('break');
     sendNotif('☕ Break time!', `Focus session complete — break starting automatically.`);
     showToast('☕ Break starting in 3s…');
   } else {
     pmPhase='focus';
-    pomoSound('resume');
+    timerSound('resume');
     sendNotif('🔥 Break over!', 'Focus session starting automatically.');
     showToast('🔥 Focus starting in 3s…');
   }
@@ -2874,18 +2874,25 @@ function soundDone(){
   [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 'triangle', 0.25, 0.22), i * 110));
 }
 
-function pomoSound(kind){
-  const pref = localStorage.getItem('st_pomo_sound') || 'chime';
+function timerSound(kind){
+  const pref = localStorage.getItem('st_timer_sound') || 'chime';
   if(pref === 'none') return;
   if(pref === 'bell'){
-    if(kind==='done'){ playTone(880,'sine',0.6,0.22); setTimeout(()=>playTone(880,'sine',0.5,0.16),480); }
-    else if(kind==='break'){ playTone(659,'sine',0.55,0.2); }
+    if(kind==='start'){ playTone(659,'sine',0.35,0.18); }
+    else if(kind==='pause'){ playTone(494,'sine',0.35,0.16); }
     else if(kind==='resume'){ playTone(523,'sine',0.5,0.2); }
+    else if(kind==='milestone'){ playTone(784,'sine',0.5,0.2); setTimeout(()=>playTone(784,'sine',0.4,0.14),260); }
+    else if(kind==='break'){ playTone(659,'sine',0.55,0.2); }
+    else if(kind==='done'){ playTone(880,'sine',0.6,0.22); setTimeout(()=>playTone(880,'sine',0.5,0.16),480); }
     return;
   }
-  if(kind==='done') soundDone();
-  else if(kind==='break') soundBreak();
+  // chime (default) — original melodic tones
+  if(kind==='start') soundStart();
+  else if(kind==='pause') soundPause();
   else if(kind==='resume') soundResume();
+  else if(kind==='milestone') soundMilestone();
+  else if(kind==='break') soundBreak();
+  else if(kind==='done') soundDone();
 }
 
 async function requestNotifPerm(){
@@ -3025,14 +3032,14 @@ async function handleNotifToggle(){
   await Notification.requestPermission();
   refreshNotifBtn();
 }
-function savePomoSound(val){
-  localStorage.setItem('st_pomo_sound', val);
+function saveTimerSound(val){
+  localStorage.setItem('st_timer_sound', val);
   showToast('Saved!');
-  if(val!=='none') pomoSound('resume');
+  if(val!=='none') timerSound('resume');
 }
-function loadPomoSoundSelect(){
-  const el = document.getElementById('pomoSoundSelect');
-  if(el) el.value = localStorage.getItem('st_pomo_sound') || 'chime';
+function loadTimerSoundSelect(){
+  const el = document.getElementById('timerSoundSelect');
+  if(el) el.value = localStorage.getItem('st_timer_sound') || 'chime';
 }
 
 // ── Theme / Scheme ─────────────────────────────────
