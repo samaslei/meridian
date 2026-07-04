@@ -47,7 +47,6 @@
   --heat4:     #7C3AED;
 
   --box-max-width: 1400px;
-  --pane-width: 260px;
   --radius: 20px;
   --radius-sm: 10px;
 }
@@ -276,11 +275,7 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .scheme-row.active .scheme-check { opacity:1; }
 
 /* ── Sett sliders ── */
-.sett-slider-wrap { display:flex; flex-direction:column; gap:6px; }
-.sett-slider { -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:4px; background:var(--surface2); border:1px solid var(--border); outline:none; cursor:pointer; }
-.sett-slider::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--accent); cursor:pointer; border:2px solid var(--bg); }
-.sett-slider::-moz-range-thumb { width:16px; height:16px; border-radius:50%; background:var(--accent); cursor:pointer; border:2px solid var(--bg); }
-.sett-width-label { font-family:'Inter',sans-serif; font-size:.7rem; color:var(--accent2); text-align:right; }
+
 
 /* ══════════════════
    ROW LAYOUTS
@@ -693,13 +688,13 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .todo-add-btn { background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; border-radius:7px; color:#fff; font-size:.85rem; padding:5px 11px; cursor:pointer; flex-shrink:0; }
 .todo-add-btn:hover { opacity:.85; }
 .todo-list { display:flex; flex-direction:column; overflow-y:auto; flex:1; }
-.todo-item { display:flex; align-items:center; gap:8px; padding:8px 2px; border-radius:6px; background:transparent; border:none; border-bottom:1px solid var(--border); transition:background .12s; }
+.todo-item { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:12px; background:transparent; border:none; border-bottom:1px solid var(--border); transition:background .12s; }
 .todo-item:last-child { border-bottom:none; }
 .todo-item:hover { background:color-mix(in srgb, var(--text) 4%, transparent); }
 .todo-item.done .todo-text { text-decoration:line-through; color:var(--text3); opacity:.6; }
-.todo-cb { width:14px; height:14px; border-radius:4px; border:1px solid var(--border2); background:var(--surface); flex-shrink:0; cursor:pointer; position:relative; transition:all .15s; }
+.todo-cb { width:16px; height:16px; border-radius:50%; border:1px solid var(--border2); background:var(--surface); flex-shrink:0; cursor:pointer; position:relative; transition:all .15s; }
 .todo-cb.checked { background:var(--accent); border-color:var(--accent); }
-.todo-cb.checked::after { content:''; position:absolute; top:2px; left:4px; width:4px; height:7px; border:1.5px solid #fff; border-top:none; border-left:none; transform:rotate(45deg); }
+.todo-cb.checked::after { content:''; position:absolute; top:3px; left:5px; width:4px; height:7px; border:1.5px solid #fff; border-top:none; border-left:none; transform:rotate(45deg); }
 .todo-text { flex:1; font-family:'Inter',sans-serif; font-size:.72rem; color:var(--text); line-height:1.4; word-break:break-word; }
 .todo-del { background:none; border:none; color:var(--text3); cursor:pointer; font-size:.8rem; padding:0 2px; opacity:0; transition:opacity .15s; flex-shrink:0; line-height:1; }
 .todo-item:hover .todo-del { opacity:1; }
@@ -870,6 +865,36 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .sett-section-title { font-family:'Inter',sans-serif; font-size:.62rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:2px; }
 .sett-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
 .sett-row label { font-family:'Inter',sans-serif; font-size:.78rem; color:var(--text); }
+.settings-page-title { font-family:'Space Grotesk',sans-serif; font-size:1.4rem; color:var(--text); margin-bottom:2px; }
+.settings-page-sub { font-family:'Inter',sans-serif; font-size:.82rem; color:var(--text3); margin-bottom:26px; }
+.settings-card { display:flex; flex-direction:column; gap:14px; padding:20px 22px; margin-bottom:16px; }
+.settings-card-title { font-family:'Space Grotesk',sans-serif; font-size:.95rem; font-weight:600; color:var(--text); }
+.sett-hint { font-family:'Inter',sans-serif; font-size:.75rem; color:var(--text3); line-height:1.5; margin:-6px 0 0; }
+.sett-btn-row { display:flex; gap:10px; flex-wrap:wrap; }
+.sett-btn { background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); color:var(--text2); cursor:pointer; font-family:'Inter',sans-serif; font-size:.8rem; font-weight:500; padding:9px 16px; transition:border-color .2s,color .2s; }
+.sett-btn:hover { border-color:var(--accent); color:var(--text); }
+.sett-btn.danger { color:#f87171; border-color:rgba(248,113,113,.3); }
+.sett-btn.danger:hover { background:rgba(248,113,113,.08); border-color:#f87171; }
+.sett-divider { height:1px; background:var(--border); margin:2px 0; }
+.sett-select {
+  background:var(--surface3) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23a5a5b5' d='M1 1l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 10px center;
+  background-size:10px 7px;
+  border:1px solid var(--border2);
+  border-radius:var(--radius-sm);
+  color:var(--text);
+  cursor:pointer;
+  font-family:'Inter',sans-serif;
+  font-size:.8rem;
+  font-weight:600;
+  padding:8px 30px 8px 14px;
+  outline:none;
+  -webkit-appearance:none;
+  appearance:none;
+  box-shadow:inset 0 1px 0 var(--glass-top), 0 1px 3px rgba(0,0,0,.15);
+  transition:border-color .15s, box-shadow .15s;
+}
+.sett-select:hover { border-color:var(--text3); }
+.sett-select:focus { border-color:var(--accent); box-shadow:inset 0 1px 0 var(--glass-top), 0 0 0 3px var(--accent-glow); }
 .sett-input { width:80px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); color:var(--text); font-family:'Inter',sans-serif; font-size:.83rem; padding:7px 10px; outline:none; text-align:right; -moz-appearance:textfield; }
 .sett-input::-webkit-inner-spin-button { -webkit-appearance:none; }
 .sett-input:focus { border-color:var(--accent); }
@@ -885,6 +910,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
    ══════════════════ */
 @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
 .card,.stat-box,.timer-card,.chart-card,.streak-box { animation:fadeUp .4s ease both; }
+.reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-duration:0.001ms !important; animation-delay:0s !important; transition-duration:0.001ms !important; }
 .row1 > *:nth-child(1) { animation-delay:.05s; }
 .row1 > *:nth-child(2) { animation-delay:.12s; }
 .row2 > *:nth-child(1) { animation-delay:.18s; }
@@ -1168,6 +1194,7 @@ function switchView(name){
   document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
+  if(name==='settings'){ updateAuthBtn(); refreshNotifBtn(); }
 }
 function loadStudyPlan(ev){
   const file = ev.target.files[0]; if(!file) return;
@@ -1304,16 +1331,6 @@ function injectStudyPlan(htmlStr){
     <div id="supaStatus" title="Supabase sync" style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3);padding:4px 10px;border-radius:20px;background:var(--surface2);border:1px solid var(--border2);font-family:'Inter',sans-serif;">
       <span id="supaStatusDot" style="width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background 0.3s"></span>
       <span id="supaStatusLabel">—</span>
-    </div>
-    <div class="dd-wrap" id="dataWrap">
-      <button class="icon-btn vdots" id="dataBtn" onclick="toggleDD('dataPanel')">⋮</button>
-      <div class="dd-panel" id="dataPanel" style="min-width:190px;">
-        <div class="dd-title">Data &amp; Backup</div>
-        <button class="dd-item" onclick="exportData();closeAllDD()">⬇ Export JSON</button>
-        <button class="dd-item" onclick="document.getElementById('fileInput').click();closeAllDD()">⬆ Import JSON</button>
-        <div class="dd-divider"></div>
-        <button class="dd-item danger" onclick="clearAll();closeAllDD()">✕ Clear All Data</button>
-      </div>
     </div>
     <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
     <div class="dd-wrap" id="schemeWrap">
@@ -1655,11 +1672,74 @@ function injectStudyPlan(htmlStr){
 </div>
 
 <div class="view" id="view-settings">
-  <div class="page-wrap">
-    <div class="settings-placeholder">
-      <div class="sp-icon">🚧</div>
-      <h2>Settings</h2>
-      <p>Under construction — check back soon!</p>
+  <div class="page-wrap" style="max-width:640px;">
+    <div class="settings-page-title">Settings</div>
+    <div class="settings-page-sub">Manage your preferences and data</div>
+
+    <div class="card settings-card">
+      <div class="settings-card-title">Account</div>
+      <div class="sett-row">
+        <label>Status</label>
+        <span id="settAcctStatus" style="font-family:'Inter',sans-serif;font-size:.78rem;color:var(--text3);">—</span>
+      </div>
+      <div class="sett-btn-row">
+        <button class="sett-btn" id="settAcctBtn" onclick="openAuthModal()">Sign in</button>
+      </div>
+      <div class="sett-divider"></div>
+      <div class="sett-row" style="align-items:flex-start;flex-direction:column;gap:8px;">
+        <label style="font-family:'Inter',sans-serif;font-size:.78rem;color:var(--text);">Nickname</label>
+        <div style="display:flex;gap:8px;width:100%;">
+          <input type="text" id="nicknameInput" placeholder="e.g. Alex" maxlength="24"
+            style="flex:1;padding:8px 12px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-family:'Inter',sans-serif;font-size:.85rem;outline:none;">
+          <button class="sett-btn" onclick="saveNickname()">Save</button>
+        </div>
+        <p class="sett-hint">Used in your greeting on the dashboard — e.g. "Good morning, Alex".</p>
+      </div>
+    </div>
+
+    <div class="card settings-card">
+      <div class="settings-card-title">Preferences</div>
+      <div class="sett-row">
+        <label>Reduce motion</label>
+        <button class="sett-btn" id="motionToggleBtn" onclick="toggleReduceMotion()">Off</button>
+      </div>
+      <div class="sett-divider"></div>
+      <div class="sett-row">
+        <label>Sound effects</label>
+        <button class="sett-btn" id="soundToggleBtn" onclick="toggleSoundEffects()">On</button>
+      </div>
+    </div>
+
+    <div class="card settings-card">
+      <div class="settings-card-title">Notifications</div>
+      <div class="sett-row">
+        <label>Desktop notifications</label>
+        <button class="sett-btn" id="notifPermBtn" onclick="handleNotifToggle()">Enable</button>
+      </div>
+      <p class="sett-hint">Get notified when a pomodoro session or break ends, even if this tab isn't focused.</p>
+      <div class="sett-divider"></div>
+      <div class="sett-row">
+        <label>Pomodoro sound</label>
+        <select id="pomoSoundSelect" onchange="savePomoSound(this.value)" class="sett-select">
+          <option value="chime">Chime</option>
+          <option value="bell">Bell</option>
+          <option value="none">None</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card settings-card">
+      <div class="settings-card-title">Data &amp; Backup</div>
+      <p class="sett-hint">Export your study data as a JSON file to keep a backup, or import a file you've saved before.</p>
+      <div class="sett-btn-row">
+        <button class="sett-btn" onclick="exportData()">⬇ Export JSON</button>
+        <button class="sett-btn" onclick="document.getElementById('fileInput').click()">⬆ Import JSON</button>
+      </div>
+      <div class="sett-divider"></div>
+      <div class="sett-row">
+        <label>Clear all data</label>
+        <button class="sett-btn danger" onclick="if(confirm('This will permanently delete all study data, tags, and events. This cannot be undone. Continue?'))clearAll()">✕ Clear All Data</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1679,23 +1759,6 @@ function injectStudyPlan(htmlStr){
   </div>
 </div>
 
-<div class="modal-overlay" id="settOverlay" onclick="if(event.target===this)closeSettings()">
-  <div class="modal" style="max-width:400px;">
-    <div class="modal-title">⚙ Settings</div>
-    <div class="settings-section">
-      <div class="sett-section-title">Layout</div>
-      <div class="sett-row"><label>Box width</label><span class="sett-width-label" id="widthLabel">—</span></div>
-      <div class="sett-slider-wrap">
-        <input type="range" class="sett-slider" id="widthSlider" min="160" max="440" step="10" value="260" oninput="previewWidth(this.value)" onchange="saveWidth(this.value)">
-        <div style="display:flex;justify-content:space-between;"><span style="font-family:'Inter',sans-serif;font-size:.58rem;color:var(--muted);">Narrow</span><span style="font-family:'Inter',sans-serif;font-size:.58rem;color:var(--muted);">Wide</span></div>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="modal-cancel" onclick="closeSettings()">Cancel</button>
-      <button class="modal-save" onclick="saveSettings()">Save</button>
-    </div>
-  </div>
-</div>
 
 <script>
 // ── State ──────────────────────────────────────────
@@ -1732,13 +1795,18 @@ function openAuthModal(){
 function updateAuthBtn(){
   const icon  = document.getElementById('authBtnIcon');
   const label = document.getElementById('authBtnLabel');
-  if(!icon) return;
+  const settStatus = document.getElementById('settAcctStatus');
+  const settBtn = document.getElementById('settAcctBtn');
   if(currentUser){
-    icon.textContent = '✓';
-    label.textContent = currentUser.email.split('@')[0];
+    if(icon) icon.textContent = '✓';
+    if(label) label.textContent = currentUser.email.split('@')[0];
+    if(settStatus) settStatus.textContent = `Signed in as ${currentUser.email}`;
+    if(settBtn) settBtn.textContent = 'Manage account';
   } else {
-    icon.textContent = '👤';
-    label.textContent = 'Sign in';
+    if(icon) icon.textContent = '👤';
+    if(label) label.textContent = 'Sign in';
+    if(settStatus) settStatus.textContent = isGuest ? 'Guest mode · data saved in this browser only' : 'Not signed in';
+    if(settBtn) settBtn.textContent = 'Sign in';
   }
 }
 
@@ -1997,7 +2065,10 @@ const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov',
 async function init(){
   applyScheme(localStorage.getItem('st_scheme')||'indigo',false);
   applyTheme((localStorage.getItem('st_theme')||'dark')==='dark'?'dark':'light',false);
-  loadWidth();
+  loadNickname();
+  loadReduceMotion();
+  loadSoundEffects();
+  loadPomoSoundSelect();
   loadNotes();
   drawTicks('swTicks');drawTicks('pmTicks');
   setArc('swArc',0);setArc('pmArc',1);
@@ -2027,11 +2098,10 @@ async function init(){
   setTimeout(syncCdHeight,50);
   window.addEventListener('resize',syncCdHeight);
   document.addEventListener('click',e=>{
-    if(!e.target.closest('#dataWrap'))document.getElementById('dataPanel').classList.remove('open');
     if(!e.target.closest('#schemeWrap'))document.getElementById('schemePanel').classList.remove('open');
     if(!e.target.closest('.tag-dd-wrap'))document.querySelectorAll('.tag-dd').forEach(d=>d.classList.remove('open'));
   });
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCdModal();closeSettings();}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCdModal();}});
 }
 
 // ── Dropdowns ──────────────────────────────────────
@@ -2051,7 +2121,8 @@ function renderGlance(){
     'Good night', 'Burning the midnight oil', 'Still at it?', 'Late night grind', 'Good night'
   ];
   const greetWord = greetings[Math.floor(Math.random() * greetings.length)];
-  const greetName = currentUser ? ', ' + currentUser.email.split('@')[0] : '';
+  const nickname = localStorage.getItem('st_nickname');
+  const greetName = nickname ? ', ' + nickname : (currentUser ? ', ' + currentUser.email.split('@')[0] : '');
   document.getElementById('glanceGreeting').textContent = greetWord + greetName;
   document.getElementById('glanceDate').textContent=today().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   const ws=startOfWeek(today());let wk=0;for(let i=0;i<7;i++)wk+=studyLog[toKey(addDays(ws,i))]||0;
@@ -2323,17 +2394,6 @@ function renderMilestone(){
 }
 
 // ── Goals ──────────────────────────────────────────
-// ── Settings ───────────────────────────────────────
-function openSettings(){
-  const saved=localStorage.getItem('st_boxwidth')||'260';
-  document.getElementById('widthSlider').value=saved;
-  document.getElementById('widthLabel').textContent=saved+'px';
-  document.getElementById('settOverlay').classList.add('open');
-}
-function closeSettings(){document.getElementById('settOverlay').classList.remove('open');}
-function saveSettings(){
-  persist();closeSettings();showToast('Settings saved!');
-}
 
 // ── Chart type ─────────────────────────────────────
 function setChartType(t){chartType=t;localStorage.setItem('st_chart',t);document.getElementById('btnBar').classList.toggle('active',t==='bar');document.getElementById('btnLine').classList.toggle('active',t==='line');renderWeek();}
@@ -2691,18 +2751,18 @@ function pmPhaseEnd(){
   if(pmPhase==='focus'){
     pmDone++;renderPmDots();
     if(pmDone>=maxC){
-      soundDone();
+      pomoSound('done');
       sendNotif('🎉 All cycles done!', `You completed ${pmDone} pomodoro cycles. Time to log your session!`);
       showToast('🎉 All cycles done! Amazing work!');
       pmLog();return;
     }
     pmPhase='short';
-    soundBreak();
+    pomoSound('break');
     sendNotif('☕ Break time!', `Focus session complete — break starting automatically.`);
     showToast('☕ Break starting in 3s…');
   } else {
     pmPhase='focus';
-    soundResume();
+    pomoSound('resume');
     sendNotif('🔥 Break over!', 'Focus session starting automatically.');
     showToast('🔥 Focus starting in 3s…');
   }
@@ -2765,6 +2825,7 @@ let _actx = null;
 function getACtx(){ if(!_actx) _actx = new AudioCtx(); return _actx; }
 
 function playTone(freq, type='sine', duration=0.12, vol=0.18, fadeOut=true){
+  if(localStorage.getItem('st_sound_enabled')==='0') return;
   try {
     const ctx = getACtx();
     if(ctx.state === 'suspended') ctx.resume();
@@ -2811,6 +2872,20 @@ function soundMilestone(){
 function soundDone(){
   // Four-note fanfare — all done
   [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => playTone(f, 'triangle', 0.25, 0.22), i * 110));
+}
+
+function pomoSound(kind){
+  const pref = localStorage.getItem('st_pomo_sound') || 'chime';
+  if(pref === 'none') return;
+  if(pref === 'bell'){
+    if(kind==='done'){ playTone(880,'sine',0.6,0.22); setTimeout(()=>playTone(880,'sine',0.5,0.16),480); }
+    else if(kind==='break'){ playTone(659,'sine',0.55,0.2); }
+    else if(kind==='resume'){ playTone(523,'sine',0.5,0.2); }
+    return;
+  }
+  if(kind==='done') soundDone();
+  else if(kind==='break') soundBreak();
+  else if(kind==='resume') soundResume();
 }
 
 async function requestNotifPerm(){
@@ -2900,19 +2975,64 @@ function loadNotes(){
   todoRender();
 }
 
-// ── Width Control ───────────────────────────────────
-function previewWidth(val){
-  document.documentElement.style.setProperty('--pane-width', val+'px');
-  document.getElementById('widthLabel').textContent=val+'px';
+// ── Preferences: Nickname & Reduce Motion ──────────
+function saveNickname(){
+  const val = document.getElementById('nicknameInput').value.trim();
+  localStorage.setItem('st_nickname', val);
+  renderGlance();
+  showToast('Nickname saved!');
 }
-function saveWidth(val){
-  localStorage.setItem('st_boxwidth', val);
-  previewWidth(val);
+function loadNickname(){
+  const val = localStorage.getItem('st_nickname')||'';
+  const el = document.getElementById('nicknameInput');
+  if(el) el.value = val;
 }
-function loadWidth(){
-  const saved=localStorage.getItem('st_boxwidth')||'260';
-  document.getElementById('widthSlider').value=saved;
-  previewWidth(saved);
+function toggleReduceMotion(){
+  const on = !document.documentElement.classList.contains('reduce-motion');
+  document.documentElement.classList.toggle('reduce-motion', on);
+  localStorage.setItem('st_reduce_motion', on ? '1' : '0');
+  const btn = document.getElementById('motionToggleBtn');
+  if(btn) btn.textContent = on ? 'On' : 'Off';
+}
+function loadReduceMotion(){
+  const on = localStorage.getItem('st_reduce_motion')==='1';
+  document.documentElement.classList.toggle('reduce-motion', on);
+  const btn = document.getElementById('motionToggleBtn');
+  if(btn) btn.textContent = on ? 'On' : 'Off';
+}
+function toggleSoundEffects(){
+  const wasOff = localStorage.getItem('st_sound_enabled')==='0';
+  localStorage.setItem('st_sound_enabled', wasOff ? '1' : '0');
+  const btn = document.getElementById('soundToggleBtn');
+  if(btn) btn.textContent = wasOff ? 'On' : 'Off';
+  if(wasOff) playTone(659,'sine',0.12,0.15);
+}
+function loadSoundEffects(){
+  const on = localStorage.getItem('st_sound_enabled')!=='0';
+  const btn = document.getElementById('soundToggleBtn');
+  if(btn) btn.textContent = on ? 'On' : 'Off';
+}
+function refreshNotifBtn(){
+  const btn = document.getElementById('notifPermBtn');
+  if(!btn) return;
+  if(!('Notification' in window)){ btn.textContent='Unsupported'; btn.disabled=true; return; }
+  if(Notification.permission==='granted'){ btn.textContent='Enabled ✓'; btn.disabled=true; }
+  else if(Notification.permission==='denied'){ btn.textContent='Blocked'; btn.disabled=true; }
+  else { btn.textContent='Enable'; btn.disabled=false; }
+}
+async function handleNotifToggle(){
+  if(!('Notification' in window)) return;
+  await Notification.requestPermission();
+  refreshNotifBtn();
+}
+function savePomoSound(val){
+  localStorage.setItem('st_pomo_sound', val);
+  showToast('Saved!');
+  if(val!=='none') pomoSound('resume');
+}
+function loadPomoSoundSelect(){
+  const el = document.getElementById('pomoSoundSelect');
+  if(el) el.value = localStorage.getItem('st_pomo_sound') || 'chime';
 }
 
 // ── Theme / Scheme ─────────────────────────────────
