@@ -664,9 +664,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .ctype-btn { background:var(--surface2); border:1px solid var(--border2); border-radius:6px; color:var(--text3); cursor:pointer; font-size:.76rem; padding:4px 9px; transition:border-color .2s,color .2s,background .2s; }
 .ctype-btn.active { border-color:var(--accent); color:var(--accent2); background:color-mix(in srgb,var(--accent) 12%,transparent); }
 .week-nav,.year-nav {
-  display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;
-  background:var(--surface2); border:1px solid var(--border); border-radius:12px;
-  padding:6px 8px;
+  display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:8px;
+  background:none; border:none; border-radius:0; padding:0; width:auto;
 }
 .week-label,.year-label {
   font-family:'Space Grotesk',sans-serif; font-size:.88rem; font-weight:600;
@@ -1453,7 +1452,7 @@ function injectStudyPlan(htmlStr){
             <button class="t-btn stop" id="pmStop" onclick="pmLog()" style="display:none">Stop &amp; Log</button>
             <button class="t-btn reset" onclick="pmReset()">Reset</button>
           </div>
-          <div class="pomo-row" id="pmDots"></div>
+          <div class="pomo-row" id="pmDots" style="margin-top:auto;"></div>
           <div class="pm-bottom-row">
             <div class="t-stats-row">
               <div class="t-stat"><div class="t-stat-val" id="pmFocusToday">0h</div><div class="t-stat-lbl">Focus Today</div></div>
@@ -1468,14 +1467,16 @@ function injectStudyPlan(htmlStr){
           </div>
         </div>
         <div class="timer-pane-tags">
-          <div class="tag-section-lbl">Tags</div>
-          <div class="tag-pill-row" id="pmPills"></div>
-          <div class="tag-dd-wrap">
-            <button class="tag-add-pill" onclick="toggleTagDD('pm')">+ tag</button>
-            <div class="tag-dd" id="pmTagDD">
-              <input class="tag-search" id="pmSearch" placeholder="Search or create…" oninput="filterOpts('pm',this.value)" onkeydown="if(event.key==='Enter')createTag('pm')">
-              <div class="tag-opts" id="pmOpts"></div>
-              <div class="tag-create-row"><button class="tag-create-btn" id="pmCreateBtn" onclick="createTag('pm')">+ Create tag</button></div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div class="tag-section-lbl">Tags</div>
+            <div class="tag-pill-row" id="pmPills"></div>
+            <div class="tag-dd-wrap" style="margin-left:auto;">
+              <button class="tag-add-pill" onclick="toggleTagDD('pm')">+ tag</button>
+              <div class="tag-dd" id="pmTagDD">
+                <input class="tag-search" id="pmSearch" placeholder="Search or create…" oninput="filterOpts('pm',this.value)" onkeydown="if(event.key==='Enter')createTag('pm')">
+                <div class="tag-opts" id="pmOpts"></div>
+                <div class="tag-create-row"><button class="tag-create-btn" id="pmCreateBtn" onclick="createTag('pm')">+ Create tag</button></div>
+              </div>
             </div>
           </div>
         </div>
@@ -1560,12 +1561,12 @@ function injectStudyPlan(htmlStr){
   </div>
 </div><div class="charts-row">
   <div class="card">
+    <div class="section-title">Yearly Heatmap</div>
     <div class="year-nav">
       <button class="nav-btn" onclick="changeYear(-1)">◀</button>
       <div class="year-label" id="yearLabel">—</div>
       <button class="nav-btn" onclick="changeYear(1)">▶</button>
     </div>
-    <div class="section-title">Yearly Heatmap</div>
     <div class="heatmap-scroll">
       <div class="heatmap-inner">
         <div class="dow-axis" id="dowAxis"></div>
