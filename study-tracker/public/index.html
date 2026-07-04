@@ -13,13 +13,15 @@
    ══════════════════════════════════════════ */
 :root {
   /* Core palette - High Contrast OLED Dark */
-  --bg:       #000000;
-  --bg2:      #080808;
-  --surface:  #121212;
-  --surface2: #1A1A1A;
-  --surface3: #222222;
-  --border:   rgba(255,255,255,0.08);
-  --border2:  rgba(255,255,255,0.12);
+  --bg:       #0a0a0f;
+  --bg2:      #0f0f18;
+  --surface:  rgba(255,255,255,0.05);
+  --surface2: rgba(255,255,255,0.08);
+  --surface3: rgba(255,255,255,0.12);
+  --border:   rgba(255,255,255,0.09);
+  --border2:  rgba(255,255,255,0.15);
+  --glass-blur: blur(20px);
+  --glass-top: rgba(255,255,255,0.10);
 
   /* Accent - Vibrant Blue */
   --accent:   #3B82F6;
@@ -35,10 +37,10 @@
   --btn-text: #FFFFFF;
 
   /* Heat */
-  --heat0-bg:  #1a1a1a;
+  --heat0-bg:  rgba(255,255,255,0.04);
   --heat0-bdr: rgba(255,255,255,0.07);
   --cal-inv:   invert(0.55);
-  --tip-bg:    #111111;
+  --tip-bg:    rgba(15,15,15,0.9);
   --heat1:     #1E1B4B;
   --heat2:     #312E81;
   --heat3:     #4C1D95;
@@ -51,13 +53,15 @@
 }
 
 :root.light {
-  --bg:       #F8FAFC;
-  --bg2:      #F1F5F9;
-  --surface:  #FFFFFF;
-  --surface2: #F8FAFC;
-  --surface3: #EEF2FF;
-  --border:   rgba(0,0,0,0.06);
-  --border2:  rgba(0,0,0,0.1);
+  --bg:       #F0F4FF;
+  --bg2:      #E8EEFF;
+  --surface:  rgba(255,255,255,0.60);
+  --surface2: rgba(255,255,255,0.75);
+  --surface3: rgba(255,255,255,0.85);
+  --border:   rgba(0,0,0,0.07);
+  --border2:  rgba(0,0,0,0.11);
+  --glass-blur: blur(16px);
+  --glass-top: rgba(255,255,255,0.9);
   --accent:   #2563EB;
   --accent2:  #3B82F6;
   --accent3:  #1D4ED8;
@@ -70,7 +74,7 @@
   --heat0-bg:  #EEF2FF;
   --heat0-bdr: rgba(0,0,0,0.08);
   --cal-inv:   invert(0) brightness(0.4);
-  --tip-bg:    #FFFFFF;
+  --tip-bg:    rgba(255,255,255,0.95);
   --heat1:     #DBEAFE;
   --heat2:     #93C5FD;
   --heat3:     #3B82F6;
@@ -101,8 +105,34 @@ body {
   transition:background .3s,color .3s;
   font-size:1rem;
   background-image: none;
+  position:relative;
 }
-:root.light body { background-image:none; }
+body::before {
+  content:'';
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  opacity:.045;
+  background-image:
+    radial-gradient(circle, var(--text) 1px, transparent 1px),
+    radial-gradient(circle, var(--text) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: 0 0, 14px 14px;
+}
+body::after {
+  content:'';
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:
+    radial-gradient(ellipse 55% 45% at 15% 15%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 70%),
+    radial-gradient(ellipse 45% 40% at 85% 80%, color-mix(in srgb, var(--accent2) 12%, transparent), transparent 70%),
+    radial-gradient(ellipse 35% 30% at 75% 15%, color-mix(in srgb, var(--accent3) 8%, transparent), transparent 70%);
+}
+body > * { position:relative; z-index:1; }
+:root.light body::before { opacity:.06; }
 
 * { transition:background .25s, color .25s, border-color .25s; }
 .bar,.hcell,.lc-dot,.t-btn,.icon-btn,.card,.stat-box { transition:background .25s,color .25s,border-color .25s,transform .15s,filter .15s,opacity .25s; }
@@ -121,16 +151,18 @@ body {
 .timer-card, .streak-box, .radar-pane, .milestone-row, .timer-pane {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-top: 1px solid var(--glass-top);
   border-radius: var(--radius);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  backdrop-filter: none;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18), inset 0 1px 0 var(--glass-top);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover, .stat-box:hover, .timer-pane:hover {
   transform: translateY(-2px);
   border-color: var(--border2);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.28), inset 0 1px 0 var(--glass-top);
 }
 
 .card { padding:20px; margin-bottom:0; }
@@ -387,7 +419,7 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .tmr-tab.active { background:var(--surface3); color:var(--accent2); }
 
 /* Todo as pane */
-.todo-pane { background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); display:flex; flex-direction:column; overflow:hidden; padding:12px; gap:8px; height:100%; box-sizing:border-box; }
+.todo-pane { background:rgba(0,0,0,0.18); border:1px solid var(--border2); border-top:1px solid rgba(255,255,255,0.10); border-radius:var(--radius-sm); display:flex; flex-direction:column; overflow:hidden; padding:12px; gap:8px; height:100%; box-sizing:border-box; backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); }
 .todo-pane .todo-list { flex:1; overflow-y:auto; min-height:0; }
 
 /* Ring */
@@ -403,7 +435,7 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .sw-ring-wrap .ring-inner .timer-display { font-size:1.9rem; }
 
 /* Timer pane */
-.timer-pane { background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:0; display:flex; flex-direction:column; overflow:visible; }
+.timer-pane { background:rgba(0,0,0,0.18); border:1px solid var(--border2); border-top:1px solid rgba(255,255,255,0.10); border-radius:var(--radius-sm); padding:0; display:flex; flex-direction:column; overflow:visible; backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); }
 .timer-pane-main { display:flex; flex-direction:column; gap:6px; padding:12px 12px; flex:1; }
 .timer-pane-tags {
   border-top:1px solid var(--border); padding:6px 12px;
@@ -679,7 +711,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .nav-btn:hover { border-color:var(--accent); color:var(--accent2); background:color-mix(in srgb,var(--accent) 10%,transparent); }
 .week-total { font-family:'Inter',sans-serif; font-size:.78rem; color:var(--text3); text-align:right; margin-top:10px; }
 .week-total span { color:var(--accent3); }
-.bar-chart { display:flex; align-items:flex-end; justify-content:space-around; gap:6px; padding-bottom:8px; height:130px; overflow:hidden; }
+.bar-chart { display:flex; align-items:flex-end; justify-content:space-around; gap:6px; padding-bottom:8px; height:130px; min-height:130px; max-height:130px; overflow:hidden; }
 .bar-col { display:flex; flex-direction:column; align-items:center; gap:3px; flex:1; height:100%; justify-content:flex-end; overflow:visible; }
 .bar-label-top { font-family:'Inter',sans-serif; font-size:.56rem; color:var(--text3); line-height:1; margin-bottom:2px; white-space:nowrap; }
 .bar-wrap { width:100%; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; flex:1; min-height:0; }
@@ -691,7 +723,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .bar.future { background:var(--border2); opacity:.3; }
 .bar-day { font-family:'Inter',sans-serif; font-size:.56rem; color:var(--text3); text-transform:uppercase; margin-top:3px; flex-shrink:0; transition:color .15s; }
 .bar-day.today { color:var(--accent2); }
-.line-chart-wrap { height:130px; flex:1; overflow:hidden; }
+.line-chart-wrap { height:130px; min-height:130px; max-height:130px; flex:1; overflow:hidden; }
 .line-chart-wrap svg { overflow:visible; width:100%; height:100%; }
 .lc-dot { transition:r .15s ease,filter .15s ease; cursor:pointer; }
 .lc-dot:hover { filter:brightness(1.4) drop-shadow(0 0 4px var(--accent2)); }
@@ -1344,7 +1376,7 @@ function injectStudyPlan(htmlStr){
           <button class="ctype-btn" id="btnLine" onclick="setChartType('line')">〜</button>
         </div>
       </div>
-      <div id="weekChart" style="height:130px;overflow:hidden;"></div>
+      <div id="weekChart" style="height:130px;overflow:hidden;min-height:130px;max-height:130px;"></div>
       <div class="week-total" id="weekTotal"></div>
     </div>
   </div><div class="timer-card" style="margin-bottom:0;">
@@ -2316,15 +2348,13 @@ function renderBarChart(days){
 }
 function renderLineChart(days){
   const w=document.getElementById('weekChart');w.innerHTML='';w.className='line-chart-wrap';
-  const W=560,H=130,P={t:18,r:16,b:26,l:28};
+  const W=w.clientWidth||560, H=130, P={t:18,r:16,b:26,l:28};
   const vals=days.map(d=>studyLog[d.key]||0),maxV=Math.max(...vals,1),tk=toKey(today());
   const xs=i=>P.l+(i/(days.length-1))*(W-P.l-P.r),ys=v=>P.t+(1-v/maxV)*(H-P.t-P.b);
   const acc=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(),mut=getComputedStyle(document.documentElement).getPropertyValue('--muted').trim();
   const grid=[0,.25,.5,.75,1].map(f=>{const y=ys(maxV*f);return`<line x1="${P.l}" y1="${y}" x2="${W-P.r}" y2="${y}" stroke="${mut}" stroke-width="1" stroke-dasharray="3,3" opacity=".3"/><text x="${P.l-4}" y="${y+4}" text-anchor="end" font-size="9" fill="${mut}" font-family="Space Mono,monospace">${fmt(maxV*f)}</text>`;}).join('');
   let pd='',ad='';days.forEach((d,i)=>{const x=xs(i),y=ys(vals[i]);if(i===0){pd+=`M${x} ${y}`;ad+=`M${x} ${H-P.b}L${x} ${y}`;}else{pd+=`L${x} ${y}`;ad+=`L${x} ${y}`;}});ad+=`L${xs(days.length-1)} ${H-P.b}Z`;
-  // Visible dots + day labels (no static value labels)
   const dots=days.map((d,i)=>{const x=xs(i),y=ys(vals[i]),iT=d.key===tk;const dc=iT?acc:(vals[i]>0?acc:mut);return`<circle class="lc-dot" cx="${x}" cy="${y}" r="${iT?5:3.5}" fill="${dc}" ${iT?`stroke="${acc}" stroke-width="2"`:''} data-val="${vals[i]}" data-day="${d.day}"/><text x="${x}" y="${H-P.b+14}" text-anchor="middle" font-size="9" fill="${iT?acc:mut}" font-family="Space Mono,monospace" font-weight="${iT?'bold':'normal'}">${d.day}</text>`;}).join('');
-  // Invisible larger hit targets for tooltip
   const hitTargets=days.map((d,i)=>{const x=xs(i),y=ys(vals[i]);return`<circle class="lc-hit" cx="${x}" cy="${y}" r="14" fill="transparent" data-val="${vals[i]}" data-day="${d.day}" data-key="${d.key}"/>`;}).join('');
   w.innerHTML=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;overflow:visible"><defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${acc}" stop-opacity=".2"/><stop offset="100%" stop-color="${acc}" stop-opacity="0"/></linearGradient></defs>${grid}<path d="${ad}" fill="url(#lg)"/><path d="${pd}" fill="none" stroke="${acc}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}${hitTargets}</svg>`;
   // Wire hover to hit targets (they sit on top), animate the matching dot
