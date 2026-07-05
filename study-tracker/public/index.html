@@ -546,7 +546,7 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .tag-opt-name { font-family:'Inter',sans-serif; font-size:.76rem; color:var(--text); flex:1; }
 .tag-opt-del { background:none; border:none; color:var(--text3); cursor:pointer; font-size:.75rem; opacity:0; padding:0 2px; transition:opacity .15s,color .15s; }
 .tag-opt:hover .tag-opt-del { opacity:1; }
-.tag-opt-del:hover { color:#f87171; }
+.tag-opt-del:hover { color:var(--accent2); }
 .tag-create-row { border-top:1px solid var(--border); margin-top:5px; padding-top:5px; }
 .tag-create-btn { background:transparent; border:none; color:var(--accent2); cursor:pointer; font-family:'Inter',sans-serif; font-size:.73rem; padding:3px 0; width:100%; text-align:left; }
 .tag-create-btn:hover { opacity:.8; }
@@ -708,8 +708,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .todo-add-btn { background:linear-gradient(135deg,var(--accent),var(--accent2)); border:none; border-radius:7px; color:#fff; font-size:.85rem; padding:5px 11px; cursor:pointer; flex-shrink:0; }
 .todo-add-btn:hover { opacity:.85; }
 .todo-list { display:flex; flex-direction:column; overflow-y:auto; flex:1; }
-.todo-item { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:12px; background:transparent; border:none; border-bottom:1px solid var(--border); transition:background .12s; }
-.todo-item:last-child { border-bottom:none; }
+.todo-item { display:flex; align-items:center; gap:8px; padding:8px 10px; border-radius:12px; background:transparent; border:none; transition:background .12s; }
 .todo-item:hover { background:color-mix(in srgb, var(--text) 4%, transparent); }
 .todo-item.done .todo-text { text-decoration:line-through; color:var(--text3); opacity:.6; }
 .todo-cb { width:16px; height:16px; border-radius:50%; border:1px solid var(--border2); background:var(--surface); flex-shrink:0; cursor:pointer; position:relative; transition:all .15s; }
@@ -1019,9 +1018,9 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   .manual-form .hm-input-group { width:100%; flex:1 1 100%; justify-content:space-between; }
 
   /* Calendar + progress bars stack vertically */
-  .row2-input-card { flex-direction:column!important; gap:10px!important; align-items:stretch!important; }
+  .row2-input-card { flex-direction:column!important; gap:0!important; align-items:stretch!important; }
   .mini-cal { width:100%!important; flex-shrink:unset!important; }
-  .time-progress { min-width:unset!important; width:100%; }
+  .time-progress { min-width:unset!important; width:100%; border-top:1px solid var(--border); padding-top:16px; margin-top:16px; }
 
   /* Milestone */
   .qs-grid { flex-wrap:wrap; }
@@ -1058,8 +1057,9 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   body { padding:18px 20px 40px; overflow-x:hidden; }
   .row1 { grid-template-columns:1fr!important; }
   .row2 { grid-template-columns:1fr!important; }
-  .row2-input-card { flex-direction:column!important; gap:10px!important; }
+  .row2-input-card { flex-direction:column!important; gap:0!important; }
   .mini-cal { width:100%!important; flex-shrink:0; }
+  .time-progress { border-top:1px solid var(--border); padding-top:16px; margin-top:16px; width:100%; }
   .timer-body { grid-template-columns:1fr 1fr; }
   .row3 { grid-template-columns:1fr!important; }
   .qs-grid { flex-wrap:wrap; }
@@ -1214,7 +1214,7 @@ function switchView(name){
   document.querySelectorAll('.sb-item').forEach(b => b.classList.remove('active'));
   document.getElementById('view-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
-  if(name==='settings'){ updateAuthBtn(); refreshNotifBtn(); }
+  if(name==='settings'){ updateAuthBtn(); refreshNotifBtn(); renderArchivedTagsSettings(); }
 }
 function loadStudyPlan(ev){
   const file = ev.target.files[0]; if(!file) return;
@@ -1415,7 +1415,6 @@ function injectStudyPlan(htmlStr){
           <div class="streak-number-new" id="statStreak">0</div>
         </div>
         <div class="streak-label">day streak!</div>
-        <div class="streak-week-row" id="streakWeekRow"></div>
         <div class="stat-sub" id="statLongest">Longest: 0 days</div>
       </div>
     </div><div class="chart-card">
@@ -1754,6 +1753,12 @@ function injectStudyPlan(htmlStr){
     </div>
 
     <div class="card settings-card">
+      <div class="settings-card-title">Tags</div>
+      <p class="sett-hint">Archived tags won't show up when logging new sessions, but stay attached to your past history. Archive a tag by clicking the 🗄 icon next to it in any tag picker.</p>
+      <div id="archivedTagsList" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <div class="card settings-card">
       <div class="settings-card-title">Data &amp; Backup</div>
       <p class="sett-hint">Export your study data as a JSON file to keep a backup, or import a file you've saved before.</p>
       <div class="sett-btn-row">
@@ -1792,6 +1797,7 @@ let events    = JSON.parse(localStorage.getItem('st_events')||'[]');
 let archivedEvents = JSON.parse(localStorage.getItem('st_archived_events')||'[]');
 let sessions  = JSON.parse(localStorage.getItem('st_sess')  ||'[]');
 let allTags   = JSON.parse(localStorage.getItem('st_tags')  ||'[]');
+let archivedTags = JSON.parse(localStorage.getItem('st_archived_tags')||'[]');
 let goals     = JSON.parse(localStorage.getItem('st_goals') ||'{"week":0,"month":0}');
 let tagColors = JSON.parse(localStorage.getItem('st_tagcol')||'{}');
 
@@ -2072,7 +2078,7 @@ function scheduleSupa() {
   syncTimer = setTimeout(supaSync, 1500); // debounce — sync 1.5s after last change
 }
 
-function persistLocal(){localStorage.setItem('st_log',JSON.stringify(studyLog));localStorage.setItem('st_events',JSON.stringify(events));localStorage.setItem('st_archived_events',JSON.stringify(archivedEvents));localStorage.setItem('st_sess',JSON.stringify(sessions));localStorage.setItem('st_tags',JSON.stringify(allTags));localStorage.setItem('st_goals',JSON.stringify(goals));}
+function persistLocal(){localStorage.setItem('st_log',JSON.stringify(studyLog));localStorage.setItem('st_events',JSON.stringify(events));localStorage.setItem('st_archived_events',JSON.stringify(archivedEvents));localStorage.setItem('st_sess',JSON.stringify(sessions));localStorage.setItem('st_tags',JSON.stringify(allTags));localStorage.setItem('st_archived_tags',JSON.stringify(archivedTags));localStorage.setItem('st_goals',JSON.stringify(goals));}
 function persist(){ persistLocal(); scheduleSupa(); }
 
 // ── Date helpers ───────────────────────────────────
@@ -2308,7 +2314,7 @@ function filterOpts(w,q){
   allTags.filter(t=>t.toLowerCase().includes(q.toLowerCase())&&!activeTags[w].includes(t)).forEach(t=>{
     const row=document.createElement('div');row.className='tag-opt';
     const c=tagColor(t);
-    row.innerHTML=`<div class="tag-opt-dot" style="background:${c}"></div><span class="tag-opt-name">${t}</span><button class="tag-opt-del" onclick="deleteTag(event,'${t}')" title="Delete tag">✕</button>`;
+    row.innerHTML=`<div class="tag-opt-dot" style="background:${c}"></div><span class="tag-opt-name">${t}</span><button class="tag-opt-del" onclick="archiveTag(event,'${t}')" title="Archive tag">🗄</button>`;
     row.addEventListener('click',()=>{addTagTo(w,t);document.getElementById(w+'Search').value='';filterOpts(w,'');});
     opts.appendChild(row);
   });
@@ -2324,6 +2330,51 @@ function addTagTo(w,t){
   activeTags[w].push(t);renderPills(w);
 }
 function removeTagFrom(w,t){activeTags[w]=activeTags[w].filter(x=>x!==t);renderPills(w);}
+function archiveTag(e,t){
+  e.stopPropagation();
+  allTags=allTags.filter(x=>x!==t);
+  if(!archivedTags.includes(t))archivedTags.push(t);
+  activeTags.sw=activeTags.sw.filter(x=>x!==t);activeTags.pm=activeTags.pm.filter(x=>x!==t);activeTags.manual=activeTags.manual.filter(x=>x!==t);
+  persist();renderPills('sw');renderPills('pm');renderPills('manual');renderTagCloud();renderRadar();renderArchivedTagsSettings();
+  filterOpts('sw',document.getElementById('swSearch').value);filterOpts('pm',document.getElementById('pmSearch').value);
+  showToast(`Tag "${t}" archived — past sessions keep it, but it won't show up for new ones.`);
+}
+function restoreTag(t){
+  archivedTags=archivedTags.filter(x=>x!==t);
+  if(!allTags.includes(t))allTags.push(t);
+  persist();renderTagCloud();renderRadar();renderArchivedTagsSettings();
+  showToast(`Tag "${t}" restored.`);
+}
+function permanentlyDeleteTag(t){
+  if(!confirm(`Permanently delete "${t}"? This removes it from all past sessions too. This cannot be undone.`))return;
+  archivedTags=archivedTags.filter(x=>x!==t);
+  allTags=allTags.filter(x=>x!==t);
+  sessions.forEach(s=>{s.tags=(s.tags||[]).filter(x=>x!==t);});
+  delete tagColors[t];localStorage.setItem('st_tagcol',JSON.stringify(tagColors));
+  persist();renderTagCloud();renderRadar();renderArchivedTagsSettings();
+  showToast(`Tag "${t}" permanently deleted.`);
+}
+function renderArchivedTagsSettings(){
+  const el=document.getElementById('archivedTagsList');
+  if(!el)return;
+  if(!archivedTags.length){el.innerHTML='<p class="sett-hint" style="margin:0;">No archived tags.</p>';return;}
+  el.innerHTML='';
+  archivedTags.forEach(t=>{
+    const c=tagColor(t);
+    const row=document.createElement('div');
+    row.className='sett-row';
+    row.innerHTML=`
+      <label style="display:flex;align-items:center;gap:8px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:${c};display:inline-block;flex-shrink:0;"></span>
+        ${t}
+      </label>
+      <div class="sett-btn-row">
+        <button class="sett-btn" onclick="restoreTag('${t}')">Restore</button>
+        <button class="sett-btn danger" onclick="permanentlyDeleteTag('${t}')">Delete</button>
+      </div>`;
+    el.appendChild(row);
+  });
+}
 function deleteTag(e,t){
   e.stopPropagation();
   allTags=allTags.filter(x=>x!==t);
@@ -2847,8 +2898,8 @@ function renderPmDots(){
 function updateTimerStats(){const dk=toKey(today()),ts=sessions.filter(s=>s.date===dk),tot=ts.reduce((a,s)=>a+(s.hours||0),0);document.getElementById('swToday').textContent=fmt(tot);document.getElementById('swSessCount').textContent=ts.length;}
 
 // ── Export / Import ────────────────────────────────
-function exportData(){const blob=new Blob([JSON.stringify({studyLog,events,sessions,tags:allTags,tagColors,goals},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`meridian-${toKey(today())}.json`;a.click();showToast('Exported!');}
-function importData(ev){const file=ev.target.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);const isOldFormat=Object.keys(d).every(k=>/^\d{4}-\d{2}-\d{2}$/.test(k));if(isOldFormat){studyLog=d;}else{if(!d.studyLog&&!d.sessions){showToast('Invalid file.');return;}if(d.studyLog)studyLog=d.studyLog;if(d.events)events=d.events;if(d.sessions)sessions=d.sessions;if(d.tags)allTags=d.tags;if(d.tagColors)tagColors=d.tagColors;if(d.goals)goals=d.goals;localStorage.setItem('st_events',JSON.stringify(events));localStorage.setItem('st_sess',JSON.stringify(sessions));localStorage.setItem('st_tags',JSON.stringify(allTags));localStorage.setItem('st_tagcol',JSON.stringify(tagColors));localStorage.setItem('st_goals',JSON.stringify(goals));}localStorage.setItem('st_log',JSON.stringify(studyLog));persist();renderAll();renderCountdowns();renderTagCloud();renderRadar();renderCal();showToast('Imported!');setTimeout(()=>window.location.reload(),800);}catch(err){showToast('Invalid file.');}ev.target.value='';};r.readAsText(file);}
+function exportData(){const blob=new Blob([JSON.stringify({studyLog,events,sessions,tags:allTags,archivedTags,tagColors,goals},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`meridian-${toKey(today())}.json`;a.click();showToast('Exported!');}
+function importData(ev){const file=ev.target.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);const isOldFormat=Object.keys(d).every(k=>/^\d{4}-\d{2}-\d{2}$/.test(k));if(isOldFormat){studyLog=d;}else{if(!d.studyLog&&!d.sessions){showToast('Invalid file.');return;}if(d.studyLog)studyLog=d.studyLog;if(d.events)events=d.events;if(d.sessions)sessions=d.sessions;if(d.tags)allTags=d.tags;if(d.archivedTags)archivedTags=d.archivedTags;if(d.tagColors)tagColors=d.tagColors;if(d.goals)goals=d.goals;localStorage.setItem('st_events',JSON.stringify(events));localStorage.setItem('st_sess',JSON.stringify(sessions));localStorage.setItem('st_tags',JSON.stringify(allTags));localStorage.setItem('st_archived_tags',JSON.stringify(archivedTags));localStorage.setItem('st_tagcol',JSON.stringify(tagColors));localStorage.setItem('st_goals',JSON.stringify(goals));}localStorage.setItem('st_log',JSON.stringify(studyLog));persist();renderAll();renderCountdowns();renderTagCloud();renderRadar();renderCal();showToast('Imported!');setTimeout(()=>window.location.reload(),800);}catch(err){showToast('Invalid file.');}ev.target.value='';};r.readAsText(file);}
 function clearAll(){studyLog={};events=[];sessions=[];persist();renderAll();renderCountdowns();renderTagCloud();renderRadar();renderCal();showToast('Cleared.');}
 
 // ── Notes ──────────────────────────────────────────
