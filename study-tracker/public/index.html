@@ -425,7 +425,7 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .timer-card { padding:16px 18px; margin-bottom:0; display:flex; flex-direction:column; height:100%; box-sizing:border-box; }
 .timer-card-header { display:flex; align-items:center; margin-bottom:12px; gap:10px; }
 .manual-date-display { font-family:'Inter',sans-serif; font-size:.72rem; color:var(--accent2); }
-.manual-form { background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:10px 12px; display:none; flex-direction:column; gap:6px; }
+.manual-form { background:transparent; border:none; border-radius:0; padding:10px 0 0; display:none; flex-direction:column; gap:6px; }
 .manual-form.open { display:flex; }
 .timer-card-title { font-family:'Inter',sans-serif; font-size:.62rem; text-transform:uppercase; letter-spacing:0.6px; color:var(--text3); }
 .timer-body { display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:stretch; flex:1; min-height:0; }
@@ -624,9 +624,22 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .today-btn:hover { border-color:var(--accent); color:var(--accent2); }
 .manual-toggle { background:transparent; border:none; color:var(--text3); cursor:pointer; font-family:'Inter',sans-serif; font-size:.68rem; text-decoration:underline dotted; transition:color .2s; }
 .manual-toggle:hover { color:var(--accent2); }
-.manual-form { background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:10px 12px; margin-top:4px; display:none; flex-direction:column; gap:8px; }
+.manual-form { background:transparent; border:none; border-radius:0; padding:10px 0 0; margin-top:4px; display:none; flex-direction:column; gap:8px; }
 .manual-form.open { display:flex; }
 .manual-row { display:flex; gap:6px; align-items:flex-end; }
+.hm-input-group { display:flex; align-items:center; gap:6px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:0 6px 0 14px; height:38px; flex:1; min-width:140px; }
+.hm-divider { width:1px; height:20px; background:var(--border2); flex-shrink:0; margin:0 2px; }
+.hm-input-group input[type="number"] {
+  width:100%; flex:1; min-width:24px; background:transparent; border:none; outline:none; color:var(--text);
+  font-family:'Inter',sans-serif; font-size:.85rem; font-weight:600; text-align:center;
+  -moz-appearance:textfield;
+}
+.hm-input-group input[type="number"]::-webkit-outer-spin-button,
+.hm-input-group input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; margin:0; }
+.hm-input-group .hm-unit { font-family:'Inter',sans-serif; font-size:.72rem; color:var(--text3); flex-shrink:0; }
+.hm-input-group .hm-unit:last-child { margin-right:2px; }
+.hm-input-group input[type="number"]:focus { outline:none; border:none; box-shadow:none; }
+.hm-input-group:focus-within { border-color:var(--accent); }
 .log-btn {
   background:var(--accent);
   border:none; border-radius:99px; color:#fff; cursor:pointer;
@@ -636,8 +649,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   text-transform:uppercase; letter-spacing:0.5px;
 }
 .log-btn:hover { opacity:.9; box-shadow:0 6px 20px var(--accent-glow); }
-.clear-btn { background:transparent; border:1px solid var(--border2); border-radius:var(--radius-sm); color:var(--text3); cursor:pointer; font-family:'Inter',sans-serif; font-size:.7rem; padding:9px 10px; transition:border-color .2s,color .2s; }
-.clear-btn:hover { border-color:#ef4444; color:#f87171; }
+.clear-btn { background:transparent; border:none; border-radius:7px; color:var(--text3); cursor:pointer; font-size:.85rem; line-height:1; transition:color .2s,background .15s; width:30px; height:30px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.clear-btn:hover { color:#f87171; background:rgba(248,113,113,.12); }
 
 /* ── Mini Calendar ── */
 .mini-cal { padding-top:0; margin-top:0; }
@@ -1003,7 +1016,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   /* Manual form */
   .manual-form .manual-row { flex-wrap:wrap; }
   .manual-form .date-display { flex:1; min-width:0; }
-  .manual-form #hoursInput { width:100%; flex:1 1 100%; }
+  .manual-form .hm-input-group { width:100%; flex:1 1 100%; justify-content:space-between; }
 
   /* Calendar + progress bars stack vertically */
   .row2-input-card { flex-direction:column!important; gap:10px!important; align-items:stretch!important; }
@@ -1429,7 +1442,6 @@ function injectStudyPlan(htmlStr){
         <button class="tmr-tab" id="tabPm" onclick="setTimerMode('pm')">Pomodoro</button>
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
-        <span class="manual-date-display" id="manualDateDisplay"></span>
         <button class="manual-toggle" onclick="toggleManual()" id="manualToggleBtn">+ Manual Entry</button>
       </div>
     </div>
@@ -1439,7 +1451,14 @@ function injectStudyPlan(htmlStr){
           <span id="dateDisplayText">—</span><span>📅</span>
           <input type="date" id="dateInput" style="position:absolute;bottom:0;left:0;opacity:0;pointer-events:none;width:100%;height:100%;" onchange="updateDateDisplay(this.value)">
         </div>
-        <input type="number" id="hoursInput" min="0" max="24" step="0.5" placeholder="hours, e.g. 2.5" onkeydown="if(event.key==='Enter')logHours()" style="flex:1;min-width:120px;">
+        <div class="hm-input-group">
+          <input type="number" id="hoursInputH" min="0" max="24" step="1" placeholder="0" onkeydown="if(event.key==='Enter')logHours()">
+          <span class="hm-unit">h</span>
+          <input type="number" id="hoursInputM" min="0" max="59" step="5" placeholder="0" onkeydown="if(event.key==='Enter')logHours()">
+          <span class="hm-unit">m</span>
+          <div class="hm-divider"></div>
+          <button class="clear-btn" onclick="clearDay()" title="Clear Day">✕</button>
+        </div>
         <div id="manualPills" style="display:flex;gap:4px;align-items:center;flex-shrink:0;"></div>
         <div class="tag-dd-wrap">
           <button class="tag-add-pill" onclick="toggleTagDD('manual')">+ tag</button>
@@ -1450,7 +1469,6 @@ function injectStudyPlan(htmlStr){
           </div>
         </div>
         <button class="log-btn" onclick="logHours()">Log</button>
-        <button class="clear-btn" onclick="clearDay()">✕ Clear Day</button>
       </div>
     </div>
     <div class="timer-body">
@@ -2142,26 +2160,29 @@ function renderGlance(){
 // ── Date / Manual ──────────────────────────────────
 function jumpToToday(){const s=toKey(today());document.getElementById('dateInput').value=s;updateDateDisplay(s);}
 function updateDateDisplay(v){if(!v)return;const label=new Date(v+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});document.getElementById('dateDisplayText').textContent=label;const mini=document.getElementById('manualDateDisplay');if(mini)mini.textContent=label;}
-function toggleManual(){manualOpen=!manualOpen;document.getElementById('manualForm').classList.toggle('open',manualOpen);if(manualOpen)setTimeout(()=>document.getElementById('hoursInput').focus(),50);}
+function toggleManual(){manualOpen=!manualOpen;document.getElementById('manualForm').classList.toggle('open',manualOpen);if(manualOpen)setTimeout(()=>document.getElementById('hoursInputH').focus(),50);}
 
 function closeConfirm(){document.getElementById('confirmOverlay').style.display='none';}
 
 let undoClearData=null;
 
 function logHours(){
-  const d=document.getElementById('dateInput').value,h=parseFloat(document.getElementById('hoursInput').value);
-  if(!d)return showToast('Pick a date!');if(isNaN(h)||h<0)return showToast('Enter valid hours!');
+  const d=document.getElementById('dateInput').value;
+  const hh=parseFloat(document.getElementById('hoursInputH').value)||0;
+  const mm=parseFloat(document.getElementById('hoursInputM').value)||0;
+  const h=hh+mm/60;
+  if(!d)return showToast('Pick a date!');if(isNaN(h)||h<=0)return showToast('Enter valid hours!');
   const tags=[...activeTags.manual||[]];
   const doLog=()=>{
     studyLog[d]=(studyLog[d]||0)+h;sessions.push({date:d,hours:h,tags,ts:Date.now(),source:'manual'});
     activeTags.manual=[];renderPills('manual');
-    persist();renderAll();renderRadar();renderCal();document.getElementById('hoursInput').value='';
+    persist();renderAll();renderRadar();renderCal();document.getElementById('hoursInputH').value='';document.getElementById('hoursInputM').value='';
     showToast(`+${fmt(h)} logged!`);
     launchConfetti(50,50);
     const fw=document.querySelector('.streak-flame-wrap');if(fw){fw.classList.remove('flame-pulse');void fw.offsetWidth;fw.classList.add('flame-pulse');setTimeout(()=>fw.classList.remove('flame-pulse'),500);}
   };
   if(tags.length===0){
-    showConfirm('No tags selected', 'You\'re logging without any tags. Continue anyway?', 'Log anyway', doLog);
+    showConfirm('No tags selected', 'You\'re logging without any tags. Continue anyway?', 'Log anyway', doLog, 'Add a tag', () => toggleTagDD('manual'), true);
   } else {
     doLog();
   }
@@ -2712,7 +2733,8 @@ function swLog(){
       'Log anyway',
       () => { swLogCommit(hrs); },
       'Add a tag',
-      () => { swRun=false; swIv=null; document.getElementById('swStart').textContent='Resume'; document.getElementById('swStart').className='t-btn start'; document.getElementById('swDot').classList.remove('show'); toggleTagDD('sw'); }
+      () => { swRun=false; swIv=null; document.getElementById('swStart').textContent='Resume'; document.getElementById('swStart').className='t-btn start'; document.getElementById('swDot').classList.remove('show'); toggleTagDD('sw'); },
+      true
     );
     return;
   }
@@ -2797,7 +2819,8 @@ function pmLog(){
       'Log anyway',
       () => { pmLogCommit(hrs); },
       'Add a tag',
-      () => { toggleTagDD('pm'); }
+      () => { toggleTagDD('pm'); },
+      true
     );
     return;
   }
@@ -2921,7 +2944,7 @@ function sendNotif(title, body, icon='🍅'){
 
 
 // ── Confirm Dialog ──────────────────────────────────
-function showConfirm(title, msg, confirmLabel, onConfirm, cancelLabel, onCancel){
+function showConfirm(title, msg, confirmLabel, onConfirm, cancelLabel, onCancel, swapOrder){
   const overlay = document.getElementById('confirmOverlay');
   document.getElementById('confirmTitle').textContent = title;
   document.getElementById('confirmMsg').textContent = msg;
@@ -2929,8 +2952,21 @@ function showConfirm(title, msg, confirmLabel, onConfirm, cancelLabel, onCancel)
   const btnCancel = document.getElementById('confirmCancel');
   btnOk.textContent = confirmLabel;
   btnCancel.textContent = cancelLabel || 'Cancel';
+  const coloredStyle = 'padding:7px 14px;border-radius:8px;border:none;background:var(--accent);color:var(--btn-text);font-size:0.8rem;font-weight:600;cursor:pointer;font-family:inherit;';
+  const plainStyle   = 'padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:0.8rem;cursor:pointer;font-family:inherit;';
+  if(swapOrder){
+    btnOk.style.cssText = plainStyle;
+    btnCancel.style.cssText = coloredStyle;
+    btnOk.style.order = '0';
+    btnCancel.style.order = '1';
+  } else {
+    btnOk.style.cssText = coloredStyle;
+    btnCancel.style.cssText = plainStyle;
+    btnOk.style.order = '1';
+    btnCancel.style.order = '0';
+  }
   btnOk.onclick = () => { overlay.style.display='none'; onConfirm && onConfirm(); };
-  btnCancel.onclick = () => { overlay.style.display='none'; onCancel && onCancel(); };
+  btnCancel.onclick = () => { overlay.style.display='none'; if(onCancel) setTimeout(onCancel, 0); };
   overlay.style.display = 'flex';
 }
 // ── Mini Todo ───────────────────────────────────────
