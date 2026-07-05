@@ -112,7 +112,7 @@ body::before {
   inset:0;
   pointer-events:none;
   z-index:0;
-  opacity:.025;
+  opacity:.05;
   background-image:
     radial-gradient(circle, var(--text) 1px, transparent 1px),
     radial-gradient(circle, var(--text) 1px, transparent 1px);
@@ -131,7 +131,7 @@ body::after {
     radial-gradient(ellipse 35% 30% at 75% 15%, color-mix(in srgb, var(--accent3) 5%, transparent), transparent 70%);
 }
 body > * { position:relative; z-index:1; }
-:root.light body::before { opacity:.035; }
+:root.light body::before { opacity:.07; }
 
 * { transition:background .25s, color .25s, border-color .25s; }
 .bar,.hcell,.lc-dot,.t-btn,.icon-btn,.card,.stat-box { transition:background .25s,color .25s,border-color .25s,transform .15s,filter .15s,opacity .25s; }
@@ -2902,6 +2902,7 @@ async function requestNotifPerm(){
 
 function sendNotif(title, body, icon='🍅'){
   if(!('Notification' in window) || Notification.permission !== 'granted') return;
+  if(localStorage.getItem('st_notif_enabled')==='0') return;
   try {
     const n = new Notification(title, { body, icon, silent: true });
     setTimeout(() => n.close(), 6000);
@@ -3023,13 +3024,25 @@ function refreshNotifBtn(){
   const btn = document.getElementById('notifPermBtn');
   if(!btn) return;
   if(!('Notification' in window)){ btn.textContent='Unsupported'; btn.disabled=true; return; }
-  if(Notification.permission==='granted'){ btn.textContent='Enabled ✓'; btn.disabled=true; }
-  else if(Notification.permission==='denied'){ btn.textContent='Blocked'; btn.disabled=true; }
-  else { btn.textContent='Enable'; btn.disabled=false; }
+  if(Notification.permission==='denied'){ btn.textContent='Blocked'; btn.disabled=true; return; }
+  if(Notification.permission==='granted'){
+    const on = localStorage.getItem('st_notif_enabled')!=='0';
+    btn.textContent = on ? 'On' : 'Off';
+    btn.disabled = false;
+    return;
+  }
+  btn.textContent='Enable'; btn.disabled=false;
 }
 async function handleNotifToggle(){
   if(!('Notification' in window)) return;
+  if(Notification.permission==='granted'){
+    const on = localStorage.getItem('st_notif_enabled')!=='0';
+    localStorage.setItem('st_notif_enabled', on ? '0' : '1');
+    refreshNotifBtn();
+    return;
+  }
   await Notification.requestPermission();
+  if(Notification.permission==='granted') localStorage.setItem('st_notif_enabled','1');
   refreshNotifBtn();
 }
 function saveTimerSound(val){
