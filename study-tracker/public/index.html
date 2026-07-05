@@ -365,9 +365,16 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .cd-left { flex:1; min-width:0; display:flex; align-items:baseline; gap:6px; }
 .cd-name { font-family:'Space Grotesk',sans-serif; font-size:.95rem; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
 .cd-date { font-family:'Inter',sans-serif; font-size:.52rem; color:var(--text3); white-space:nowrap; flex-shrink:0; position:relative; top:1px; }
-.cd-badge { font-family:'Space Grotesk',sans-serif; font-size:.88rem; font-weight:600; color:var(--accent2); white-space:nowrap; margin-left:auto; }
-.cd-badge.soon,.cd-date.soon { color:#f87171; }
-.cd-badge.passed,.cd-date.passed { color:var(--text3); }
+.cd-badge {
+  font-family:'Space Grotesk',sans-serif;
+  color:var(--accent2); white-space:nowrap; margin-left:auto;
+  font-size:1.05rem; font-weight:800; letter-spacing:.2px;
+}
+.cd-badge-unit { font-size:.72em; font-weight:700; margin-left:2px; opacity:.85; }
+.cd-badge.soon { color:#f87171; }
+.cd-badge.passed { color:var(--text3); font-weight:700; font-size:.95rem; }
+.cd-date.soon { color:#f87171; }
+.cd-date.passed { color:var(--text3); }
 .cd-done-btn {
   background:none; border:1.5px solid var(--border2); border-radius:50%;
   width:22px; height:22px; cursor:pointer; display:flex; align-items:center;
@@ -2220,7 +2227,7 @@ function renderCal(){
       const evList=evtMap[d];
       cell.addEventListener('mouseenter',e2=>{
         const tip=document.getElementById('hovTip');
-        tip.textContent=evList.map(ev=>{const diff=Math.round((new Date(ev.date+'T00:00:00').getTime()-new Date(toKey(today())+'T00:00:00').getTime())/86400000);const badge=diff<0?`${Math.abs(diff)}d ago`:diff===0?'Today!':`in ${diff}d`;return `${ev.name} — ${badge}`;}).join(' · ');
+        tip.textContent=evList.map(ev=>{const diff=Math.round((new Date(ev.date+'T00:00:00').getTime()-new Date(toKey(today())+'T00:00:00').getTime())/86400000);const badge=diff<0?`${Math.abs(diff)} day${Math.abs(diff)===1?'':'s'} ago`:diff===0?'Today!':diff===1?'Tomorrow':`in ${diff} days`;return `${ev.name} — ${badge}`;}).join(' · ');
         tip.classList.add('show');moveHovTip(e2);
       });
       cell.addEventListener('mousemove',moveHovTip);
@@ -2558,7 +2565,10 @@ function renderCountdowns(){
     const diff=Math.round((new Date(ev.date+'T00:00:00').getTime()-tm)/86400000);
     const passed=diff<0,soon=diff>=0&&diff<=7;
     const cls=passed?'passed':soon?'soon':'';
-    const badge=passed?`${Math.abs(diff)}d ago`:diff===0?'Today!':`${diff}d`;
+    const badge=passed?`${Math.abs(diff)}<span class="cd-badge-unit"> day${Math.abs(diff)===1?'':'s'} ago</span>`
+      :diff===0?'Today!'
+      :diff===1?'Tomorrow'
+      :`${diff}<span class="cd-badge-unit"> days</span>`;
     const dateStr=new Date(ev.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const item=document.createElement('div');item.className='countdown-item';
     item.innerHTML=`<button class="cd-done-btn" title="Mark done">✓</button><div class="cd-left"><div class="cd-name">${ev.name}</div><div class="cd-date ${cls}">${dateStr}</div></div><div class="cd-badge ${cls}">${badge}</div><button class="cd-edit" title="Edit">✎</button>`;
