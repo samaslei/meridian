@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Meridian</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0d0f'/%3E%3Cellipse cx='32' cy='32' rx='30' ry='6' fill='none' stroke='%235eead4' stroke-width='1.2' opacity='0.5'/%3E%3Ccircle cx='32' cy='32' r='16' fill='%23f97316' fill-opacity='0.15'/%3E%3Ccircle cx='32' cy='32' r='16' fill='none' stroke='%23f97316' stroke-width='2.5'/%3E%3Cellipse cx='32' cy='32' rx='30' ry='6' fill='none' stroke='%230d0d0f' stroke-width='5' stroke-dasharray='95 100' stroke-dashoffset='-1'/%3E%3Cellipse cx='32' cy='32' rx='30' ry='6' fill='none' stroke='%235eead4' stroke-width='1.2' stroke-dasharray='95 100' stroke-dashoffset='-1' opacity='0.5'/%3E%3Ccircle cx='14' cy='20' r='1.5' fill='%235eead4' opacity='0.6'/%3E%3Ccircle cx='50' cy='22' r='1' fill='%23f97316' opacity='0.5'/%3E%3Ccircle cx='48' cy='44' r='1.5' fill='%235eead4' opacity='0.4'/%3E%3Cline x1='32' y1='32' x2='32' y2='18' stroke='%23f2f2f6' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='32' y1='32' x2='42' y2='27' stroke='%23f2f2f6' stroke-width='1.5' stroke-linecap='round' opacity='0.5'/%3E%3Ccircle cx='32' cy='32' r='3.5' fill='%23f97316'/%3E%3Ccircle cx='32' cy='32' r='1.5' fill='%230d0d0f'/%3E%3C/svg%3E">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cpath d='M 75 15 A 45 45 0 1 0 105 85 A 55 55 0 0 1 75 15 Z' fill='%23FBBF24'/%3E%3Cpath d='M 15 90 L 40 45 L 60 65 L 85 35 L 105 70' fill='none' stroke='%237C3AED' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='15' cy='90' r='7' fill='%237C3AED'/%3E%3Ccircle cx='40' cy='45' r='7' fill='%237C3AED'/%3E%3Ccircle cx='60' cy='65' r='7' fill='%237C3AED'/%3E%3Ccircle cx='85' cy='35' r='7' fill='%237C3AED'/%3E%3Ccircle cx='105' cy='70' r='7' fill='%237C3AED'/%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 <style>
@@ -185,7 +185,7 @@ body > * { position:relative; z-index:1; }
 
 /* ── Header ── */
 .header-row { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:4px; }
-h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Space Grotesk',sans-serif; display:flex; align-items:center; gap:8px; }
+h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Space Grotesk',sans-serif; display:flex; align-items:baseline; gap:8px; }
 .subtitle {
   font-family:'Inter',sans-serif;
   font-size:.72rem;
@@ -821,7 +821,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 }
 .sidebar.collapsed { width:60px; }
 .sb-top { display:flex; align-items:center; justify-content:space-between; padding:18px 14px 14px; border-bottom:1px solid var(--border); flex-shrink:0; }
-.sb-logo { display:flex; align-items:center; gap:8px; overflow:hidden; white-space:nowrap; }
+.sb-logo { display:flex; align-items:baseline; gap:8px; overflow:hidden; white-space:nowrap; }
 .sb-logo svg { flex-shrink:0; }
 .sb-logo-text { font-family:'Space Grotesk',sans-serif; font-size:1.05rem; font-weight:600; color:var(--text); transition:opacity .2s; }
 .sidebar.collapsed .sb-logo-text { opacity:0; width:0; pointer-events:none; }
@@ -1099,20 +1099,20 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   <div style="width:100%;max-width:420px;margin:auto;padding:24px;">
 
     <div style="text-align:center;margin-bottom:28px;">
-      <svg width="52" height="52" viewBox="30 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:8px;">
+      <svg width="52" height="52" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:8px;">
         <defs>
           <linearGradient id="logoGradLogin" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#4F46E5"/>
             <stop offset="100%" stop-color="#7C3AED"/>
           </linearGradient>
         </defs>
-        <path d="M 80 25 A 20 20 0 1 0 103 50 A 24 24 0 0 1 80 25 Z" fill="#FBBF24"/>
-        <path d="M 40 95 L 60 55 L 80 75 L 100 55 L 120 95" fill="none" stroke="url(#logoGradLogin)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="40" cy="95" r="5" fill="url(#logoGradLogin)"/>
-        <circle cx="60" cy="55" r="5" fill="url(#logoGradLogin)"/>
-        <circle cx="80" cy="75" r="5" fill="url(#logoGradLogin)"/>
-        <circle cx="100" cy="55" r="5" fill="url(#logoGradLogin)"/>
-        <circle cx="120" cy="95" r="5" fill="url(#logoGradLogin)"/>
+        <path d="M 75 15 A 45 45 0 1 0 105 85 A 55 55 0 0 1 75 15 Z" fill="#FBBF24"/>
+        <path d="M 15 90 L 40 45 L 60 65 L 85 35 L 105 70" fill="none" stroke="url(#logoGradLogin)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="15" cy="90" r="7" fill="url(#logoGradLogin)"/>
+        <circle cx="40" cy="45" r="7" fill="url(#logoGradLogin)"/>
+        <circle cx="60" cy="65" r="7" fill="url(#logoGradLogin)"/>
+        <circle cx="85" cy="35" r="7" fill="url(#logoGradLogin)"/>
+        <circle cx="105" cy="70" r="7" fill="url(#logoGradLogin)"/>
       </svg>
       <div style="font-size:1.4rem;font-weight:700;color:var(--text);letter-spacing:-0.5px;">Meridian</div>
       <div style="font-size:0.8rem;color:var(--text3);margin-top:4px;">your personal study dashboard</div>
@@ -1311,20 +1311,20 @@ function injectStudyPlan(htmlStr){
 <nav class="sidebar collapsed" id="sidebar">
   <div class="sb-top">
     <div class="sb-logo">
-      <svg width="26" height="26" viewBox="30 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="26" height="26" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="logoGradSidebar" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#4F46E5"/>
             <stop offset="100%" stop-color="#7C3AED"/>
           </linearGradient>
         </defs>
-        <path d="M 80 25 A 20 20 0 1 0 103 50 A 24 24 0 0 1 80 25 Z" fill="#FBBF24"/>
-        <path d="M 40 95 L 60 55 L 80 75 L 100 55 L 120 95" fill="none" stroke="url(#logoGradSidebar)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="40" cy="95" r="5" fill="url(#logoGradSidebar)"/>
-        <circle cx="60" cy="55" r="5" fill="url(#logoGradSidebar)"/>
-        <circle cx="80" cy="75" r="5" fill="url(#logoGradSidebar)"/>
-        <circle cx="100" cy="55" r="5" fill="url(#logoGradSidebar)"/>
-        <circle cx="120" cy="95" r="5" fill="url(#logoGradSidebar)"/>
+        <path d="M 75 15 A 45 45 0 1 0 105 85 A 55 55 0 0 1 75 15 Z" fill="#FBBF24"/>
+        <path d="M 15 90 L 40 45 L 60 65 L 85 35 L 105 70" fill="none" stroke="url(#logoGradSidebar)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="15" cy="90" r="7" fill="url(#logoGradSidebar)"/>
+        <circle cx="40" cy="45" r="7" fill="url(#logoGradSidebar)"/>
+        <circle cx="60" cy="65" r="7" fill="url(#logoGradSidebar)"/>
+        <circle cx="85" cy="35" r="7" fill="url(#logoGradSidebar)"/>
+        <circle cx="105" cy="70" r="7" fill="url(#logoGradSidebar)"/>
       </svg>
       <span class="sb-logo-text">Meridian</span>
     </div>
@@ -1355,20 +1355,20 @@ function injectStudyPlan(htmlStr){
 
 <div class="header-row">
   <div>
-    <h1><svg width="32" height="32" viewBox="30 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+    <h1><svg width="32" height="32" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
       <defs>
         <linearGradient id="logoGradHeader" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#4F46E5"/>
           <stop offset="100%" stop-color="#7C3AED"/>
         </linearGradient>
       </defs>
-      <path d="M 80 25 A 20 20 0 1 0 103 50 A 24 24 0 0 1 80 25 Z" fill="#FBBF24"/>
-      <path d="M 40 95 L 60 55 L 80 75 L 100 55 L 120 95" fill="none" stroke="url(#logoGradHeader)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="40" cy="95" r="5" fill="url(#logoGradHeader)"/>
-      <circle cx="60" cy="55" r="5" fill="url(#logoGradHeader)"/>
-      <circle cx="80" cy="75" r="5" fill="url(#logoGradHeader)"/>
-      <circle cx="100" cy="55" r="5" fill="url(#logoGradHeader)"/>
-      <circle cx="120" cy="95" r="5" fill="url(#logoGradHeader)"/>
+      <path d="M 75 15 A 45 45 0 1 0 105 85 A 55 55 0 0 1 75 15 Z" fill="#FBBF24"/>
+      <path d="M 15 90 L 40 45 L 60 65 L 85 35 L 105 70" fill="none" stroke="url(#logoGradHeader)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="15" cy="90" r="7" fill="url(#logoGradHeader)"/>
+      <circle cx="40" cy="45" r="7" fill="url(#logoGradHeader)"/>
+      <circle cx="60" cy="65" r="7" fill="url(#logoGradHeader)"/>
+      <circle cx="85" cy="35" r="7" fill="url(#logoGradHeader)"/>
+      <circle cx="105" cy="70" r="7" fill="url(#logoGradHeader)"/>
     </svg><span>Meridian</span></h1>
     <div class="subtitle">Track · Reflect · Grow</div>
   </div>
