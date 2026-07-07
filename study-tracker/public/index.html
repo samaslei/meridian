@@ -453,6 +453,10 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .sw-ring-wrap { width:200px; height:200px; }
 .sw-ring-wrap .ring-svg { width:200px; height:200px; }
 .sw-ring-wrap .ring-inner .timer-display { font-size:2rem; }
+.pm-ring-wrap { width:190px; height:190px; }
+.pm-ring-wrap .ring-svg { width:190px; height:190px; }
+.pm-ring-wrap .ring-inner .timer-display { font-size:1.9rem; }
+.pm-ring-wrap .ring-inner .timer-phase-lbl { font-size:.66rem; }
 
 /* Timer pane */
 .timer-pane { background:transparent; border:none; border-radius:0; padding:0 14px 0 0; display:flex; flex-direction:column; overflow:visible; box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none; }
@@ -499,17 +503,32 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .pm-bottom-row .t-stats-row { flex-shrink:0; }
 .pm-bottom-row .pomo-settings { flex:1; }
 .pomo-row { display:flex; align-items:center; justify-content:center; gap:4px; flex-wrap:wrap; }
+.pomo-cycles-row { display:flex; align-items:center; justify-content:center; gap:8px; }
+.pomo-cyc-btn { width:18px; height:18px; border-radius:50%; border:1px solid var(--border2); background:var(--surface2); color:var(--text3); cursor:pointer; font-size:.8rem; line-height:1; display:flex; align-items:center; justify-content:center; padding:0; flex-shrink:0; transition:border-color .15s,color .15s,background .15s; }
+.pomo-cyc-btn:hover { border-color:var(--accent); color:var(--accent2); background:var(--accent-glow); }
+.pomo-cyc-btn:disabled { opacity:.35; cursor:default; }
+.pomo-cyc-btn:disabled:hover { border-color:var(--border2); color:var(--text3); background:var(--surface2); }
 .pomo-dot { width:9px; height:9px; border-radius:50%; background:var(--surface); border:1px solid var(--border2); transition:all .3s; }
 .pomo-dot.done { background:var(--accent); border-color:var(--accent); box-shadow:0 0 6px var(--accent-glow); }
 .pomo-dot.active { background:color-mix(in srgb,var(--accent) 50%,transparent); border-color:var(--accent); animation:pg .9s ease-in-out infinite alternate; }
 @keyframes pg{from{box-shadow:0 0 0 0 var(--accent-glow)}to{box-shadow:0 0 0 3px var(--accent-glow)}}
 .pomo-lbl { font-family:'Inter',sans-serif; font-size:.60rem; color:var(--text3); }
-.pomo-settings { display:flex; gap:3px; flex-wrap:wrap; }
+.pomo-settings { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .pomo-set { display:flex; flex-direction:column; gap:2px; }
 .pomo-set label { font-family:'Inter',sans-serif; font-size:.55rem; color:var(--text3); text-transform:uppercase; }
 .pomo-set input { width:22px; background:var(--surface); border:1px solid var(--border2); border-radius:5px; color:var(--text); font-family:'Inter',sans-serif; font-size:.64rem; padding:2px 2px; outline:none; -moz-appearance:textfield; text-align:center; }
 .pomo-set input::-webkit-inner-spin-button { -webkit-appearance:none; }
 .pomo-set input:focus { border-color:var(--accent); }
+
+/* Pomodoro duration presets */
+.pomo-presets { display:flex; gap:6px; flex-wrap:wrap; }
+.pomo-preset {
+  background:var(--surface); border:1px solid var(--border2); border-radius:999px;
+  color:var(--text3); cursor:pointer; font-family:'Space Grotesk',sans-serif;
+  font-size:.72rem; font-weight:600; padding:5px 13px; transition:all .15s;
+}
+.pomo-preset:hover { border-color:var(--accent); color:var(--text); }
+.pomo-preset.active { background:color-mix(in srgb,var(--accent) 15%,transparent); border-color:var(--accent); color:var(--accent2); }
 
 /* ══════════════════
    TAGS
@@ -723,6 +742,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .todo-del { background:none; border:none; color:var(--text3); cursor:pointer; font-size:.8rem; padding:0 2px; opacity:0; transition:opacity .15s; flex-shrink:0; line-height:1; }
 .todo-item:hover .todo-del { opacity:1; }
 .todo-del:hover { color:#f87171; }
+.todo-text { cursor:text; }
+.todo-edit-input { flex:1; background:var(--surface2); border:1px solid var(--accent); border-radius:6px; color:var(--text); font-family:'Inter',sans-serif; font-size:.80rem; padding:4px 7px; outline:none; min-width:0; }
 .todo-empty { font-family:'Inter',sans-serif; font-size:.76rem; color:var(--text3); text-align:center; padding:12px 0; opacity:.6; }
 
 /* ══════════════════
@@ -802,6 +823,32 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   box-shadow:0 8px 24px var(--accent-glow);
 }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── Floating timer (shown on other views while a timer runs) ── */
+.floating-timer {
+  position:fixed; top:24px; left:50%; z-index:9997;
+  display:flex; align-items:center; gap:10px;
+  background:var(--surface); border:1px solid var(--border2); border-top:1px solid var(--glass-top);
+  border-radius:99px; padding:8px 14px 8px 12px;
+  box-shadow:0 10px 32px rgba(0,0,0,.35), inset 0 1px 0 var(--glass-top);
+  backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur);
+  cursor:pointer; opacity:0; pointer-events:none; transform:translateX(-50%) translateY(-16px) scale(.96);
+  transition:opacity .2s,transform .2s,border-color .2s;
+}
+.floating-timer.show { opacity:1; pointer-events:all; transform:translateX(-50%) translateY(0) scale(1); }
+.floating-timer:hover { border-color:var(--accent); }
+.ft-dot { width:9px; height:9px; border-radius:50%; background:var(--accent); box-shadow:0 0 8px var(--accent-glow); animation:pg 1s ease-in-out infinite alternate; flex-shrink:0; }
+.ft-info { display:flex; flex-direction:column; line-height:1.15; }
+.ft-label { font-family:'Inter',sans-serif; font-size:.58rem; text-transform:uppercase; letter-spacing:.5px; color:var(--text3); }
+.ft-time { font-family:'Space Grotesk',sans-serif; font-size:.92rem; font-weight:600; color:var(--text); font-variant-numeric:tabular-nums; }
+.ft-pause {
+  background:var(--surface2); border:1px solid var(--border2); border-radius:50%;
+  width:26px; height:26px; flex-shrink:0; cursor:pointer; color:var(--text3);
+  font-size:.65rem; display:flex; align-items:center; justify-content:center; padding:0;
+  transition:border-color .15s,color .15s,background .15s;
+}
+.ft-pause:hover { border-color:var(--accent); color:var(--accent2); background:var(--accent-glow); }
+@media(max-width:700px){ .floating-timer{ top:16px; left:16px; right:16px; transform:translateY(-16px) scale(.96); } .floating-timer.show{ transform:translateY(0) scale(1); } }
 
 /* ══════════════════
    SIDEBAR
@@ -1019,6 +1066,8 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   .ring-svg { width:130px; height:130px; }
   .sw-ring-wrap { width:160px; height:160px; }
   .sw-ring-wrap .ring-svg { width:160px; height:160px; }
+  .pm-ring-wrap { width:150px; height:150px; }
+  .pm-ring-wrap .ring-svg { width:150px; height:150px; }
   .timer-display { font-size:2rem; }
   .todo-pane { min-height:180px; }
 
@@ -1084,6 +1133,14 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 <body>
 <div id="hovTip" class="hov-tip"></div>
 <div id="toast" class="toast"></div>
+<div id="floatingTimer" class="floating-timer" onclick="switchView('dashboard')">
+  <div class="ft-dot"></div>
+  <div class="ft-info">
+    <div class="ft-label">Stopwatch</div>
+    <div class="ft-time">00:00:00</div>
+  </div>
+  <button class="ft-pause" title="Pause">❚❚</button>
+</div>
 <div id="sbOverlay" class="sb-overlay" onclick="closeMobileSidebar()"></div>
 <button id="sbMobileToggle" class="sb-mobile-toggle" onclick="openMobileSidebar()">☰</button>
 <div class="app-layout">
@@ -1242,6 +1299,29 @@ function switchView(name){
   document.getElementById('nav-'+name).classList.add('active');
   if(name==='settings'){ updateAuthBtn(); refreshNotifBtn(); renderArchivedTagsSettings(); }
   closeMobileSidebar();
+  updateFloatingTimer();
+}
+function updateFloatingTimer(){
+  const el = document.getElementById('floatingTimer');
+  if(!el) return;
+  const dashActive = document.getElementById('view-dashboard').classList.contains('active');
+  if(dashActive || (!swRun && !pmRun)){
+    el.classList.remove('show');
+    return;
+  }
+  const label = el.querySelector('.ft-label');
+  const time  = el.querySelector('.ft-time');
+  const pause = el.querySelector('.ft-pause');
+  if(swRun){
+    label.textContent = 'Stopwatch';
+    time.textContent = document.getElementById('swDisplay').textContent;
+    pause.onclick = (e) => { e.stopPropagation(); swToggle(); };
+  } else if(pmRun){
+    label.textContent = 'Pomodoro · ' + pmPhase.charAt(0).toUpperCase()+pmPhase.slice(1);
+    time.textContent = document.getElementById('pmDisplay').textContent;
+    pause.onclick = (e) => { e.stopPropagation(); pmToggle(); };
+  }
+  el.classList.add('show');
 }
 function loadStudyPlan(ev){
   const file = ev.target.files[0]; if(!file) return;
@@ -1548,7 +1628,7 @@ function injectStudyPlan(htmlStr){
       <div class="timer-pane" id="pmPane" style="display:none;">
         <div class="timer-pane-main">
           <div class="timer-pane-title">Pomodoro <div class="active-dot" id="pmDot"></div></div>
-          <div class="ring-wrap">
+          <div class="ring-wrap pm-ring-wrap">
             <svg class="ring-svg" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" id="pmRingSvg">
               <defs>
                 <linearGradient id="pmGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -1572,17 +1652,27 @@ function injectStudyPlan(htmlStr){
             <button class="t-btn stop" id="pmStop" onclick="pmLog()" style="display:none">Stop &amp; Log</button>
             <button class="t-btn reset" onclick="pmReset()">Reset</button>
           </div>
-          <div class="pomo-row" id="pmDots" style="margin-top:auto;"></div>
-          <div class="pm-bottom-row">
+          <div class="pomo-cycles-row">
+            <button type="button" class="pomo-cyc-btn" id="pmCycMinus" onclick="pmCycleAdj(-1)" title="Fewer cycles">−</button>
+            <div class="pomo-row" id="pmDots"></div>
+            <button type="button" class="pomo-cyc-btn" id="pmCycPlus" onclick="pmCycleAdj(1)" title="More cycles">+</button>
+          </div>
+          <div class="pm-bottom-row" style="margin-top:auto;">
             <div class="t-stats-row">
               <div class="t-stat"><div class="t-stat-val" id="pmFocusToday">0h</div><div class="t-stat-lbl">Focus Today</div></div>
               <div class="t-stat"><div class="t-stat-val" id="pmCyclesEl">0</div><div class="t-stat-lbl">Cycles</div></div>
             </div>
             <div class="pomo-settings">
-              <div class="pomo-set"><label>Focus</label><input type="number" id="pmFMin" value="25" min="1" max="120" onchange="pmReset()"></div>
-              <div class="pomo-set"><label>Short</label><input type="number" id="pmSMin" value="5" min="1" max="60"></div>
-              <div class="pomo-set"><label>Long</label><input type="number" id="pmLMin" value="15" min="1" max="120"></div>
-              <div class="pomo-set"><label>Cycles</label><input type="number" id="pmMaxC" value="4" min="1" max="12" onchange="renderPmDots()"></div>
+              <div class="pomo-presets" id="pmPresets">
+                <button type="button" class="pomo-preset" data-f="50" data-s="10" data-l="20" onclick="setPmPreset(this)">50/10</button>
+                <button type="button" class="pomo-preset active" data-f="25" data-s="5" data-l="15" onclick="setPmPreset(this)">25/5</button>
+                <button type="button" class="pomo-preset" data-f="90" data-s="20" data-l="30" onclick="setPmPreset(this)">90/20</button>
+                <button type="button" class="pomo-preset" data-f="15" data-s="5" data-l="10" onclick="setPmPreset(this)">15/5</button>
+              </div>
+              <input type="hidden" id="pmMaxC" value="4" min="1" max="12">
+              <input type="hidden" id="pmFMin" value="25">
+              <input type="hidden" id="pmSMin" value="5">
+              <input type="hidden" id="pmLMin" value="15">
             </div>
           </div>
         </div>
@@ -2799,6 +2889,7 @@ function swToggle(){
       updSW();
     },1000);
     showToast('⏱ Stopwatch started!');
+    updateFloatingTimer();
   }
   else{
     swRun=false;
@@ -2809,9 +2900,10 @@ function swToggle(){
     document.getElementById('swStart').className='t-btn start';
     document.getElementById('swDot').classList.remove('show');
     showToast('⏸ Paused.');
+    updateFloatingTimer();
   }
 }
-function swReset(){clearInterval(swIv);swIv=null;swEl=0;swRun=false;swLastHourNotif=0;document.getElementById('swDisplay').textContent='00:00:00';document.getElementById('swDisplay').classList.remove('running');document.getElementById('swStart').textContent='Start';document.getElementById('swStart').className='t-btn start';document.getElementById('swStop').style.display='none';document.getElementById('swDot').classList.remove('show');setArc('swArc',0);}
+function swReset(){clearInterval(swIv);swIv=null;swEl=0;swRun=false;swLastHourNotif=0;document.getElementById('swDisplay').textContent='00:00:00';document.getElementById('swDisplay').classList.remove('running');document.getElementById('swStart').textContent='Start';document.getElementById('swStart').className='t-btn start';document.getElementById('swStop').style.display='none';document.getElementById('swDot').classList.remove('show');setArc('swArc',0);updateFloatingTimer();}
 function swLog(){
   clearInterval(swIv);swIv=null;
   const hrs=swEl/3600;
@@ -2823,7 +2915,7 @@ function swLog(){
       'Log anyway',
       () => { swLogCommit(hrs); },
       'Add a tag',
-      () => { swRun=false; swIv=null; document.getElementById('swStart').textContent='Resume'; document.getElementById('swStart').className='t-btn start'; document.getElementById('swDot').classList.remove('show'); toggleTagDD('sw'); },
+      () => { swRun=false; swIv=null; document.getElementById('swStart').textContent='Resume'; document.getElementById('swStart').className='t-btn start'; document.getElementById('swDot').classList.remove('show'); toggleTagDD('sw'); updateFloatingTimer(); },
       true
     );
     return;
@@ -2839,7 +2931,7 @@ function swLogCommit(hrs){
   showToast(`+${fmt(hrs)} logged!`);launchConfetti(50,50);
   activeTags.sw=[];renderPills('sw');swReset();
 }
-function updSW(){const h=Math.floor(swEl/3600),m=Math.floor((swEl%3600)/60),s=swEl%60;document.getElementById('swDisplay').textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;updSwRing();}
+function updSW(){const h=Math.floor(swEl/3600),m=Math.floor((swEl%3600)/60),s=swEl%60;document.getElementById('swDisplay').textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;updSwRing();updateFloatingTimer();}
 // ── POMODORO ───────────────────────────────────────
 let pmPhase='focus',pmEl=0,pmFocus=0,pmDone=0,pmRun=false,pmIv=null;
 function pmToggle(){
@@ -2854,6 +2946,7 @@ function pmToggle(){
     document.getElementById('pmDot').classList.add('show');
     pmIv=setInterval(()=>{pmEl++;if(pmPhase==='focus')pmFocus++;if(pmEl>=getPmSecs()){pmPhaseEnd();return;}updPM();renderPmDots();},1000);
     showToast(pmPhase==='focus'?'🔥 Focus session started!':'☕ Break started!');
+    updateFloatingTimer();
   }
   else{
     pmRun=false;
@@ -2864,7 +2957,31 @@ function pmToggle(){
     document.getElementById('pmStart').className='t-btn start';
     document.getElementById('pmDot').classList.remove('show');
     showToast('⏸ Pomodoro paused.');
+    updateFloatingTimer();
   }
+}
+function setPmPreset(btn){
+  document.getElementById('pmFMin').value=btn.dataset.f;
+  document.getElementById('pmSMin').value=btn.dataset.s;
+  document.getElementById('pmLMin').value=btn.dataset.l;
+  document.querySelectorAll('.pomo-preset').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  localStorage.setItem('st_pm_preset', JSON.stringify({f:btn.dataset.f,s:btn.dataset.s,l:btn.dataset.l}));
+  pmReset();
+}
+function loadPmPreset(){
+  const saved=localStorage.getItem('st_pm_preset');
+  if(!saved) return;
+  try{
+    const p=JSON.parse(saved);
+    document.getElementById('pmFMin').value=p.f;
+    document.getElementById('pmSMin').value=p.s;
+    document.getElementById('pmLMin').value=p.l;
+    document.querySelectorAll('.pomo-preset').forEach(b=>{
+      b.classList.toggle('active', b.dataset.f===String(p.f) && b.dataset.s===String(p.s));
+    });
+    updPM();
+  }catch(e){}
 }
 function getPmSecs(){const f=parseInt(document.getElementById('pmFMin').value)||25,s=parseInt(document.getElementById('pmSMin').value)||5,l=parseInt(document.getElementById('pmLMin').value)||15;return pmPhase==='focus'?f*60:pmPhase==='short'?s*60:l*60;}
 function pmPhaseEnd(){
@@ -2897,7 +3014,7 @@ function pmPhaseEnd(){
     if(!pmRun) pmToggle();
   }, 3000);
 }
-function pmReset(){clearInterval(pmIv);pmIv=null;pmEl=0;pmFocus=0;pmDone=0;pmPhase='focus';pmRun=false;document.getElementById('pmDisplay').classList.remove('running');document.getElementById('pmStart').textContent='Start';document.getElementById('pmStart').className='t-btn start';document.getElementById('pmStop').style.display='none';document.getElementById('pmDot').classList.remove('show');updPM();updPmPhase();renderPmDots();setArc('pmArc',1);}
+function pmReset(){clearInterval(pmIv);pmIv=null;pmEl=0;pmFocus=0;pmDone=0;pmPhase='focus';pmRun=false;document.getElementById('pmDisplay').classList.remove('running');document.getElementById('pmStart').textContent='Start';document.getElementById('pmStart').className='t-btn start';document.getElementById('pmStop').style.display='none';document.getElementById('pmDot').classList.remove('show');updPM();updPmPhase();renderPmDots();setArc('pmArc',1);updateFloatingTimer();}
 function pmLog(){
   clearInterval(pmIv);pmIv=null;pmRun=false;
   const hrs=pmFocus/3600;
@@ -2925,7 +3042,7 @@ function pmLogCommit(hrs){
   showToast(`+${fmt(hrs)} (${pmDone} cycles) logged!`);launchConfetti(50,50);
   activeTags.pm=[];renderPills('pm');pmReset();
 }
-function updPM(){const rem=Math.max(getPmSecs()-pmEl,0),m=Math.floor(rem/60),s=rem%60;document.getElementById('pmDisplay').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;updPmRing();}function updPmPhase(){const el=document.getElementById('pmPhase');if(pmPhase==='focus'){el.textContent='FOCUS';el.className='timer-phase-lbl focus-phase';}else if(pmPhase==='short'){el.textContent='SHORT BREAK';el.className='timer-phase-lbl brk-phase';}else{el.textContent='LONG BREAK';el.className='timer-phase-lbl brk-phase';}}
+function updPM(){const rem=Math.max(getPmSecs()-pmEl,0),m=Math.floor(rem/60),s=rem%60;document.getElementById('pmDisplay').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;updPmRing();updateFloatingTimer();}function updPmPhase(){const el=document.getElementById('pmPhase');if(pmPhase==='focus'){el.textContent='FOCUS';el.className='timer-phase-lbl focus-phase';}else if(pmPhase==='short'){el.textContent='SHORT BREAK';el.className='timer-phase-lbl brk-phase';}else{el.textContent='LONG BREAK';el.className='timer-phase-lbl brk-phase';}}
 function renderPmDots(){
   const total=parseInt(document.getElementById('pmMaxC').value)||4;
   const wrap=document.getElementById('pmDots');wrap.innerHTML='';
@@ -2933,6 +3050,17 @@ function renderPmDots(){
   const lbl=document.createElement('span');lbl.className='pomo-lbl';lbl.textContent=` ${pmDone}/${total}`;wrap.appendChild(lbl);
   document.getElementById('pmCyclesEl').textContent=pmDone;
   document.getElementById('pmFocusToday').textContent=fmt(pmFocus/3600);
+  const minusBtn=document.getElementById('pmCycMinus'),plusBtn=document.getElementById('pmCycPlus');
+  if(minusBtn) minusBtn.disabled = total<=1 || total<=pmDone;
+  if(plusBtn) plusBtn.disabled = total>=12;
+}
+function pmCycleAdj(delta){
+  const inp=document.getElementById('pmMaxC');
+  let v=(parseInt(inp.value)||4)+delta;
+  v=Math.max(1,Math.min(12,v));
+  v=Math.max(v,pmDone); // never drop below cycles already completed this session
+  inp.value=v;
+  renderPmDots();
 }
 function updateTimerStats(){const dk=toKey(today()),ts=sessions.filter(s=>s.date===dk),tot=ts.reduce((a,s)=>a+(s.hours||0),0);document.getElementById('swToday').textContent=fmt(tot);document.getElementById('swSessCount').textContent=ts.length;}
 
@@ -3064,6 +3192,8 @@ let todos = JSON.parse(localStorage.getItem('st_todos')||'[]');
 
 function todoSave(){ localStorage.setItem('st_todos', JSON.stringify(todos)); }
 
+let todoEditingIndex = null;
+
 function todoRender(){
   const list = document.getElementById('todoList');
   if(!list) return;
@@ -3075,17 +3205,61 @@ function todoRender(){
     const cb = document.createElement('div');
     cb.className = 'todo-cb' + (t.done ? ' checked' : '');
     cb.onclick = () => todoToggle(i);
+    item.appendChild(cb);
+
+    if(todoEditingIndex === i){
+      const input = document.createElement('input');
+      input.className = 'todo-edit-input';
+      input.type = 'text';
+      input.maxLength = 120;
+      input.value = t.text;
+      input.onkeydown = (e) => {
+        if(e.key === 'Enter'){ todoSaveEdit(i, input.value); }
+        else if(e.key === 'Escape'){ todoCancelEdit(); }
+      };
+      input.onblur = () => todoSaveEdit(i, input.value);
+      item.appendChild(input);
+      list.appendChild(item);
+      input.focus();
+      input.select();
+      return;
+    }
+
     const txt = document.createElement('span');
     txt.className = 'todo-text';
     txt.textContent = t.text;
+    txt.title = 'Click to edit';
+    txt.onclick = () => todoStartEdit(i);
     const del = document.createElement('button');
     del.className = 'todo-del';
     del.textContent = '✕';
     del.title = 'Delete';
     del.onclick = () => todoDelete(i);
-    item.appendChild(cb); item.appendChild(txt); item.appendChild(del);
+    item.appendChild(txt); item.appendChild(del);
     list.appendChild(item);
   });
+}
+
+function todoStartEdit(i){
+  todoEditingIndex = i;
+  todoRender();
+}
+
+function todoCancelEdit(){
+  todoEditingIndex = null;
+  todoRender();
+}
+
+function todoSaveEdit(i, newText){
+  // onblur can fire right after Enter's save already cleared editing; guard against double-save
+  if(todoEditingIndex !== i) return;
+  const text = newText.trim();
+  todoEditingIndex = null;
+  if(text && text !== todos[i].text){
+    todos[i].text = text;
+    todoSave();
+  }
+  todoRender();
 }
 
 function todoAdd(){
