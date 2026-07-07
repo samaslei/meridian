@@ -848,6 +848,14 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   transition:border-color .15s,color .15s,background .15s;
 }
 .ft-pause:hover { border-color:var(--accent); color:var(--accent2); background:var(--accent-glow); }
+.ft-popout {
+  background:var(--surface2); border:1px solid var(--border2); border-radius:50%;
+  width:26px; height:26px; flex-shrink:0; cursor:pointer; color:var(--text3);
+  font-size:.72rem; display:flex; align-items:center; justify-content:center; padding:0;
+  transition:border-color .15s,color .15s,background .15s;
+}
+.ft-popout:hover { border-color:var(--accent); color:var(--accent2); background:var(--accent-glow); }
+.ft-popout.active { border-color:var(--accent); color:var(--accent2); }
 @media(max-width:700px){ .floating-timer{ top:16px; left:16px; right:16px; transform:translateY(-16px) scale(.96); } .floating-timer.show{ transform:translateY(0) scale(1); } }
 
 /* ══════════════════
@@ -1140,6 +1148,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
     <div class="ft-time">00:00:00</div>
   </div>
   <button class="ft-pause" title="Pause">❚❚</button>
+  <button class="ft-popout" id="ftPopout" onclick="toggleTimerPiP(event)" title="Pop out into a floating window">⤢</button>
 </div>
 <div id="sbOverlay" class="sb-overlay" onclick="closeMobileSidebar()"></div>
 <button id="sbMobileToggle" class="sb-mobile-toggle" onclick="openMobileSidebar()">☰</button>
@@ -1301,27 +1310,102 @@ function switchView(name){
   closeMobileSidebar();
   updateFloatingTimer();
 }
+let pipWin = null;
+let pipEls = null;
+
+function currentTimerInfo(){
+  if(swRun){
+    return { label:'Stopwatch', time:document.getElementById('swDisplay').textContent, onPause:()=>swToggle() };
+  } else if(pmRun){
+    return { label:'Pomodoro · '+pmPhase.charAt(0).toUpperCase()+pmPhase.slice(1), time:document.getElementById('pmDisplay').textContent, onPause:()=>pmToggle() };
+  }
+  return null;
+}
+
 function updateFloatingTimer(){
+  const info = currentTimerInfo();
+  if(pipWin){
+    if(!info){ pipWin.close(); }
+    else {
+      pipEls.label.textContent = info.label;
+      pipEls.time.textContent = info.time;
+      pipEls.pause.onclick = (e) => { e.stopPropagation(); info.onPause(); };
+    }
+  }
   const el = document.getElementById('floatingTimer');
   if(!el) return;
+  const popoutBtn = document.getElementById('ftPopout');
+  if(popoutBtn) popoutBtn.classList.toggle('active', !!pipWin);
+  if(pipWin){ el.classList.remove('show'); return; }
   const dashActive = document.getElementById('view-dashboard').classList.contains('active');
-  if(dashActive || (!swRun && !pmRun)){
-    el.classList.remove('show');
+  if(!info || dashActive){ el.classList.remove('show'); return; }
+  el.querySelector('.ft-label').textContent = info.label;
+  el.querySelector('.ft-time').textContent = info.time;
+  el.querySelector('.ft-pause').onclick = (e) => { e.stopPropagation(); info.onPause(); };
+  el.classList.add('show');
+}
+
+function toggleTimerPiP(e){
+  if(e) e.stopPropagation();
+  if(pipWin){ pipWin.close(); return; }
+  openTimerPiP();
+}
+
+async function openTimerPiP(){
+  if(!('documentPictureInPicture' in window)){
+    showToast('Floating window isn\'t supported in this browser yet.');
     return;
   }
-  const label = el.querySelector('.ft-label');
-  const time  = el.querySelector('.ft-time');
-  const pause = el.querySelector('.ft-pause');
-  if(swRun){
-    label.textContent = 'Stopwatch';
-    time.textContent = document.getElementById('swDisplay').textContent;
-    pause.onclick = (e) => { e.stopPropagation(); swToggle(); };
-  } else if(pmRun){
-    label.textContent = 'Pomodoro · ' + pmPhase.charAt(0).toUpperCase()+pmPhase.slice(1);
-    time.textContent = document.getElementById('pmDisplay').textContent;
-    pause.onclick = (e) => { e.stopPropagation(); pmToggle(); };
-  }
-  el.classList.add('show');
+  if(pipWin) return;
+  try{
+    pipWin = await documentPictureInPicture.requestWindow({ width:250, height:100, disallowReturnToOpener:true });
+  }catch(err){ pipWin=null; return; }
+
+  // Bring the page's CSS variables/classes along so ft-* styling matches
+  [...document.styleSheets].forEach(sheet=>{
+    try{
+      const rules=[...sheet.cssRules].map(r=>r.cssText).join('');
+      const style=pipWin.document.createElement('style');
+      style.textContent=rules;
+      pipWin.document.head.appendChild(style);
+    }catch(err){
+      if(sheet.href){
+        const link=pipWin.document.createElement('link');
+        link.rel='stylesheet'; link.href=sheet.href;
+        pipWin.document.head.appendChild(link);
+      }
+    }
+  });
+  pipWin.document.title = 'Timer';
+  pipWin.document.documentElement.style.height='100%';
+  pipWin.document.body.style.cssText='margin:0;height:100%;display:flex;align-items:center;background:var(--bg);';
+
+  const wrap=pipWin.document.createElement('div');
+  wrap.className='floating-timer show';
+  wrap.style.cssText='position:static;transform:none;width:100%;height:100%;box-sizing:border-box;border-radius:0;justify-content:space-between;';
+  wrap.innerHTML=`
+    <div class="ft-dot"></div>
+    <div class="ft-info">
+      <div class="ft-label">Timer</div>
+      <div class="ft-time">00:00:00</div>
+    </div>
+    <button class="ft-pause" title="Pause">❚❚</button>
+  `;
+  wrap.onclick=() => { window.focus(); switchView('dashboard'); };
+  pipWin.document.body.appendChild(wrap);
+
+  pipEls = {
+    label: wrap.querySelector('.ft-label'),
+    time: wrap.querySelector('.ft-time'),
+    pause: wrap.querySelector('.ft-pause')
+  };
+
+  pipWin.addEventListener('pagehide', () => {
+    pipWin = null; pipEls = null;
+    updateFloatingTimer();
+  });
+
+  updateFloatingTimer();
 }
 function loadStudyPlan(ev){
   const file = ev.target.files[0]; if(!file) return;
