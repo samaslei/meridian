@@ -746,6 +746,28 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .todo-edit-input { flex:1; background:var(--surface2); border:1px solid var(--accent); border-radius:6px; color:var(--text); font-family:'Inter',sans-serif; font-size:.80rem; padding:4px 7px; outline:none; min-width:0; }
 .todo-empty { font-family:'Inter',sans-serif; font-size:.76rem; color:var(--text3); text-align:center; padding:12px 0; opacity:.6; }
 
+/* ── Subtasks ── */
+.todo-chevron { background:none; border:none; color:var(--text3); cursor:pointer; font-size:.62rem; padding:0 2px; flex-shrink:0; line-height:1; transition:transform .15s,color .15s; }
+.todo-chevron:hover { color:var(--accent2); }
+.todo-chevron.open { transform:rotate(90deg); }
+.todo-progress { font-family:'Space Mono',monospace; font-size:.62rem; color:var(--text3); flex-shrink:0; white-space:nowrap; }
+.todo-add-sub { background:none; border:none; color:var(--text3); cursor:pointer; font-size:.85rem; padding:0 2px; opacity:0; transition:opacity .15s,color .15s; flex-shrink:0; line-height:1; }
+.todo-item:hover .todo-add-sub { opacity:1; }
+.todo-add-sub:hover { color:var(--accent2); }
+.todo-subs { display:flex; flex-direction:column; margin:0 0 2px 34px; border-left:2px solid var(--border); padding-left:10px; }
+.todo-sub-item { display:flex; align-items:center; gap:7px; padding:4px 8px; border-radius:10px; background:transparent; transition:background .12s; }
+.todo-sub-item:hover { background:color-mix(in srgb, var(--text) 4%, transparent); }
+.todo-sub-item.done .todo-sub-text { text-decoration:line-through; color:var(--text3); opacity:.6; }
+.todo-sub-cb { width:13px; height:13px; border-radius:4px; border:2px solid var(--text3); background:transparent; flex-shrink:0; cursor:pointer; position:relative; transition:all .15s; }
+.todo-sub-cb.checked { background:var(--accent); border-color:var(--accent); }
+.todo-sub-cb.checked::after { content:''; position:absolute; top:1.5px; left:3px; width:3px; height:6px; border:1.3px solid #fff; border-top:none; border-left:none; transform:rotate(45deg); }
+.todo-sub-text { flex:1; font-family:'Inter',sans-serif; font-size:.73rem; color:var(--text); line-height:1.4; word-break:break-word; cursor:text; }
+.todo-sub-del { background:none; border:none; color:var(--text3); cursor:pointer; font-size:.72rem; padding:0 2px; opacity:0; transition:opacity .15s; flex-shrink:0; line-height:1; }
+.todo-sub-item:hover .todo-sub-del { opacity:1; }
+.todo-sub-del:hover { color:#f87171; }
+.todo-sub-edit-input { flex:1; background:var(--surface2); border:1px solid var(--accent); border-radius:6px; color:var(--text); font-family:'Inter',sans-serif; font-size:.73rem; padding:3px 6px; outline:none; min-width:0; }
+
+
 /* ══════════════════
    CHARTS / HEATMAP
    ══════════════════ */
@@ -3273,10 +3295,15 @@ function showConfirm(title, msg, confirmLabel, onConfirm, cancelLabel, onCancel,
 }
 // ── Mini Todo ───────────────────────────────────────
 let todos = JSON.parse(localStorage.getItem('st_todos')||'[]');
+todos.forEach(ensureSubs);
+
+function ensureSubs(t){ if(!Array.isArray(t.subs)) t.subs = []; return t.subs; }
 
 function todoSave(){ localStorage.setItem('st_todos', JSON.stringify(todos)); }
 
 let todoEditingIndex = null;
+let subtasksOpen = new Set();
+let subEditing = null; // {i, j} — j === -1 means "adding a new subtask"
 
 function todoRender(){
   const list = document.getElementById('todoList');
@@ -3284,6 +3311,7 @@ function todoRender(){
   if(!todos.length){ list.innerHTML='<div class="todo-empty">Nothing here yet</div>'; return; }
   list.innerHTML = '';
   todos.forEach((t,i) => {
+    const subs = ensureSubs(t);
     const item = document.createElement('div');
     item.className = 'todo-item' + (t.done ? ' done' : '');
     const cb = document.createElement('div');
@@ -3297,30 +3325,122 @@ function todoRender(){
       input.type = 'text';
       input.maxLength = 120;
       input.value = t.text;
+      let committed = false;
       input.onkeydown = (e) => {
-        if(e.key === 'Enter'){ todoSaveEdit(i, input.value); }
-        else if(e.key === 'Escape'){ todoCancelEdit(); }
+        if(e.key === 'Enter'){ committed=true; todoSaveEdit(i, input.value); }
+        else if(e.key === 'Escape'){ committed=true; todoCancelEdit(); }
       };
-      input.onblur = () => todoSaveEdit(i, input.value);
+      input.onblur = () => { if(committed) return; committed=true; todoSaveEdit(i, input.value); };
       item.appendChild(input);
       list.appendChild(item);
       input.focus();
       input.select();
-      return;
+    } else {
+      const txt = document.createElement('span');
+      txt.className = 'todo-text';
+      txt.textContent = t.text;
+      txt.title = 'Click to edit';
+      txt.onclick = () => todoStartEdit(i);
+      item.appendChild(txt);
+
+      if(subs.length){
+        const doneCount = subs.filter(s=>s.done).length;
+        const prog = document.createElement('span');
+        prog.className = 'todo-progress';
+        prog.textContent = `${doneCount}/${subs.length}`;
+        item.appendChild(prog);
+        const chev = document.createElement('button');
+        chev.className = 'todo-chevron' + (subtasksOpen.has(i) ? ' open' : '');
+        chev.textContent = '▸';
+        chev.title = subtasksOpen.has(i) ? 'Hide subtasks' : 'Show subtasks';
+        chev.onclick = () => subToggleOpen(i);
+        item.appendChild(chev);
+      }
+
+      const addSub = document.createElement('button');
+      addSub.className = 'todo-add-sub';
+      addSub.textContent = '+';
+      addSub.title = 'Add subtask';
+      addSub.onclick = () => subStartAdd(i);
+      item.appendChild(addSub);
+
+      const del = document.createElement('button');
+      del.className = 'todo-del';
+      del.textContent = '✕';
+      del.title = 'Delete';
+      del.onclick = () => todoDelete(i);
+      item.appendChild(del);
+      list.appendChild(item);
     }
 
-    const txt = document.createElement('span');
-    txt.className = 'todo-text';
-    txt.textContent = t.text;
-    txt.title = 'Click to edit';
-    txt.onclick = () => todoStartEdit(i);
-    const del = document.createElement('button');
-    del.className = 'todo-del';
-    del.textContent = '✕';
-    del.title = 'Delete';
-    del.onclick = () => todoDelete(i);
-    item.appendChild(txt); item.appendChild(del);
-    list.appendChild(item);
+    // ── Subtasks panel ──
+    const showSubs = subtasksOpen.has(i) || (subEditing && subEditing.i === i);
+    if(showSubs){
+      const wrap = document.createElement('div');
+      wrap.className = 'todo-subs';
+      let focusInput = null;
+
+      subs.forEach((s,j) => {
+        const row = document.createElement('div');
+        row.className = 'todo-sub-item' + (s.done ? ' done' : '');
+
+        if(subEditing && subEditing.i === i && subEditing.j === j){
+          const input = document.createElement('input');
+          input.className = 'todo-sub-edit-input';
+          input.type = 'text';
+          input.maxLength = 120;
+          input.value = s.text;
+          let committed = false;
+          input.onkeydown = (e) => {
+            if(e.key === 'Enter'){ committed=true; subSaveEdit(i, j, input.value); }
+            else if(e.key === 'Escape'){ committed=true; subEditing=null; todoRender(); }
+          };
+          input.onblur = () => { if(committed) return; committed=true; subSaveEdit(i, j, input.value); };
+          row.appendChild(input);
+          wrap.appendChild(row);
+          focusInput = input;
+          return;
+        }
+
+        const scb = document.createElement('div');
+        scb.className = 'todo-sub-cb' + (s.done ? ' checked' : '');
+        scb.onclick = () => subToggle(i, j);
+        const stxt = document.createElement('span');
+        stxt.className = 'todo-sub-text';
+        stxt.textContent = s.text;
+        stxt.title = 'Click to edit';
+        stxt.onclick = () => subStartEdit(i, j);
+        const sdel = document.createElement('button');
+        sdel.className = 'todo-sub-del';
+        sdel.textContent = '✕';
+        sdel.title = 'Delete';
+        sdel.onclick = () => subDelete(i, j);
+        row.appendChild(scb); row.appendChild(stxt); row.appendChild(sdel);
+        wrap.appendChild(row);
+      });
+
+      if(subEditing && subEditing.i === i && subEditing.j === -1){
+        const row = document.createElement('div');
+        row.className = 'todo-sub-item';
+        const input = document.createElement('input');
+        input.className = 'todo-sub-edit-input';
+        input.type = 'text';
+        input.maxLength = 120;
+        input.placeholder = 'New subtask…';
+        let committed = false;
+        input.onkeydown = (e) => {
+          if(e.key === 'Enter'){ committed=true; subCommitAdd(i, input.value, true); }
+          else if(e.key === 'Escape'){ committed=true; subEditing=null; todoRender(); }
+        };
+        input.onblur = () => { if(committed) return; committed=true; subCommitAdd(i, input.value, false); };
+        row.appendChild(input);
+        wrap.appendChild(row);
+        focusInput = input;
+      }
+
+      list.appendChild(wrap);
+      if(focusInput){ focusInput.focus(); focusInput.select && focusInput.select(); }
+    }
   });
 }
 
@@ -3335,7 +3455,6 @@ function todoCancelEdit(){
 }
 
 function todoSaveEdit(i, newText){
-  // onblur can fire right after Enter's save already cleared editing; guard against double-save
   if(todoEditingIndex !== i) return;
   const text = newText.trim();
   todoEditingIndex = null;
@@ -3350,7 +3469,7 @@ function todoAdd(){
   const inp = document.getElementById('todoInput');
   const text = inp.value.trim();
   if(!text) return;
-  todos.unshift({ text, done: false, id: Date.now() });
+  todos.unshift({ text, done: false, id: Date.now(), subs: [] });
   todoSave(); todoRender();
   inp.value = '';
 }
@@ -3369,6 +3488,47 @@ function todoDelete(i){
 
 function todoClearDone(){
   todos = todos.filter(t => !t.done);
+  todoSave(); todoRender();
+}
+
+// ── Subtasks ──────────────────────────────────────
+function subToggleOpen(i){
+  if(subtasksOpen.has(i)) subtasksOpen.delete(i); else subtasksOpen.add(i);
+  todoRender();
+}
+
+function subStartAdd(i){
+  subtasksOpen.add(i);
+  subEditing = { i, j: -1 };
+  todoRender();
+}
+
+function subCommitAdd(i, text, keepOpen){
+  const val = text.trim();
+  if(val){ ensureSubs(todos[i]).push({ text: val, done: false }); todoSave(); }
+  subEditing = keepOpen ? { i, j: -1 } : null;
+  todoRender();
+}
+
+function subStartEdit(i, j){
+  subEditing = { i, j };
+  todoRender();
+}
+
+function subSaveEdit(i, j, newText){
+  const val = newText.trim();
+  if(val) { todos[i].subs[j].text = val; todoSave(); }
+  subEditing = null;
+  todoRender();
+}
+
+function subToggle(i, j){
+  todos[i].subs[j].done = !todos[i].subs[j].done;
+  todoSave(); todoRender();
+}
+
+function subDelete(i, j){
+  todos[i].subs.splice(j, 1);
   todoSave(); todoRender();
 }
 
@@ -3540,4 +3700,7 @@ init();
 </script>
 
 <script>
-window.SP_SRC = atob("PCFET0NUWVBFIGh0bWw+CjxodG1sIGxhbmc9ImVuIj4KPGhlYWQ+CjxtZXRhIGNoYXJzZXQ9IlVURi04Ij4KPG1ldGEgbmFtZT0idmlld3BvcnQiIGNvbnRlbnQ9IndpZHRoPWRldmljZS13aWR0aCwgaW5pdGlhbC1zY2FsZT0xLjAiPgo8dGl0bGU+U3R1ZHkgUGxhbiDigJQgRFNBICsgQXBwIERldiArIFB5dGhvbjwvdGl0bGU+CjxsaW5rIHJlbD0icHJlY29ubmVjdCIgaHJlZj0iaHR0cHM6Ly9mb250cy5nb29nbGVhcGlzLmNvbSI+CjxsaW5rIHJlbD0icHJlY29ubmVjdCIgaHJlZj0iaHR0cHM6Ly9nc3RhdGljLmNvbSIgY3Jvc3NvcmlnaW4+CjxsaW5rIGhyZWY9Imh0dHBzOi8vZm9udHMuZ29vZ2xlYXBpcy5jb20vY3NzMj9mYW1pbHk9U3BhY2UrTW9ubzp3Z2h0QDQwMDs3MDAmZmFtaWx5PVN5bmU6d2dodEA0MDA7NTAwOzYwMDs3MDA7ODAwJmZhbWlseT1ETStTYW5zOndnaHRAMzAwOzQwMDs1MDAmZGlzcGxheT1zd2FwIiByZWw9InN0eWxlc2hlZXQiPgo8bGluayByZWw9InN0eWxlc2hlZXQiIGhyZWY9Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vQHRhYmxlci9pY29ucy13ZWJmb250QGxhdGVzdC9kaXN0L3RhYmxlci1pY29ucy5taW4uY3NzIj4KPHN0eWxlPgogIDpyb290IHsKICAgIC0tYmc6ICMwZDBkMGY7CiAgICAtLWJnMjogIzE2MTYxOTsKICAgIC0tYmczOiAjMWUxZTIzOwogICAgLS1iZzQ6ICMyNjI2MmQ7CiAgICAtLWJvcmRlcjogcmdiYSgyNTUsMjU1LDI1NSwwLjA3KTsKICAgIC0tYm9yZGVyMjogcmdiYSgyNTUsMjU1LDI1NSwwLjEyKTsKICAgIC0tdGV4dDogI2YwZWVlODsKICAgIC0tdGV4dDI6ICNhMDllOTg7CiAgICAtLXRleHQzOiAjNmI2OTY2OwogICAgLS1hY2NlbnQ6ICM3YzZhZjc7CiAgICAtLWFjY2VudDI6ICM5ZDhmZmY7CiAgICAtLWFjY2VudDM6ICMzZDJmYTg7CiAgICAtLWdyZWVuOiAjNGFkZTgwOwogICAgLS1ncmVlbjI6ICMxNjY1MzQ7CiAgICAtLWFtYmVyOiAjZmJiZjI0OwogICAgLS1jb3JhbDogI2Y5NzMxNjsKICAgIC0tdGVhbDogIzJkZDRiZjsKICAgIC0tcGluazogI2Y0NzJiNjsKICAgIC0tYmx1ZTogIzYwYTVmYTsKICAgIC0tcmVkOiAjZjg3MTcxOwogIH0KICAqIHsgYm94LXNpemluZzogYm9yZGVyLWJveDsgbWFyZ2luOiAwOyBwYWRkaW5nOiAwOyB9CiAgYm9keSB7CiAgICBiYWNrZ3JvdW5kOiB2YXIoLS1iZyk7CiAgICBjb2xvcjogdmFyKC0tdGV4dCk7CiAgICBmb250LWZhbWlseTogJ0RNIFNhbnMnLCBzYW5zLXNlcmlmOwogICAgZm9udC1zaXplOiAxNXB4OwogICAgbGluZS1oZWlnaHQ6IDEuNjsKICAgIG1pbi1oZWlnaHQ6IDEwMHZoOwogIH0KICBoMSwgaDIsIGgzLCAubW9ubyB7IGZvbnQtZmFtaWx5OiAnU3luZScsIHNhbnMtc2VyaWY7IH0KICBjb2RlLCAuY29kZSB7IGZvbnQtZmFtaWx5OiAnU3BhY2UgTW9ubycsIG1vbm9zcGFjZTsgfQoKICAvKiBMQVlPVVQgKi8KICAuc2hlbGwgeyBtYXgtd2lkdGg6IDExMDBweDsgbWFyZ2luOiAwIGF1dG87IHBhZGRpbmc6IDAgMjRweCA4MHB4OyB9CgogIC8qIEhFQURFUiAqLwogIC5oZWFkZXIgewogICAgcGFkZGluZzogNDhweCAwIDQwcHg7CiAgICBib3JkZXItYm90dG9tOiAxcHggc29saWQgdmFyKC0tYm9yZGVyKTsKICAgIG1hcmdpbi1ib3R0b206IDQwcHg7CiAgfQogIC5oZWFkZXItdGFnIHsKICAgIGZvbnQtZmFtaWx5OiAnU3BhY2UgTW9ubycsIG1vbm9zcGFjZTsKICAgIGZvbnQtc2l6ZTogMTFweDsKICAgIGNvbG9yOiB2YXIoLS1hY2NlbnQyKTsKICAgIGxldHRlci1zcGFjaW5nOiAwLjE1ZW07CiAgICB0ZXh0LXRyYW5zZm9ybTogdXBwZXJjYXNlOwogICAgbWFyZ2luLWJvdHRvbTogMTJweDsKICB9CiAgLmhlYWRlciBoMSB7CiAgICBmb250LXNpemU6IDQycHg7CiAgICBmb250LXdlaWdodDogODAwOwogICAgbGluZS1oZWlnaHQ6IDEuMTsKICAgIGJhY2tncm91bmQ6IGxpbmVhci1ncmFkaWVudCgxMzVkZWcsICNmMGVlZTggMCUsICNhMDllOTggMTAwJSk7CiAgICAtd2Via2l0LWJhY2tncm91bmQtY2xpcDogdGV4dDsKICAgIC13ZWJraXQtdGV4dC1maWxsLWNvbG9yOiB0cmFuc3BhcmVudDsKICAgIGJhY2tncm91bmQtY2xpcDogdGV4dDsKICAgIG1hcmdpbi1ib3R0b206IDEycHg7CiAgfQogIC5oZWFkZXItc3ViIHsKICAgIGNvbG9yOiB2YXIoLS10ZXh0Mik7CiAgICBmb250LXNpemU6IDE1cHg7CiAgICBtYXgtd2lkdGg6IDU2MHB4OwogIH0KICAuaGVhZGVyLXBpbGxzIHsKICAgIGRpc3BsYXk6IGZsZXg7CiAgICBmbGV4LXdyYXA6IHdyYXA7CiAgICBnYXA6IDhweDsKICAgIG1hcmdpbi10b3A6IDIwcHg7CiAgfQogIC5waWxsIHsKICAgIHBhZGRpbmc6IDRweCAxMnB4OwogICAgYm9yZGVyLXJhZGl1czogMTAwcHg7CiAgICBmb250LXNpemU6IDEycHg7CiAgICBmb250LXdlaWdodDogNTAwOwogICAgYm9yZGVyOiAxcHggc29saWQ7CiAgfQogIC5waWxsLXB1cnBsZSB7IGJhY2tncm91bmQ6IHJnYmEoMTI0LDEwNiwyNDcsMC4xNSk7IGJvcmRlci1jb2xvcjogcmdiYSgxMjQsMTA2LDI0NywwLjM1KTsgY29sb3I6ICNiM2E3ZmI7IH0KICAucGlsbC1ncm
+window.SP_SRC = null; // NOTE: originally-embedded bundled study plan data was truncated/corrupted in the source file and could not be recovered.
+</script>
+</body>
+</html>
