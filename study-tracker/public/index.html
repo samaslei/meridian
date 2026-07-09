@@ -95,7 +95,7 @@
 :root.light[data-scheme="gold"]   {--accent:#b45309;--accent2:#d97706;--accent3:#f59e0b;--accent-glow:rgba(180,83,9,.15);--heat1:#fef3c7;--heat2:#fcd34d;--heat3:#f59e0b;--heat4:#b45309;}
 
 *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
-html { font-size:16px; }
+html { font-size:16px; background:var(--bg); }
 body {
   background:var(--bg);
   color:var(--text);
@@ -147,7 +147,7 @@ body > * { position:relative; z-index:1; }
 
 /* ── Card Base ── */
 .card, .input-card, .countdown-box, .chart-card, .stat-box, .quick-stats-card,
-.timer-card, .streak-box, .radar-pane, .milestone-row, .timer-pane {
+.timer-card, .streak-box, .radar-pane, .milestone-row, .timer-pane, .todo-card {
   border: 1px solid var(--border);
   border-top: 1px solid var(--glass-top);
   border-radius: var(--radius);
@@ -176,7 +176,7 @@ body > * { position:relative; z-index:1; }
    excluded — it opts out of the glass effect entirely, see its own rule.) */
 .card::before, .input-card::before, .countdown-box::before, .chart-card::before,
 .stat-box::before, .quick-stats-card::before, .timer-card::before,
-.streak-box::before, .radar-pane::before, .milestone-row::before {
+.streak-box::before, .radar-pane::before, .milestone-row::before, .todo-card::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -204,7 +204,8 @@ body > * { position:relative; z-index:1; }
 .timer-card:has(.tag-dd.open),
 .streak-box:has(.tag-dd.open),
 .radar-pane:has(.tag-dd.open),
-.milestone-row:has(.tag-dd.open) {
+.milestone-row:has(.tag-dd.open),
+.todo-card:has(.tag-dd.open) {
   position: relative;
   z-index: 50;
 }
@@ -257,6 +258,15 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
   font-family:'Space Grotesk',sans-serif;
 }
 .icon-btn:hover { border-color:var(--accent); color:var(--accent2); background:color-mix(in srgb,var(--accent) 8%,transparent); }
+.icon-btn.active { border-color:var(--accent); color:var(--accent2); background:color-mix(in srgb,var(--accent) 15%,transparent); }
+.ft-pin-btn {
+  background:none; border:none; color:var(--text3); cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center;
+  width:26px; height:26px; border-radius:50%; padding:0; flex-shrink:0;
+  transition:color .15s,background .15s;
+}
+.ft-pin-btn:hover { color:var(--accent2); background:var(--surface2); }
+.ft-pin-btn.active { color:var(--accent2); background:color-mix(in srgb,var(--accent) 15%,transparent); }
 .vdots { font-size:1.15rem; font-weight:700; padding:5px 10px; }
 
 /* ── Scheme trigger ── */
@@ -316,10 +326,10 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .row2 { display:grid; grid-template-columns:1fr 380px; gap:14px; margin-bottom:14px; align-items:start; }
 @media(max-width:700px){.row2{grid-template-columns:1fr;}}
 .row2 > .countdown-col { display:flex; flex-direction:column; overflow:hidden; }
-.row2 > .countdown-col .countdown-box { flex:1; min-height:200px; }
+.row2 > .countdown-col .countdown-box { flex:1; min-height:160px; }
 .row2-right { display:flex; flex-direction:column; gap:14px; }
 .countdown-col { display:flex; flex-direction:column; overflow:hidden; }
-.countdown-box { padding:16px; display:flex; flex-direction:column; gap:8px; box-sizing:border-box; overflow:hidden; }
+.countdown-box { padding:14px; display:flex; flex-direction:column; gap:6px; box-sizing:border-box; overflow:hidden; }
 
 .row3 { display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:14px; align-items:end; }
 @media(max-width:900px){.row3{grid-template-columns:1fr;}}
@@ -453,15 +463,26 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 /* ══════════════════
    TIMER / POMODORO
    ══════════════════ */
-.timer-card { padding:16px 18px; margin-bottom:0; display:flex; flex-direction:column; height:100%; box-sizing:border-box; overflow:visible; position:relative; contain:layout style; }
-.timer-card-header { display:flex; align-items:center; margin-bottom:12px; gap:10px; }
+.timer-card { padding:16px 18px; margin-bottom:0; display:flex; flex-direction:column; height:100%; box-sizing:border-box; overflow:visible; position:relative; contain:layout style; min-width:0; }
+.timer-card-header { display:flex; flex-direction:column; align-items:stretch; margin-bottom:12px; gap:8px; }
 .manual-date-display { font-family:'Inter',sans-serif; font-size:.80rem; color:var(--accent2); }
-.manual-form { position:absolute; top:52px; right:0; width:max-content; max-width:calc(100% - 20px); z-index:50; background:var(--bg); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:0; display:flex; flex-direction:column; gap:6px; max-height:0; opacity:0; overflow:hidden; pointer-events:none; transition:max-height .3s ease, opacity .2s ease, padding .3s ease; }
-.manual-form.open { max-height:220px; opacity:1; padding:12px 16px; pointer-events:auto; overflow:visible; }
+.manual-form { position:absolute; top:calc(100% + 8px); right:0; width:260px; max-width:calc(100vw - 40px); z-index:50; background:var(--bg); border:1px solid var(--border2); border-radius:var(--radius-sm); box-shadow:0 12px 32px rgba(0,0,0,.35); padding:0; display:flex; flex-direction:column; gap:12px; max-height:0; opacity:0; overflow:hidden; pointer-events:none; transition:max-height .3s ease, opacity .2s ease, padding .3s ease; }
+.manual-form.open { max-height:360px; opacity:1; padding:14px 16px 16px; pointer-events:auto; overflow:visible; }
+.manual-form-header { display:flex; align-items:center; justify-content:space-between; padding-bottom:8px; margin-bottom:-4px; border-bottom:1px solid var(--border); }
+.manual-form-title { font-family:'Inter',sans-serif; font-size:.72rem; text-transform:uppercase; letter-spacing:.6px; color:var(--text3); font-weight:600; }
+.manual-form-close { background:none; border:none; color:var(--text3); cursor:pointer; font-size:.78rem; line-height:1; padding:3px 5px; border-radius:6px; transition:color .15s,background .15s; }
+.manual-form-close:hover { color:#f87171; background:rgba(248,113,113,.12); }
+.manual-field { display:flex; flex-direction:column; gap:6px; }
+.manual-field-label { font-family:'Inter',sans-serif; font-size:.64rem; text-transform:uppercase; letter-spacing:.5px; color:var(--text3); }
+.manual-field-row { display:flex; align-items:center; gap:8px; }
+.manual-log-btn { width:100%; text-align:center; margin-top:2px; }
 .timer-card-title { font-family:'Inter',sans-serif; font-size:.70rem; text-transform:uppercase; letter-spacing:0.6px; color:var(--text3); }
-.timer-body { display:grid; grid-template-columns:1fr 1fr; gap:0; align-items:stretch; flex:1; min-height:0; }
+.timer-body { display:grid; grid-template-columns:1fr; gap:0; align-items:stretch; flex:1; min-height:0; }
 .timer-body::after { display:none; }
-@media(max-width:600px){.timer-body{grid-template-columns:1fr;}}
+
+/* Live Tracking + To-do sit as separate boxes side by side, stretched to match the graphs column's height */
+.timer-todo-row { display:grid; grid-template-columns:1.6fr 1fr; gap:14px; align-items:stretch; align-self:stretch; }
+@media(max-width:900px){ .timer-todo-row { grid-template-columns:1fr; } }
 
 /* Timer mode toggle */
 .timer-mode-toggle { display:flex; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:3px; gap:2px; }
@@ -469,8 +490,8 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .tmr-tab:focus { outline:none; box-shadow:none; }
 .tmr-tab.active { background:var(--surface3); color:var(--accent2); outline:none; box-shadow:none; }
 
-/* Todo as pane */
-.todo-pane .todo-list { flex:1; overflow-y:auto; min-height:0; }
+/* Todo as its own card */
+.todo-card .todo-list { flex:1; overflow-y:auto; min-height:0; }
 
 /* Ring */
 .ring-wrap { position:relative; display:flex; align-items:center; justify-content:center; width:160px; height:160px; margin:0 auto; }
@@ -489,10 +510,11 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .pm-ring-wrap .ring-inner .timer-phase-lbl { font-size:.66rem; }
 
 /* Timer pane */
-.timer-pane { background:transparent; border:none; border-radius:0; padding:0 14px 0 0; display:flex; flex-direction:column; overflow:visible; box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none; }
+.timer-pane { background:transparent; border:none; border-radius:0; padding:0; display:flex; flex-direction:column; overflow:visible; box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none; min-width:0; }
 .timer-body { position:relative; }
-.timer-body::before { content:''; position:absolute; left:50%; top:12%; bottom:12%; width:1px; background:var(--border); transform:translateX(-50%); pointer-events:none; }
-.todo-pane { background:transparent; border:none; border-radius:0; display:flex; flex-direction:column; overflow:hidden; padding:12px 0 0 14px; gap:8px; height:100%; box-sizing:border-box; box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none; }
+
+/* To-do — now its own standalone card, styled like timer-card */
+.todo-card { padding:16px 18px; display:flex; flex-direction:column; gap:8px; overflow:hidden; height:100%; box-sizing:border-box; position:relative; contain:layout style; min-width:0; }
 .timer-pane-main { display:flex; flex-direction:column; gap:6px; padding:12px 12px 12px 12px; flex:1; }
 .timer-pane-tags {
   border-top:none; padding:6px 0 0 0;
@@ -523,6 +545,7 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .t-btn.pause { background:linear-gradient(135deg,var(--accent2),var(--accent3)); color:var(--bg); }
 .t-btn.stop { background:linear-gradient(135deg,#ef4444,#f87171); color:#fff; }
 .t-btn.reset { background:var(--surface); border:1px solid var(--border2); color:var(--text3); }
+.t-btn.skip { background:var(--surface); border:1px solid var(--accent); color:var(--accent2); }
 .t-stats-row { display:flex; gap:14px; }
 .t-stat { display:flex; flex-direction:column; gap:2px; }
 .t-stat-val { font-family:'Space Grotesk',sans-serif; font-size:1.2rem; font-weight:600; color:var(--accent2); }
@@ -551,7 +574,13 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .pomo-set input:focus { border-color:var(--accent); }
 
 /* Pomodoro duration presets */
-.pomo-presets { display:flex; gap:6px; flex-wrap:wrap; }
+.pomo-presets { display:flex; gap:6px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:thin; scrollbar-color:var(--surface3) transparent; min-width:0; flex:1 1 auto; padding-bottom:10px; margin-bottom:-6px; }
+.pomo-presets::-webkit-scrollbar { height:3px; }
+.pomo-presets::-webkit-scrollbar-track { background:transparent; }
+.pomo-presets::-webkit-scrollbar-thumb { background:var(--surface3); border-radius:99px; }
+.pomo-presets::-webkit-scrollbar-thumb:hover { background:var(--accent); }
+.t-stats-row .tag-dd-wrap { flex-shrink:0; }
+.pomo-preset { flex-shrink:0; }
 .pomo-preset {
   background:var(--surface); border:1px solid var(--border2); border-radius:999px;
   color:var(--text3); cursor:pointer; font-family:'Space Grotesk',sans-serif;
@@ -559,6 +588,9 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 }
 .pomo-preset:hover { border-color:var(--accent); color:var(--text); }
 .pomo-preset.active { background:color-mix(in srgb,var(--accent) 15%,transparent); border-color:var(--accent); color:var(--accent2); }
+.pomo-preset { display:inline-flex; align-items:center; gap:5px; }
+.pomo-preset-x { background:none; border:none; color:inherit; cursor:pointer; font-size:.85rem; opacity:.55; line-height:1; padding:0; }
+.pomo-preset-x:hover { opacity:1; color:var(--accent2); }
 
 /* ══════════════════
    TAGS
@@ -649,7 +681,7 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 /* ══════════════════
    INPUT / CALENDAR
    ══════════════════ */
-.input-card { padding:10px 12px; display:flex; flex-direction:column; gap:6px; box-sizing:border-box; overflow:visible; }
+.input-card { padding:8px 10px; display:flex; flex-direction:column; gap:6px; box-sizing:border-box; overflow:visible; }
 .field { display:flex; flex-direction:column; gap:5px; min-width:0; }
 .lbl { font-family:'Inter',sans-serif; font-size:.70rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.3px; }
 input[type=text],input[type=number],input[type=date] {
@@ -664,7 +696,7 @@ input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
 input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cursor:pointer; }
 .date-wrap { display:flex; gap:6px; }
 .date-display {
-  flex:1; background:var(--surface2); border:1px solid var(--border2);
+  width:100%; box-sizing:border-box; background:var(--surface2); border:1px solid var(--border2);
   border-radius:var(--radius-sm); color:var(--text); font-family:'Space Grotesk',sans-serif;
   font-size:.90rem; padding:9px 12px; cursor:pointer; display:flex;
   align-items:center; justify-content:space-between; transition:border-color .2s; user-select:none;
@@ -678,9 +710,6 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .today-btn:hover { border-color:var(--accent); color:var(--accent2); }
 .manual-toggle { background:transparent; border:none; color:var(--text3); cursor:pointer; font-family:'Inter',sans-serif; font-size:.76rem; text-decoration:underline dotted; transition:color .2s; }
 .manual-toggle:hover { color:var(--accent2); }
-.manual-form { position:absolute; top:52px; right:0; width:max-content; max-width:calc(100% - 20px); z-index:50; background:var(--bg); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:0; margin-top:0; display:flex; flex-direction:column; gap:8px; max-height:0; opacity:0; overflow:hidden; pointer-events:none; transition:max-height .3s ease, opacity .2s ease, padding .3s ease; }
-.manual-form.open { max-height:220px; opacity:1; padding:12px 16px; margin-top:0; pointer-events:auto; overflow:visible; }
-.manual-row { display:flex; gap:6px; align-items:flex-end; }
 .hm-input-group { display:flex; align-items:center; gap:4px; background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:0 6px; height:32px; min-width:unset; width:fit-content; }
 .hm-divider { width:1px; height:20px; background:var(--border2); flex-shrink:0; margin:0 2px; }
 .hm-input-group input[type="number"] {
@@ -708,7 +737,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 
 /* ── Mini Calendar ── */
 .mini-cal { padding-top:0; margin-top:0; }
-.mini-cal-header { display:flex; align-items:center; gap:6px; margin-bottom:12px; padding:8px 10px; background:var(--surface2); border:1px solid var(--border); border-radius:12px; }
+.mini-cal-header { display:flex; align-items:center; gap:6px; margin-bottom:8px; padding:6px 8px; background:var(--surface2); border:1px solid var(--border); border-radius:12px; }
 .mini-cal-month-label { font-family:'Space Grotesk',sans-serif; font-size:1.02rem; font-weight:600; color:var(--text); flex:1; }
 .mini-cal-month-label span.cal-year { color:var(--text3); font-weight:400; font-size:.93rem; margin-left:4px; }
 .mini-cal-today-btn {
@@ -726,9 +755,9 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 }
 .mini-cal-nav:hover { border-color:var(--accent); color:var(--accent2); background:color-mix(in srgb,var(--accent) 10%,transparent); }
 .mini-cal-navs { display:flex; gap:4px; }
-.mini-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-.mini-cal-dow { font-family:'Inter',sans-serif; font-size:.65rem; color:var(--text3); text-align:center; padding:3px 0; text-transform:uppercase; letter-spacing:.5px; }
-.mini-cal-cell { aspect-ratio:1; border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-size:.95rem; font-weight:500; color:var(--text3); position:relative; cursor:default; transition:background .12s; }
+.mini-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.mini-cal-dow { font-family:'Inter',sans-serif; font-size:.65rem; color:var(--text3); text-align:center; padding:2px 0; text-transform:uppercase; letter-spacing:.5px; }
+.mini-cal-cell { aspect-ratio:1.5; border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-size:.88rem; font-weight:500; color:var(--text3); position:relative; cursor:default; transition:background .12s; }
 .mini-cal-cell.other-month { opacity:.3; }
 .mini-cal-cell.has-event { cursor:pointer; }
 .mini-cal-cell.has-study { color:var(--text); font-weight:600; }
@@ -1118,8 +1147,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 
   /* Timer */
   .timer-card { padding:12px; }
-  .timer-card-header { flex-wrap:wrap; gap:6px; }
-  .timer-mode-toggle { order:-1; width:100%; justify-content:center; }
+  .timer-card-header { gap:6px; }
   .tmr-tab { flex:1; text-align:center; }
   .timer-body { grid-template-columns:1fr; gap:10px; }
   .ring-wrap { width:130px; height:130px; }
@@ -1129,12 +1157,10 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   .pm-ring-wrap { width:150px; height:150px; }
   .pm-ring-wrap .ring-svg { width:150px; height:150px; }
   .timer-display { font-size:2rem; }
-  .todo-pane { min-height:180px; }
+  .todo-card { min-height:180px; }
 
   /* Manual form */
-  .manual-form .manual-row { flex-wrap:wrap; }
-  .manual-form .date-display { flex:1; min-width:0; }
-  .manual-form .hm-input-group { width:100%; flex:1 1 100%; justify-content:space-between; }
+  .manual-form { width:280px; }
 
   /* Calendar + progress bars stack vertically */
   .row2-input-card { flex-direction:column!important; gap:0!important; align-items:stretch!important; }
@@ -1180,7 +1206,6 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   .row2-input-card { flex-direction:column!important; gap:0!important; }
   .mini-cal { width:100%!important; flex-shrink:0; }
   .time-progress { border-top:1px solid var(--border); padding-top:16px; margin-top:16px; width:100%; }
-  .timer-body { grid-template-columns:1fr 1fr; }
   .row3 { grid-template-columns:1fr!important; }
   .qs-grid { flex-wrap:wrap; }
   .qs-item { flex:1 1 calc(50% - 6px); border-right:none; border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 10px; }
@@ -1364,6 +1389,16 @@ function switchView(name){
 }
 let pipWin = null;
 let pipEls = null;
+let ftPinned = localStorage.getItem('st_ft_pinned') === '1';
+function toggleFtPin(e){
+  if(e) e.stopPropagation();
+  ftPinned = !ftPinned;
+  localStorage.setItem('st_ft_pinned', ftPinned ? '1' : '0');
+  const btn = document.getElementById('ftPinBtn');
+  if(btn) btn.classList.toggle('active', ftPinned);
+  showToast(ftPinned ? '📌 Floating timer will stay visible on Dashboard.' : 'Floating timer hidden on Dashboard.');
+  updateFloatingTimer();
+}
 
 function currentTimerInfo(){
   if(swRun){
@@ -1385,12 +1420,14 @@ function updateFloatingTimer(){
     }
   }
   const el = document.getElementById('floatingTimer');
+  const pinBtn = document.getElementById('ftPinBtn');
+  if(pinBtn) pinBtn.classList.toggle('active', ftPinned);
   if(!el) return;
   const popoutBtn = document.getElementById('ftPopout');
   if(popoutBtn) popoutBtn.classList.toggle('active', !!pipWin);
   if(pipWin){ el.classList.remove('show'); return; }
   const dashActive = document.getElementById('view-dashboard').classList.contains('active');
-  if(!info || dashActive){ el.classList.remove('show'); return; }
+  if(!info || (dashActive && !ftPinned)){ el.classList.remove('show'); return; }
   el.querySelector('.ft-label').textContent = info.label;
   el.querySelector('.ft-time').textContent = info.time;
   el.querySelector('.ft-pause').onclick = (e) => { e.stopPropagation(); info.onPause(); };
@@ -1496,9 +1533,8 @@ function injectStudyPlan(htmlStr){
     }).then(r => { if(!r.ok) r.text().then(t => console.warn('Study plan sync error:', t)); });
   } catch(e){}
 
-  const keys = SP_KEYS;
   const seedData = {};
-  keys.forEach(k => { seedData[k] = localStorage.getItem(k)||null; });
+  spKnownKeys.forEach(k => { seedData[k] = localStorage.getItem(k)||null; });
 
   // Inject bridge: seeds iframe localStorage from Meridian, then patches setItem to postMessage every write back
   const bridgeScript = '\x3cscript>(function(){' +
@@ -1514,12 +1550,14 @@ function injectStudyPlan(htmlStr){
   if(frame.src) try{URL.revokeObjectURL(frame.src);}catch(e){}
   frame.src = URL.createObjectURL(blob);
 
-  // Mirror iframe localStorage writes back into Meridian immediately, and
-  // schedule a debounced push to Supabase so plan progress follows the account too.
+  // Mirror iframe localStorage writes back into Meridian immediately, learn
+  // whatever key name(s) this particular plan uses, and schedule a debounced
+  // push to Supabase so plan progress follows the account too.
   if(window._spMsgHandler) window.removeEventListener('message', window._spMsgHandler);
   window._spMsgHandler = function(e){
     if(!e.data||e.data.type!=='sp_lsset') return;
-    if(keys.includes(e.data.key)){ localStorage.setItem(e.data.key, e.data.value); scheduleSupa(); }
+    localStorage.setItem(e.data.key, e.data.value);
+    rememberSpKey(e.data.key);
   };
   window.addEventListener('message', window._spMsgHandler);
 
@@ -1679,47 +1717,70 @@ function injectStudyPlan(htmlStr){
       <div id="weekChart" style="height:130px;overflow:hidden;min-height:130px;max-height:130px;"></div>
       <div class="week-total" id="weekTotal"></div>
     </div>
-  </div><div class="timer-card" style="margin-bottom:0;">
-    <div class="timer-card-header">
-      <span class="timer-card-title">⏱ Live Tracking</span>
-      <div class="timer-mode-toggle">
-        <button class="tmr-tab active" id="tabSw" onclick="setTimerMode('sw')">Stopwatch</button>
-        <button class="tmr-tab" id="tabPm" onclick="setTimerMode('pm')">Pomodoro</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
-        <button class="manual-toggle" onclick="toggleManual()" id="manualToggleBtn">+ Manual Entry</button>
-      </div>
-    </div>
-    <div class="manual-form" id="manualForm">
-      <div class="manual-row" style="align-items:center;flex-wrap:wrap;gap:6px;justify-content:flex-end;">
-        <div class="date-display" id="dateDisplay" onclick="document.getElementById('dateInput').showPicker()" style="flex:none;cursor:pointer;position:relative;">
-          <span id="dateDisplayText">—</span>
-          <input type="date" id="dateInput" style="position:absolute;bottom:0;left:0;opacity:0;pointer-events:none;width:100%;height:100%;" onchange="updateDateDisplay(this.value)">
-        </div>
-        <div class="hm-input-group" style="flex:none;min-width:unset;">
-          <input type="number" id="hoursInputH" min="0" max="24" step="1" placeholder="" onkeydown="if(event.key==='Enter')logHours()" style="width:30px;">
-          <span class="hm-unit">h</span>
-          <input type="number" id="hoursInputM" min="0" max="59" step="5" placeholder="" onkeydown="if(event.key==='Enter')logHours()" style="width:30px;">
-          <span class="hm-unit">m</span>
-          <div class="hm-divider"></div>
-          <button class="clear-btn" onclick="clearDay()" title="Clear Day">✕</button>
-        </div>
-        <div id="manualPills" style="display:flex;gap:4px;align-items:center;flex-shrink:0;"></div>
-        <div class="tag-dd-wrap">
-          <button class="tag-add-pill" onclick="toggleTagDD('manual')">+ tag</button>
-          <div class="tag-dd" id="manualTagDD">
-            <input class="tag-search" id="manualSearch" placeholder="Search or create…" oninput="filterOpts('manual',this.value)" onkeydown="if(event.key==='Enter')createTag('manual')">
-            <div class="tag-opts" id="manualOpts"></div>
-            <div class="tag-create-row"><button class="tag-create-btn" id="manualCreateBtn" onclick="createTag('manual')">+ Create tag</button></div>
+  </div>
+  <div class="timer-todo-row">
+  <div class="timer-card" style="margin-bottom:0;">
+    <div class="timer-card-header" style="flex-direction:column;align-items:stretch;gap:8px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="timer-card-title">⏱ Live Tracking</span>
+        <div style="display:flex;align-items:center;gap:8px;margin-left:auto;position:relative;">
+          <button class="manual-toggle" onclick="toggleManual()" id="manualToggleBtn">+ Manual Entry</button>
+          <div class="manual-form" id="manualForm">
+            <div class="manual-form-header">
+              <span class="manual-form-title">Log time manually</span>
+              <button class="manual-form-close" onclick="toggleManual()" title="Close">✕</button>
+            </div>
+            <div class="manual-field">
+              <label class="manual-field-label">Date</label>
+              <div class="date-display" id="dateDisplay" onclick="document.getElementById('dateInput').showPicker()" style="cursor:pointer;position:relative;">
+                <span id="dateDisplayText">—</span>
+                <input type="date" id="dateInput" style="position:absolute;bottom:0;left:0;opacity:0;pointer-events:none;width:100%;height:100%;" onchange="updateDateDisplay(this.value)">
+              </div>
+            </div>
+            <div class="manual-field">
+              <label class="manual-field-label">Duration</label>
+              <div class="manual-field-row">
+                <div class="hm-input-group">
+                  <input type="number" id="hoursInputH" min="0" max="24" step="1" placeholder="" onkeydown="if(event.key==='Enter')logHours()" style="width:30px;">
+                  <span class="hm-unit">h</span>
+                  <input type="number" id="hoursInputM" min="0" max="59" step="5" placeholder="" onkeydown="if(event.key==='Enter')logHours()" style="width:30px;">
+                  <span class="hm-unit">m</span>
+                </div>
+                <button class="clear-btn" onclick="clearDay()" title="Clear Day">✕</button>
+              </div>
+            </div>
+            <div class="manual-field">
+              <label class="manual-field-label">Tag</label>
+              <div class="manual-field-row" style="flex-wrap:wrap;">
+                <div id="manualPills" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;"></div>
+                <div class="tag-dd-wrap">
+                  <button class="tag-add-pill" onclick="toggleTagDD('manual')">+ tag</button>
+                  <div class="tag-dd" id="manualTagDD">
+                    <input class="tag-search" id="manualSearch" placeholder="Search or create…" oninput="filterOpts('manual',this.value)" onkeydown="if(event.key==='Enter')createTag('manual')">
+                    <div class="tag-opts" id="manualOpts"></div>
+                    <div class="tag-create-row"><button class="tag-create-btn" id="manualCreateBtn" onclick="createTag('manual')">+ Create tag</button></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="log-btn manual-log-btn" onclick="logHours()">Log Entry</button>
           </div>
         </div>
-        <button class="log-btn" onclick="logHours()">Log</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="timer-mode-toggle">
+          <button class="tmr-tab active" id="tabSw" onclick="setTimerMode('sw')">Stopwatch</button>
+          <button class="tmr-tab" id="tabPm" onclick="setTimerMode('pm')">Pomodoro</button>
+        </div>
+        <button class="ft-pin-btn" onclick="toggleFtPin(event)" id="ftPinBtn" title="Keep the floating timer visible on the Dashboard too" style="margin-left:auto;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
+        </button>
       </div>
     </div>
     <div class="timer-body">
       <div class="timer-pane" id="swPane">
         <div class="timer-pane-main">
-          <div class="timer-pane-title">Stopwatch <div class="active-dot" id="swDot"></div></div>
+          <div class="timer-pane-title"><div class="active-dot" id="swDot"></div></div>
           <div class="ring-wrap sw-ring-wrap">
             <svg class="ring-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" id="swRingSvg">
               <defs>
@@ -1766,7 +1827,7 @@ function injectStudyPlan(htmlStr){
       </div>
       <div class="timer-pane" id="pmPane" style="display:none;">
         <div class="timer-pane-main">
-          <div class="timer-pane-title">Pomodoro <div class="active-dot" id="pmDot"></div></div>
+          <div class="timer-pane-title"><div class="active-dot" id="pmDot"></div></div>
           <div class="ring-wrap pm-ring-wrap">
             <svg class="ring-svg" viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg" id="pmRingSvg">
               <defs>
@@ -1790,6 +1851,7 @@ function injectStudyPlan(htmlStr){
             <button class="t-btn start" id="pmStart" onclick="pmToggle()">Start</button>
             <button class="t-btn stop" id="pmStop" onclick="pmLog()" style="display:none">Stop &amp; Log</button>
             <button class="t-btn reset" onclick="pmReset()">Reset</button>
+            <button class="t-btn skip" id="pmSkip" onclick="pmSkipBreak()" style="display:none">Skip Break</button>
           </div>
           <div class="pomo-cycles-row">
             <button type="button" class="pomo-cyc-btn" id="pmCycMinus" onclick="pmCycleAdj(-1)" title="Fewer cycles">−</button>
@@ -1797,16 +1859,30 @@ function injectStudyPlan(htmlStr){
             <button type="button" class="pomo-cyc-btn" id="pmCycPlus" onclick="pmCycleAdj(1)" title="More cycles">+</button>
           </div>
           <div class="pm-bottom-row" style="margin-top:auto;">
-            <div class="t-stats-row">
+            <div class="t-stats-row" style="align-items:center;">
               <div class="t-stat"><div class="t-stat-val" id="pmFocusToday">0h</div><div class="t-stat-lbl">Focus Today</div></div>
               <div class="t-stat"><div class="t-stat-val" id="pmCyclesEl">0</div><div class="t-stat-lbl">Cycles</div></div>
+              <div class="tag-dd-wrap" style="margin-left:auto;">
+                <button type="button" class="tag-add-pill" onclick="togglePmRatioDD()">+ ratio</button>
+                <div class="tag-dd" id="pmRatioDD">
+                  <div style="display:flex;flex-direction:column;gap:6px;">
+                    <label style="font-family:'Inter',sans-serif;font-size:.70rem;color:var(--text3);display:block;">Focus (min)
+                      <input type="number" id="pmNewF" min="1" max="180" value="25" class="tag-search" style="margin:2px 0 0;">
+                    </label>
+                    <label style="font-family:'Inter',sans-serif;font-size:.70rem;color:var(--text3);display:block;">Short break (min)
+                      <input type="number" id="pmNewS" min="1" max="60" value="5" class="tag-search" style="margin:2px 0 0;">
+                    </label>
+                    <label style="font-family:'Inter',sans-serif;font-size:.70rem;color:var(--text3);display:block;">Long break (min)
+                      <input type="number" id="pmNewL" min="1" max="90" value="15" class="tag-search" style="margin:2px 0 0;">
+                    </label>
+                  </div>
+                  <div class="tag-create-row"><button class="tag-create-btn" onclick="addPmRatio()">+ Add ratio</button></div>
+                </div>
+              </div>
             </div>
             <div class="pomo-settings">
-              <div class="pomo-presets" id="pmPresets">
-                <button type="button" class="pomo-preset" data-f="90" data-s="20" data-l="30" onclick="setPmPreset(this)">90/20</button>
-                <button type="button" class="pomo-preset" data-f="50" data-s="10" data-l="20" onclick="setPmPreset(this)">50/10</button>
-                <button type="button" class="pomo-preset active" data-f="25" data-s="5" data-l="15" onclick="setPmPreset(this)">25/5</button>
-                <button type="button" class="pomo-preset" data-f="15" data-s="5" data-l="10" onclick="setPmPreset(this)">15/5</button>
+              <div class="pomo-presets-row" style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;flex:1 1 0%;min-width:0;">
+                <div class="pomo-presets" id="pmPresets"></div>
               </div>
               <input type="hidden" id="pmMaxC" value="4" min="1" max="12">
               <input type="hidden" id="pmFMin" value="25">
@@ -1830,19 +1906,20 @@ function injectStudyPlan(htmlStr){
           </div>
         </div>
       </div>
-      <div class="todo-pane">
-        <div class="todo-header">
-          <span class="todo-title">To-do</span>
-          <button class="todo-clear-btn" onclick="todoClearDone()" title="Clear completed">Clear done</button>
-        </div>
-        <div class="todo-input-row">
-          <input class="todo-input" id="todoInput" placeholder="Add a task…" maxlength="120"
-            onkeydown="if(event.key==='Enter')todoAdd()">
-          <button class="todo-add-btn" onclick="todoAdd()">+</button>
-        </div>
-        <div class="todo-list" id="todoList"></div>
-      </div>
     </div>
+  </div>
+  <div class="todo-card">
+    <div class="todo-header">
+      <span class="todo-title">To-do</span>
+      <button class="todo-clear-btn" onclick="todoClearDone()" title="Clear completed">Clear done</button>
+    </div>
+    <div class="todo-input-row">
+      <input class="todo-input" id="todoInput" placeholder="Add a task…" maxlength="120"
+        onkeydown="if(event.key==='Enter')todoAdd()">
+      <button class="todo-add-btn" onclick="todoAdd()">+</button>
+    </div>
+    <div class="todo-list" id="todoList"></div>
+  </div>
   </div>
 </div>
 
@@ -2074,21 +2151,17 @@ let accessToken = SUPA_KEY;
 let isGuest = false;
 function getRowId(){ return currentUser ? currentUser.id : 'meridian-default'; }
 
-// Keys the embedded Study Plan iframe writes its own progress under
-// (checked-off items, its goals, its heatmap, per-track progress).
-const SP_KEYS = ['study_goals_v1','study_heatmap_v1','study_dsa','study_python','study_appdev','study_leet'];
-function getStudyPlanProgress(){
-  const obj = {};
-  SP_KEYS.forEach(k => { const v = localStorage.getItem(k); if(v !== null) obj[k] = v; });
-  return obj;
-}
-function applyStudyPlanProgress(progress){
-  if(!progress) return;
-  Object.keys(progress).forEach(k => {
-    if(SP_KEYS.includes(k) && progress[k] !== null && progress[k] !== undefined){
-      localStorage.setItem(k, progress[k]);
-    }
-  });
+// The Study Plan feature accepts ANY uploaded .html file, so we can't know
+// its progress-storage key name(s) in advance (this file, for example, uses
+// 'dsa-progress'/'dsa-mistakes-log'; a different plan could use anything).
+// We learn the key names dynamically from what the iframe writes, and
+// remember them locally so reopening the plan in this browser re-seeds it.
+let spKnownKeys = JSON.parse(localStorage.getItem('st_sp_keys') || '[]');
+function rememberSpKey(k){
+  if(!spKnownKeys.includes(k)){
+    spKnownKeys.push(k);
+    localStorage.setItem('st_sp_keys', JSON.stringify(spKnownKeys));
+  }
 }
 
 // ── Auth state ──────────────────────────────────────
@@ -2307,7 +2380,6 @@ async function supaLoad() {
     if (data.tag_colors)       tagColors      = data.tag_colors;
     if (data.goals)            goals          = data.goals;
     if (data.study_plan_html)  localStorage.setItem('st_studyplan_html', data.study_plan_html);
-    if (data.study_plan_progress) applyStudyPlanProgress(data.study_plan_progress);
     persistLocal();
     supaReady = true;
     setSupaStatus('ok');
@@ -2328,7 +2400,6 @@ async function supaSync() {
       tags: allTags,
       tag_colors: tagColors,
       goals,
-      study_plan_progress: getStudyPlanProgress(),
       updated_at: new Date().toISOString()
     };
     const res = await fetch(
@@ -2415,6 +2486,7 @@ async function init(){
   document.addEventListener('click',e=>{
     if(!e.target.closest('#schemeWrap'))document.getElementById('schemePanel').classList.remove('open');
     if(!e.target.closest('.tag-dd-wrap'))document.querySelectorAll('.tag-dd').forEach(d=>d.classList.remove('open'));
+    if(manualOpen&&!e.target.closest('#manualForm')&&!e.target.closest('#manualToggleBtn')){manualOpen=false;document.getElementById('manualForm').classList.remove('open');}
   });
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCdModal();}});
 }
@@ -3118,6 +3190,67 @@ function pmToggle(){
     updateFloatingTimer();
   }
 }
+const PM_DEFAULT_RATIOS = [{f:90,s:20,l:30},{f:50,s:10,l:20},{f:25,s:5,l:15},{f:15,s:5,l:10}];
+function getPmRatios(){
+  try{
+    const saved = JSON.parse(localStorage.getItem('st_pm_ratios'));
+    if(Array.isArray(saved) && saved.length) return saved;
+  }catch(e){}
+  return PM_DEFAULT_RATIOS.slice();
+}
+function savePmRatios(list){ localStorage.setItem('st_pm_ratios', JSON.stringify(list)); }
+function renderPmPresets(){
+  const list = getPmRatios();
+  const wrap = document.getElementById('pmPresets');
+  wrap.innerHTML = '';
+  const curF = document.getElementById('pmFMin').value, curS = document.getElementById('pmSMin').value;
+  list.forEach((r,i) => {
+    const btn = document.createElement('span');
+    btn.setAttribute('role','button');
+    btn.setAttribute('tabindex','0');
+    btn.className = 'pomo-preset' + ((String(r.f)===String(curF) && String(r.s)===String(curS)) ? ' active' : '');
+    btn.dataset.f = r.f; btn.dataset.s = r.s; btn.dataset.l = r.l;
+    btn.innerHTML = `${r.f}/${r.s}<button type="button" class="pomo-preset-x" title="Remove ratio" onclick="event.stopPropagation();removePmRatio(${i})">×</button>`;
+    btn.addEventListener('click', e => { if(e.target.classList.contains('pomo-preset-x')) return; setPmPreset(btn); });
+    btn.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); setPmPreset(btn); } });
+    wrap.appendChild(btn);
+  });
+}
+function togglePmRatioDD(){
+  const dd = document.getElementById('pmRatioDD');
+  const was = dd.classList.contains('open');
+  document.querySelectorAll('.tag-dd').forEach(d => d.classList.remove('open'));
+  if(!was) dd.classList.add('open');
+}
+function addPmRatio(){
+  const f = parseInt(document.getElementById('pmNewF').value) || 25;
+  const s = parseInt(document.getElementById('pmNewS').value) || 5;
+  const l = parseInt(document.getElementById('pmNewL').value) || 15;
+  const list = getPmRatios();
+  if(list.some(r => r.f===f && r.s===s)){ showToast('That ratio already exists.'); return; }
+  list.push({f,s,l});
+  list.sort((a,b) => b.f-a.f);
+  savePmRatios(list);
+  renderPmPresets();
+  document.getElementById('pmRatioDD').classList.remove('open');
+  showToast(`✅ Added ${f}/${s} ratio.`);
+}
+function removePmRatio(i){
+  const list = getPmRatios();
+  if(list.length <= 1){ showToast('Keep at least one ratio.'); return; }
+  const removed = list.splice(i,1)[0];
+  savePmRatios(list);
+  const curF = document.getElementById('pmFMin').value, curS = document.getElementById('pmSMin').value;
+  if(removed && String(removed.f)===String(curF) && String(removed.s)===String(curS)){
+    const fb = list[0];
+    document.getElementById('pmFMin').value = fb.f;
+    document.getElementById('pmSMin').value = fb.s;
+    document.getElementById('pmLMin').value = fb.l;
+    localStorage.setItem('st_pm_preset', JSON.stringify({f:fb.f,s:fb.s,l:fb.l}));
+    pmReset();
+  }
+  renderPmPresets();
+}
 function setPmPreset(btn){
   document.getElementById('pmFMin').value=btn.dataset.f;
   document.getElementById('pmSMin').value=btn.dataset.s;
@@ -3200,7 +3333,20 @@ function pmLogCommit(hrs){
   showToast(`+${fmt(hrs)} (${pmDone} cycles) logged!`);launchConfetti(50,50);
   activeTags.pm=[];renderPills('pm');pmReset();
 }
-function updPM(){const rem=Math.max(getPmSecs()-pmEl,0),m=Math.floor(rem/60),s=rem%60;document.getElementById('pmDisplay').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;updPmRing();updateFloatingTimer();}function updPmPhase(){const el=document.getElementById('pmPhase');if(pmPhase==='focus'){el.textContent='FOCUS';el.className='timer-phase-lbl focus-phase';}else if(pmPhase==='short'){el.textContent='SHORT BREAK';el.className='timer-phase-lbl brk-phase';}else{el.textContent='LONG BREAK';el.className='timer-phase-lbl brk-phase';}}
+function updPM(){const rem=Math.max(getPmSecs()-pmEl,0),m=Math.floor(rem/60),s=rem%60;document.getElementById('pmDisplay').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;updPmRing();updateFloatingTimer();}function updPmPhase(){const el=document.getElementById('pmPhase');if(pmPhase==='focus'){el.textContent='FOCUS';el.className='timer-phase-lbl focus-phase';}else if(pmPhase==='short'){el.textContent='SHORT BREAK';el.className='timer-phase-lbl brk-phase';}else{el.textContent='LONG BREAK';el.className='timer-phase-lbl brk-phase';}document.getElementById('pmSkip').style.display=(pmPhase==='focus')?'none':'inline-block';}
+function pmSkipBreak(){
+  if(pmPhase==='focus') return;
+  clearInterval(pmIv);pmIv=null;pmRun=false;
+  pmPhase='focus';pmEl=0;
+  timerSound('resume');
+  showToast('⏭ Break skipped — back to focus.');
+  updPM();updPmPhase();
+  document.getElementById('pmStart').textContent='Start';
+  document.getElementById('pmStart').className='t-btn start';
+  document.getElementById('pmDot').classList.remove('show');
+  setArc('pmArc',1);
+  updateFloatingTimer();
+}
 function renderPmDots(){
   const total=parseInt(document.getElementById('pmMaxC').value)||4;
   const wrap=document.getElementById('pmDots');wrap.innerHTML='';
@@ -3732,6 +3878,8 @@ function doRender(){
   try { renderRadar(); } catch(e){ console.error('renderRadar',e); }
   try { updateTimerStats(); } catch(e){ console.error('updateTimerStats',e); }
   try { renderPmDots(); } catch(e){ console.error('renderPmDots',e); }
+  try { renderPmPresets(); } catch(e){ console.error('renderPmPresets',e); }
+  try { updateFloatingTimer(); } catch(e){ console.error('updateFloatingTimer',e); }
   try { renderCal(); } catch(e){ console.error('renderCal',e); }
   try { renderTimeProgress(); } catch(e){ console.error('renderTimeProgress',e); }
   try { setTimeout(syncCdHeight,0); } catch(e){ console.error('syncCdHeight',e); }
