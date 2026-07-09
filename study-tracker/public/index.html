@@ -148,13 +148,10 @@ body > * { position:relative; z-index:1; }
 /* ── Card Base ── */
 .card, .input-card, .countdown-box, .chart-card, .stat-box, .quick-stats-card,
 .timer-card, .streak-box, .radar-pane, .milestone-row, .timer-pane {
-  background: var(--surface);
   border: 1px solid var(--border);
   border-top: 1px solid var(--glass-top);
   border-radius: var(--radius);
   box-shadow: 0 4px 24px rgba(0,0,0,0.18), inset 0 1px 0 var(--glass-top);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   /* Isolate each blurred card onto its own compositing layer — prevents the
      faint seam/line some mobile browsers render where two backdrop-filter
@@ -168,6 +165,27 @@ body > * { position:relative; z-index:1; }
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   will-change: transform;
+}
+
+/* Blur + background live on a separate ::before layer, not on the box that
+   gets transform/contain/will-change. In Gecko (Firefox/Zen), a backdrop-filter
+   living directly on a box that's also a transform/containment boundary can
+   flicker/glow when a *sibling* box reflows (e.g. switching Stopwatch <->
+   Pomodoro resizes .timer-card). Decoupling the blur onto its own static
+   pseudo-element avoids that recompute path. (.timer-pane is intentionally
+   excluded — it opts out of the glass effect entirely, see its own rule.) */
+.card::before, .input-card::before, .countdown-box::before, .chart-card::before,
+.stat-box::before, .quick-stats-card::before, .timer-card::before,
+.streak-box::before, .radar-pane::before, .milestone-row::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .card:hover, .stat-box:hover {
@@ -435,7 +453,7 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 /* ══════════════════
    TIMER / POMODORO
    ══════════════════ */
-.timer-card { padding:16px 18px; margin-bottom:0; display:flex; flex-direction:column; height:100%; box-sizing:border-box; overflow:visible; backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur); position:relative; }
+.timer-card { padding:16px 18px; margin-bottom:0; display:flex; flex-direction:column; height:100%; box-sizing:border-box; overflow:visible; position:relative; contain:layout style; }
 .timer-card-header { display:flex; align-items:center; margin-bottom:12px; gap:10px; }
 .manual-date-display { font-family:'Inter',sans-serif; font-size:.80rem; color:var(--accent2); }
 .manual-form { position:absolute; top:52px; right:0; width:max-content; max-width:calc(100% - 20px); z-index:50; background:var(--bg); border:1px solid var(--border2); border-radius:var(--radius-sm); padding:0; display:flex; flex-direction:column; gap:6px; max-height:0; opacity:0; overflow:hidden; pointer-events:none; transition:max-height .3s ease, opacity .2s ease, padding .3s ease; }
