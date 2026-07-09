@@ -158,10 +158,16 @@ body > * { position:relative; z-index:1; }
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   /* Isolate each blurred card onto its own compositing layer — prevents the
      faint seam/line some mobile browsers render where two backdrop-filter
-     regions meet or after a nearby layout change. */
+     regions meet or after a nearby layout change. `translateZ(0)` alone can
+     still get demoted/recomposited by the browser when a sibling reflows
+     (e.g. the timer card resizing when switching Stopwatch/Pomodoro), which
+     is what produces the brief glow/seam flash on a neighboring card like
+     the chart. `will-change` tells the browser to keep this card on its own
+     GPU layer persistently instead of promoting/demoting it on the fly. */
   isolation: isolate;
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  will-change: transform;
 }
 
 .card:hover, .stat-box:hover {
