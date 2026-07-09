@@ -1496,7 +1496,7 @@ function injectStudyPlan(htmlStr){
     }).then(r => { if(!r.ok) r.text().then(t => console.warn('Study plan sync error:', t)); });
   } catch(e){}
 
-  const keys = ['study_goals_v1','study_heatmap_v1','study_dsa','study_python','study_appdev','study_leet'];
+  const keys = SP_KEYS;
   const seedData = {};
   keys.forEach(k => { seedData[k] = localStorage.getItem(k)||null; });
 
@@ -1514,11 +1514,12 @@ function injectStudyPlan(htmlStr){
   if(frame.src) try{URL.revokeObjectURL(frame.src);}catch(e){}
   frame.src = URL.createObjectURL(blob);
 
-  // Mirror iframe localStorage writes back into Meridian immediately
+  // Mirror iframe localStorage writes back into Meridian immediately, and
+  // schedule a debounced push to Supabase so plan progress follows the account too.
   if(window._spMsgHandler) window.removeEventListener('message', window._spMsgHandler);
   window._spMsgHandler = function(e){
     if(!e.data||e.data.type!=='sp_lsset') return;
-    if(keys.includes(e.data.key)) localStorage.setItem(e.data.key, e.data.value);
+    if(keys.includes(e.data.key)){ localStorage.setItem(e.data.key, e.data.value); scheduleSupa(); }
   };
   window.addEventListener('message', window._spMsgHandler);
 
@@ -2073,6 +2074,23 @@ let accessToken = SUPA_KEY;
 let isGuest = false;
 function getRowId(){ return currentUser ? currentUser.id : 'meridian-default'; }
 
+// Keys the embedded Study Plan iframe writes its own progress under
+// (checked-off items, its goals, its heatmap, per-track progress).
+const SP_KEYS = ['study_goals_v1','study_heatmap_v1','study_dsa','study_python','study_appdev','study_leet'];
+function getStudyPlanProgress(){
+  const obj = {};
+  SP_KEYS.forEach(k => { const v = localStorage.getItem(k); if(v !== null) obj[k] = v; });
+  return obj;
+}
+function applyStudyPlanProgress(progress){
+  if(!progress) return;
+  Object.keys(progress).forEach(k => {
+    if(SP_KEYS.includes(k) && progress[k] !== null && progress[k] !== undefined){
+      localStorage.setItem(k, progress[k]);
+    }
+  });
+}
+
 // ── Auth state ──────────────────────────────────────
 function openAuthModal(){
   if(currentUser){ showAccountPanel(); return; }
@@ -2289,6 +2307,7 @@ async function supaLoad() {
     if (data.tag_colors)       tagColors      = data.tag_colors;
     if (data.goals)            goals          = data.goals;
     if (data.study_plan_html)  localStorage.setItem('st_studyplan_html', data.study_plan_html);
+    if (data.study_plan_progress) applyStudyPlanProgress(data.study_plan_progress);
     persistLocal();
     supaReady = true;
     setSupaStatus('ok');
@@ -2309,6 +2328,7 @@ async function supaSync() {
       tags: allTags,
       tag_colors: tagColors,
       goals,
+      study_plan_progress: getStudyPlanProgress(),
       updated_at: new Date().toISOString()
     };
     const res = await fetch(
@@ -2317,7 +2337,7 @@ async function supaSync() {
         method: 'POST',
         headers: {
           'apikey': SUPA_KEY,
-          'Authorization': `Bearer ${SUPA_KEY}`,
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
           'Prefer': 'resolution=merge-duplicates,return=minimal'
         },
