@@ -15,7 +15,8 @@
   /* Core palette - High Contrast OLED Dark */
   --bg:       #0a0a0f;
   --bg2:      #0f0f18;
-  --surface:  rgba(255,255,255,0.05);
+  --card-opacity-mult: 1;
+  --surface:  rgba(255,255,255, calc(0.05 * var(--card-opacity-mult)));
   --surface2: rgba(255,255,255,0.08);
   --surface3: rgba(255,255,255,0.12);
   --border:   rgba(255,255,255,0.09);
@@ -54,7 +55,7 @@
 :root.light {
   --bg:       #F0F4FF;
   --bg2:      #E8EEFF;
-  --surface:  rgba(255,255,255,0.60);
+  --surface:  rgba(255,255,255, calc(0.60 * var(--card-opacity-mult)));
   --surface2: rgba(255,255,255,0.75);
   --surface3: rgba(255,255,255,0.85);
   --border:   rgba(0,0,0,0.07);
@@ -1036,6 +1037,18 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .settings-card { display:flex; flex-direction:column; gap:14px; padding:20px 22px; margin-bottom:16px; }
 .settings-card-title { font-family:'Space Grotesk',sans-serif; font-size:1.02rem; font-weight:600; color:var(--text); }
 .sett-hint { font-family:'Inter',sans-serif; font-size:.91rem; color:var(--text3); line-height:1.5; margin:-6px 0 0; }
+.sett-range {
+  -webkit-appearance:none; appearance:none; width:100%; height:4px; border-radius:99px;
+  background:var(--surface2); outline:none; cursor:pointer; accent-color:var(--accent);
+}
+.sett-range::-webkit-slider-thumb {
+  -webkit-appearance:none; appearance:none; width:16px; height:16px; border-radius:50%;
+  background:var(--accent); border:2px solid var(--bg); box-shadow:0 1px 4px rgba(0,0,0,.3); cursor:pointer;
+}
+.sett-range::-moz-range-thumb {
+  width:16px; height:16px; border-radius:50%; background:var(--accent); border:2px solid var(--bg);
+  box-shadow:0 1px 4px rgba(0,0,0,.3); cursor:pointer;
+}
 .sett-btn-row { display:flex; gap:10px; flex-wrap:wrap; }
 .sett-btn { background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); color:var(--text2); cursor:pointer; font-family:'Inter',sans-serif; font-size:.8rem; font-weight:500; padding:9px 16px; transition:border-color .2s,color .2s; }
 .sett-btn:hover { border-color:var(--accent); color:var(--text); }
@@ -1074,16 +1087,27 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 /* ══════════════════
    ANIMATIONS
    ══════════════════ */
-@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-.card,.stat-box,.timer-card,.chart-card,.streak-box { animation:fadeUp .4s ease both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px) scale(.985)} to{opacity:1;transform:translateY(0) scale(1)} }
+.card,.stat-box,.timer-card,.chart-card,.streak-box,.todo-card,.input-card,.countdown-box,.quick-stats-card,.radar-pane,.milestone-row {
+  animation:fadeUp .55s cubic-bezier(.16,1,.3,1) both;
+}
 .reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-duration:0.001ms !important; animation-delay:0s !important; transition-duration:0.001ms !important; }
-.row1 > *:nth-child(1) { animation-delay:.05s; }
-.row1 > *:nth-child(2) { animation-delay:.12s; }
-.row2 > *:nth-child(1) { animation-delay:.18s; }
-.row2 > *:nth-child(2) { animation-delay:.24s; }
-.row3 > *:nth-child(1) { animation-delay:.28s; }
-.row3 > *:nth-child(2) { animation-delay:.32s; }
-.charts-row > *:nth-child(1) { animation-delay:.36s; }
+
+/* Row 1 — streak & chart, then Live Tracking & To-do */
+.stats-col .streak-box { animation-delay:.05s; }
+.stats-col .chart-card { animation-delay:.11s; }
+.timer-todo-row .timer-card { animation-delay:.17s; }
+.timer-todo-row .todo-card { animation-delay:.23s; }
+
+/* Row 2 — countdowns, then calendar */
+.countdown-col .countdown-box { animation-delay:.29s; }
+.row2-right .input-card { animation-delay:.35s; }
+
+/* Row 3 — milestone/quick stats */
+.row3 .quick-stats-card { animation-delay:.41s; }
+
+/* Charts row — heatmap */
+.charts-row > *:nth-child(1) { animation-delay:.47s; }
 
 @keyframes ripple { to{transform:scale(4);opacity:0;} }
 .ripple-wrap { position:relative; overflow:hidden; }
@@ -1709,7 +1733,7 @@ function injectStudyPlan(htmlStr){
         <button class="nav-btn" onclick="changeWeek(1)">▶</button>
       </div>
       <div class="chart-header">
-        <div class="section-title" style="margin:0;font-size:.63rem;">Weekly Progress</div>
+        <div class="section-title" style="margin:0;font-size:.63rem;display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M4 4v16h16"/><path d="M8 16v-4"/><path d="M12 16V8"/><path d="M16 16v-6"/></svg>Weekly Progress</div>
         <div class="chart-toggle">
           <button class="ctype-btn active" id="btnBar" onclick="setChartType('bar')">▐▌</button>
           <button class="ctype-btn" id="btnLine" onclick="setChartType('line')">〜</button>
@@ -1723,7 +1747,7 @@ function injectStudyPlan(htmlStr){
   <div class="timer-card" style="margin-bottom:0;">
     <div class="timer-card-header" style="flex-direction:column;align-items:stretch;gap:8px;">
       <div style="display:flex;align-items:center;gap:10px;">
-        <span class="timer-card-title">⏱ Live Tracking</span>
+        <span class="timer-card-title" style="display:inline-flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2"/><path d="M9 2h6"/><path d="M12 2v3"/></svg>Live Tracking</span>
         <div style="display:flex;align-items:center;gap:8px;margin-left:auto;position:relative;">
           <button class="manual-toggle" onclick="toggleManual()" id="manualToggleBtn">+ Manual Entry</button>
           <div class="manual-form" id="manualForm">
@@ -1910,7 +1934,7 @@ function injectStudyPlan(htmlStr){
   </div>
   <div class="todo-card">
     <div class="todo-header">
-      <span class="todo-title">To-do</span>
+      <span class="todo-title" style="display:inline-flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4 6l1.5 1.5L8 5"/><path d="M4 12l1.5 1.5L8 11"/><path d="M4 18l1.5 1.5L8 17"/></svg>To-do</span>
       <button class="todo-clear-btn" onclick="todoClearDone()" title="Clear completed">Clear done</button>
     </div>
     <div class="todo-input-row">
@@ -1927,7 +1951,7 @@ function injectStudyPlan(htmlStr){
   <div class="countdown-col">
     <div class="countdown-box">
       <div class="countdown-header">
-        <span class="section-title" style="margin:0">Countdowns</span>
+        <span class="section-title" style="margin:0;display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M6 2h12"/><path d="M6 22h12"/><path d="M6 2c0 6 6 6 6 10c0-4 6-4 6-10"/><path d="M6 22c0-6 6-6 6-10c0 4 6 4 6 10"/></svg>Countdowns</span>
         <button class="add-event-btn" onclick="openCdModal()">+ Add</button>
       </div>
       <div class="countdown-list" id="cdList"></div>
@@ -1938,6 +1962,7 @@ function injectStudyPlan(htmlStr){
     <div class="input-card row2-input-card">
       <div class="mini-cal" style="flex-shrink:0;width:100%;">
         <div class="mini-cal-header">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-right:3px;"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><path d="M8 2v4"/><path d="M16 2v4"/></svg>
           <span class="mini-cal-month-label" id="calMonth"></span>
           <button class="mini-cal-today-btn" onclick="calGoToday()">Today</button>
           <div class="mini-cal-navs">
@@ -1954,7 +1979,7 @@ function injectStudyPlan(htmlStr){
 <div class="row3">
   <div class="quick-stats-card">
     <div class="ms-bar-side" style="padding:0 0 8px 0;border-bottom:1px solid var(--border);margin-bottom:8px;">
-      <div class="ms-bar-title">Journey to next milestone</div>
+      <div class="ms-bar-title" style="display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M5 3v18"/><path d="M5 4h11l-2 4 2 4H5"/></svg>Journey to next milestone</div>
       <div class="ms-ticks" id="msTicks"></div>
       <div class="ms-track"><div class="ms-fill" id="msFill" style="width:0%"></div></div>
       <div class="ms-next" id="msNext"></div>
@@ -1981,12 +2006,12 @@ function injectStudyPlan(htmlStr){
       <div class="qs-item"><div class="qs-icon">🎯</div><div class="qs-item-text"><div class="qs-val sec" id="qsConsistency">—</div><div class="qs-label">Consistency <span class="qs-info">ⓘ<span class="qs-tip">Days studied in the last 30. 20% = 6/30 days.</span></span></div></div></div>
       <div class="qs-item"><div class="qs-icon">📈</div><div class="qs-item-text"><div class="qs-val sec" id="qsWkAvg">—</div><div class="qs-label">Wk Avg/Day</div></div></div>
     </div>
-    <div class="qs-tags-title" style="margin-top:6px;">Top Tags</div>
+    <div class="qs-tags-title" style="margin-top:6px;display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 2h7a1 1 0 0 1 1 1v7a1 1 0 0 1-.3.7l-9 9a1 1 0 0 1-1.4 0l-8-8a1 1 0 0 1 0-1.4l9-9a1 1 0 0 1 .7-.3z"/><circle cx="16.5" cy="7.5" r="1" fill="currentColor" stroke="none"/></svg>Top Tags</div>
     <div class="top-tags" id="topTags"><span class="qs-empty">No tags yet</span></div>
   </div>
 </div><div class="charts-row">
   <div class="card">
-    <div class="section-title">Yearly Heatmap</div>
+    <div class="section-title" style="display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Yearly Heatmap</div>
     <div class="year-nav">
       <button class="nav-btn" onclick="changeYear(-1)">◀</button>
       <div class="year-label" id="yearLabel">—</div>
@@ -2065,6 +2090,15 @@ function injectStudyPlan(htmlStr){
       <div class="sett-row">
         <label>Sound effects</label>
         <button class="sett-btn" id="soundToggleBtn" onclick="toggleSoundEffects()">On</button>
+      </div>
+      <div class="sett-divider"></div>
+      <div class="sett-row" style="align-items:flex-start;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+          <label>Box transparency</label>
+          <span id="cardOpacityVal" style="font-family:'Inter',sans-serif;font-size:.78rem;color:var(--text3);">100%</span>
+        </div>
+        <input type="range" class="sett-range" id="cardOpacitySlider" min="20" max="200" step="5" value="100" oninput="setCardOpacity(this.value)">
+        <p class="sett-hint">Adjust how see-through the cards and panels on your dashboard are.</p>
       </div>
     </div>
 
@@ -2456,6 +2490,7 @@ async function init(){
   applyTheme((localStorage.getItem('st_theme')||'dark')==='dark'?'dark':'light',false);
   loadNickname();
   loadReduceMotion();
+  loadCardOpacity();
   loadSoundEffects();
   loadTimerSoundSelect();
   loadNotes();
@@ -2671,7 +2706,7 @@ function filterOpts(w,q){
     const row=document.createElement('div');row.className='tag-opt';
     const c=tagColor(t);
     row.innerHTML=`<div class="tag-opt-dot" style="background:${c}"></div><span class="tag-opt-name">${t}</span><button class="tag-opt-del" onclick="archiveTag(event,'${t}')" title="Archive tag">🗄</button>`;
-    row.addEventListener('click',()=>{addTagTo(w,t);document.getElementById(w+'Search').value='';filterOpts(w,'');});
+    row.addEventListener('click',ev=>{ev.stopPropagation();addTagTo(w,t);document.getElementById(w+'Search').value='';filterOpts(w,'');});
     opts.appendChild(row);
   });
   const cb=document.getElementById(w+'CreateBtn');
@@ -2746,7 +2781,7 @@ function renderPills(w){
   activeTags[w].forEach(t=>{
     const c=tagColor(t);const pill=document.createElement('span');pill.className='tag-pill';
     pill.style.cssText=`background:${c}22;border:1px solid ${c}55;color:${c};`;
-    pill.innerHTML=`${t}<button class="tag-x" onclick="removeTagFrom('${w}','${t}')">×</button>`;
+    pill.innerHTML=`${t}<button class="tag-x" onclick="event.stopPropagation();removeTagFrom('${w}','${t}')">×</button>`;
     wrap.appendChild(pill);
   });
 }
@@ -3759,6 +3794,18 @@ function loadReduceMotion(){
   document.documentElement.classList.toggle('reduce-motion', on);
   const btn = document.getElementById('motionToggleBtn');
   if(btn) btn.textContent = on ? 'On' : 'Off';
+}
+function setCardOpacity(val){
+  document.documentElement.style.setProperty('--card-opacity-mult', val/100);
+  const label = document.getElementById('cardOpacityVal');
+  if(label) label.textContent = val+'%';
+  localStorage.setItem('st_card_opacity', val);
+}
+function loadCardOpacity(){
+  const val = localStorage.getItem('st_card_opacity')||'100';
+  const slider = document.getElementById('cardOpacitySlider');
+  if(slider) slider.value = val;
+  setCardOpacity(val);
 }
 function toggleSoundEffects(){
   const wasOff = localStorage.getItem('st_sound_enabled')==='0';
