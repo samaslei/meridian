@@ -1049,6 +1049,28 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   width:16px; height:16px; border-radius:50%; background:var(--accent); border:2px solid var(--bg);
   box-shadow:0 1px 4px rgba(0,0,0,.3); cursor:pointer;
 }
+
+/* ── Notes page ── */
+.notes-layout { display:grid; grid-template-columns:260px 1fr; gap:16px; align-items:start; height:calc(100vh - 230px); min-height:380px; }
+@media(max-width:800px){ .notes-layout { grid-template-columns:1fr; height:auto; } }
+.notes-list-card { padding:14px; display:flex; flex-direction:column; gap:10px; height:auto; max-height:calc(100vh - 230px); box-sizing:border-box; }
+.notes-list { display:flex; flex-direction:column; gap:4px; flex:1; min-height:0; overflow-y:auto; }
+@media(max-width:800px){ .notes-list { max-height:40vh; } }
+.note-item { display:flex; flex-direction:column; gap:2px; padding:9px 10px; border-radius:10px; cursor:pointer; transition:background .12s; border:1px solid transparent; }
+.note-item:hover { background:color-mix(in srgb, var(--text) 4%, transparent); }
+.note-item.active { background:color-mix(in srgb, var(--accent) 12%, transparent); border-color:color-mix(in srgb, var(--accent) 25%, transparent); }
+.note-item-title { font-family:'Inter',sans-serif; font-size:.84rem; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.note-item-snippet { font-family:'Inter',sans-serif; font-size:.72rem; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.note-editor-card { padding:20px; display:flex; flex-direction:column; gap:10px; height:calc(100vh - 230px); box-sizing:border-box; }
+.note-title-input { background:transparent; border:none; outline:none; font-family:'Space Grotesk',sans-serif; font-size:1.25rem; font-weight:700; color:var(--text); padding:2px 0; width:100%; flex-shrink:0; }
+.note-title-input::placeholder { color:var(--text3); font-weight:600; }
+.note-meta { font-family:'Inter',sans-serif; font-size:.68rem; color:var(--text3); display:flex; align-items:center; justify-content:space-between; padding-bottom:8px; margin-bottom:2px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.note-content-input { flex:1; min-height:0; background:transparent; border:none; outline:none; resize:none; font-family:'Inter',sans-serif; font-size:.90rem; line-height:1.65; color:var(--text2); overflow-y:auto; }
+.note-content-input::placeholder { color:var(--text3); }
+.note-del-btn { display:inline-flex; align-items:center; gap:5px; background:none; border:1px solid var(--border2); color:var(--text3); font-family:'Inter',sans-serif; font-size:.72rem; padding:6px 10px; border-radius:8px; cursor:pointer; align-self:flex-end; transition:color .15s,border-color .15s,background .15s; }
+.note-del-btn:hover { color:#f87171; border-color:rgba(248,113,113,.4); background:rgba(248,113,113,.08); }
+.notes-empty { display:flex; align-items:flex-start; justify-content:center; text-align:center; padding-top:60px; color:var(--text3); font-family:'Inter',sans-serif; font-size:.85rem; height:calc(100vh - 230px); box-sizing:border-box; }
+@media(max-width:800px){ .notes-empty { height:auto; padding-bottom:60px; } }
 .sett-btn-row { display:flex; gap:10px; flex-wrap:wrap; }
 .sett-btn { background:var(--surface2); border:1px solid var(--border2); border-radius:var(--radius-sm); color:var(--text2); cursor:pointer; font-family:'Inter',sans-serif; font-size:.8rem; font-weight:500; padding:9px 16px; transition:border-color .2s,color .2s; }
 .sett-btn:hover { border-color:var(--accent); color:var(--text); }
@@ -1409,6 +1431,7 @@ function switchView(name){
   document.getElementById('view-'+name).classList.add('active');
   document.getElementById('nav-'+name).classList.add('active');
   if(name==='settings'){ updateAuthBtn(); refreshNotifBtn(); renderArchivedTagsSettings(); }
+  if(name==='notes'){ initNotesView(); }
   closeMobileSidebar();
   updateFloatingTimer();
 }
@@ -1624,6 +1647,10 @@ function injectStudyPlan(htmlStr){
     <button class="sb-item" id="nav-studyplan" onclick="switchView('studyplan')">
       <span class="sb-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/></svg></span>
       <span class="sb-item-label">Study Plan</span>
+    </button>
+    <button class="sb-item" id="nav-notes" onclick="switchView('notes')">
+      <span class="sb-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></svg></span>
+      <span class="sb-item-label">Notes</span>
     </button>
     <button class="sb-item" id="nav-settings" onclick="switchView('settings')">
       <span class="sb-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
@@ -2097,7 +2124,7 @@ function injectStudyPlan(htmlStr){
           <label>Box transparency</label>
           <span id="cardOpacityVal" style="font-family:'Inter',sans-serif;font-size:.78rem;color:var(--text3);">100%</span>
         </div>
-        <input type="range" class="sett-range" id="cardOpacitySlider" min="20" max="200" step="5" value="100" oninput="setCardOpacity(this.value)">
+        <input type="range" class="sett-range" id="cardOpacitySlider" min="0" max="300" step="10" value="100" oninput="setCardOpacity(this.value)">
         <p class="sett-hint">Adjust how see-through the cards and panels on your dashboard are.</p>
       </div>
     </div>
@@ -2142,7 +2169,42 @@ function injectStudyPlan(htmlStr){
   </div>
 </div>
 
-</div></div><input type="file" id="fileInput" accept=".json" onchange="importData(event)" style="display:none">
+<div class="view" id="view-notes">
+<div class="page-wrap" style="max-width:900px;">
+  <div class="settings-page-title">Notes</div>
+  <div class="settings-page-sub">Jot down quick thoughts, ideas, and reminders</div>
+
+  <div class="notes-layout">
+    <div class="card notes-list-card">
+      <button class="log-btn" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;" onclick="createNote()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        New Note
+      </button>
+      <div class="notes-list" id="notesList"></div>
+    </div>
+
+    <div class="card note-editor-card" id="noteEditorCard" style="display:none;">
+      <input type="text" class="note-title-input" id="noteTitleInput" placeholder="Untitled note" oninput="saveActiveNote()">
+      <div class="note-meta">
+        <span id="noteMetaLabel"></span>
+        <button class="note-del-btn" onclick="deleteActiveNote()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          Delete
+        </button>
+      </div>
+      <textarea class="note-content-input" id="noteContentInput" placeholder="Start typing…" oninput="saveActiveNote()"></textarea>
+    </div>
+
+    <div class="card notes-empty" id="notesEmptyState" style="display:none;">
+      <p>No notes yet — click "New Note" to create your first one.</p>
+    </div>
+  </div>
+</div>
+</div>
+
+</div></div>
+
+<input type="file" id="fileInput" accept=".json" onchange="importData(event)" style="display:none">
 
 <div class="modal-overlay" id="cdOverlay" onclick="if(event.target===this)closeCdModal()">
   <div class="modal">
@@ -3409,6 +3471,91 @@ function importData(ev){const file=ev.target.files[0];if(!file)return;const r=ne
 function clearAll(){studyLog={};events=[];sessions=[];persist();renderAll();renderCountdowns();renderTagCloud();renderRadar();renderCal();showToast('Cleared.');}
 
 // ── Notes ──────────────────────────────────────────
+function notesSave(){ localStorage.setItem('st_notes', JSON.stringify(notesData)); }
+function formatNoteDate(ts){
+  const d = new Date(ts);
+  const now = new Date();
+  const sameDay = d.toDateString()===now.toDateString();
+  const time = d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+  if(sameDay) return 'Edited today at '+time;
+  return 'Edited '+d.toLocaleDateString([], {month:'short', day:'numeric'})+' at '+time;
+}
+function renderNotesList(){
+  const wrap = document.getElementById('notesList');
+  if(!wrap) return;
+  const sorted = [...notesData].sort((a,b)=>b.updatedAt-a.updatedAt);
+  wrap.innerHTML = sorted.map(n=>{
+    const title = n.title.trim() || 'Untitled note';
+    const snippet = n.content.trim().slice(0,80) || 'No additional text';
+    const active = n.id===activeNoteId ? ' active' : '';
+    return `<div class="note-item${active}" onclick="selectNote('${n.id}')">
+      <div class="note-item-title">${escapeHtml(title)}</div>
+      <div class="note-item-snippet">${escapeHtml(snippet)}</div>
+    </div>`;
+  }).join('');
+}
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function selectNote(id){
+  const note = notesData.find(n=>n.id===id);
+  if(!note) return;
+  activeNoteId = id;
+  document.getElementById('noteTitleInput').value = note.title;
+  document.getElementById('noteContentInput').value = note.content;
+  document.getElementById('noteMetaLabel').textContent = formatNoteDate(note.updatedAt);
+  document.getElementById('noteEditorCard').style.display = 'flex';
+  document.getElementById('notesEmptyState').style.display = 'none';
+  renderNotesList();
+}
+function createNote(){
+  const note = { id:'note_'+Date.now()+'_'+Math.random().toString(36).slice(2,7), title:'', content:'', updatedAt:Date.now() };
+  notesData.unshift(note);
+  notesSave();
+  selectNote(note.id);
+  setTimeout(()=>document.getElementById('noteTitleInput').focus(),50);
+}
+function saveActiveNote(){
+  if(!activeNoteId) return;
+  const note = notesData.find(n=>n.id===activeNoteId);
+  if(!note) return;
+  note.title = document.getElementById('noteTitleInput').value;
+  note.content = document.getElementById('noteContentInput').value;
+  note.updatedAt = Date.now();
+  notesSave();
+  document.getElementById('noteMetaLabel').textContent = formatNoteDate(note.updatedAt);
+  renderNotesList();
+}
+function deleteActiveNote(){
+  if(!activeNoteId) return;
+  const idToDelete = activeNoteId;
+  showConfirm(
+    'Delete note?',
+    'This cannot be undone.',
+    'Delete',
+    () => {
+      notesData = notesData.filter(n=>n.id!==idToDelete);
+      notesSave();
+      activeNoteId = null;
+      const sorted = [...notesData].sort((a,b)=>b.updatedAt-a.updatedAt);
+      if(sorted.length){
+        selectNote(sorted[0].id);
+      } else {
+        document.getElementById('noteEditorCard').style.display = 'none';
+        document.getElementById('notesEmptyState').style.display = 'block';
+        renderNotesList();
+      }
+    }
+  );
+}
+function initNotesView(){
+  const sorted = [...notesData].sort((a,b)=>b.updatedAt-a.updatedAt);
+  if(sorted.length){
+    selectNote(activeNoteId && notesData.find(n=>n.id===activeNoteId) ? activeNoteId : sorted[0].id);
+  } else {
+    document.getElementById('noteEditorCard').style.display = 'none';
+    document.getElementById('notesEmptyState').style.display = 'block';
+    renderNotesList();
+  }
+}
 // ── Sound & Notification Engine ────────────────────
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
 let _actx = null;
@@ -3528,6 +3675,8 @@ function showConfirm(title, msg, confirmLabel, onConfirm, cancelLabel, onCancel,
 }
 // ── Mini Todo ───────────────────────────────────────
 let todos = JSON.parse(localStorage.getItem('st_todos')||'[]');
+let notesData = JSON.parse(localStorage.getItem('st_notes')||'[]');
+let activeNoteId = null;
 todos.forEach(ensureSubs);
 
 function ensureSubs(t){ if(!Array.isArray(t.subs)) t.subs = []; return t.subs; }
@@ -3795,11 +3944,37 @@ function loadReduceMotion(){
   const btn = document.getElementById('motionToggleBtn');
   if(btn) btn.textContent = on ? 'On' : 'Off';
 }
+const GLASS_CARD_SEL = '.card, .input-card, .countdown-box, .chart-card, .stat-box, .quick-stats-card, .timer-card, .streak-box, .radar-pane, .milestone-row, .todo-card';
 function setCardOpacity(val){
-  document.documentElement.style.setProperty('--card-opacity-mult', val/100);
+  const mult = Math.max(0, val/100);
+  document.documentElement.style.setProperty('--card-opacity-mult', mult);
+  // Compute the literal rgba() value in JS (rather than leaning on calc() nested
+  // inside an rgba() alpha channel, which some engines handle inconsistently) so
+  // the transparency reliably applies everywhere.
+  const isLight = document.documentElement.classList.contains('light');
+  const base = isLight ? 0.60 : 0.05;
+  const alpha = Math.min(1, base*mult);
+  document.documentElement.style.setProperty('--surface', `rgba(255,255,255,${alpha})`);
   const label = document.getElementById('cardOpacityVal');
   if(label) label.textContent = val+'%';
   localStorage.setItem('st_card_opacity', val);
+  forceGlassRepaint();
+}
+// Some Gecko-based browsers (e.g. Zen/Firefox) cache the composited backdrop-filter
+// layer on cards that carry a persistent `will-change:transform` (added earlier to
+// stop a different Firefox flicker bug), and don't repaint it when only an inherited
+// CSS custom property changes at runtime with no accompanying layout change. Briefly
+// dropping and restoring will-change forces the browser to rebuild that layer so the
+// new transparency actually shows, instead of only appearing for a moment then
+// snapping back to the old (opaque) composited frame.
+function forceGlassRepaint(){
+  requestAnimationFrame(()=>{
+    document.querySelectorAll(GLASS_CARD_SEL).forEach(el=>{
+      el.style.willChange='auto';
+      void el.offsetWidth;
+      el.style.willChange='transform';
+    });
+  });
 }
 function loadCardOpacity(){
   const val = localStorage.getItem('st_card_opacity')||'100';
@@ -3856,7 +4031,7 @@ function loadTimerSoundSelect(){
 
 // ── Theme / Scheme ─────────────────────────────────
 function toggleTheme(){const l=document.documentElement.classList.contains('light');applyTheme(l?'dark':'light',true);}
-function applyTheme(mode,sv){const light=mode==='light';document.documentElement.classList.toggle('light',light);document.getElementById('themeBtn').textContent=light?'☀️':'🌙';if(sv)localStorage.setItem('st_theme',mode);setTimeout(()=>{renderWeek();renderRadar();renderHeatmap();renderAll();},60);}
+function applyTheme(mode,sv){const light=mode==='light';document.documentElement.classList.toggle('light',light);document.getElementById('themeBtn').textContent=light?'☀️':'🌙';if(sv)localStorage.setItem('st_theme',mode);loadCardOpacity();setTimeout(()=>{renderWeek();renderRadar();renderHeatmap();renderAll();},60);}
 const SCHEMES={indigo:{name:'Midnight Indigo',color:'#6366f1'},ember:{name:'Sunset Ember',color:'#f97316'},arctic:{name:'Arctic Frost',color:'#38bdf8'},sakura:{name:'Sakura',color:'#e879f9'},matcha:{name:'Matcha',color:'#4ade80'},gold:{name:'Obsidian Gold',color:'#f59e0b'}};
 function setScheme(s){applyScheme(s,true);closeAllDD();}
 function applyScheme(s,sv){document.documentElement.setAttribute('data-scheme',s);const m=SCHEMES[s]||SCHEMES.indigo;document.getElementById('schemeDot').style.background=m.color;document.getElementById('schemeName').textContent=m.name;document.getElementById('accentBar').style.background=`linear-gradient(90deg,${m.color} 0%,${m.color}44 100%)`;document.querySelectorAll('.scheme-row').forEach(r=>r.classList.toggle('active',r.dataset.scheme===s));if(sv)localStorage.setItem('st_scheme',s);setTimeout(()=>{if(chartType==='line')renderWeek();renderRadar();},50);}
