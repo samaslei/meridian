@@ -150,7 +150,6 @@ body > * { position:relative; z-index:1; }
 .card, .input-card, .countdown-box, .chart-card, .stat-box, .quick-stats-card,
 .timer-card, .streak-box, .radar-pane, .milestone-row, .timer-pane, .todo-card {
   border: 1px solid var(--border);
-  border-top: 1px solid var(--glass-top);
   border-radius: var(--radius);
   box-shadow: 0 4px 24px rgba(0,0,0,0.18), inset 0 1px 0 var(--glass-top);
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
@@ -330,7 +329,7 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .row2 > .countdown-col .countdown-box { flex:1; min-height:160px; }
 .row2-right { display:flex; flex-direction:column; gap:14px; }
 .countdown-col { display:flex; flex-direction:column; overflow:hidden; }
-.countdown-box { padding:14px; display:flex; flex-direction:column; gap:6px; box-sizing:border-box; overflow:hidden; }
+.countdown-box { padding:14px; display:flex; flex-direction:column; gap:6px; box-sizing:border-box; overflow:hidden; position:relative; contain:layout style; }
 
 .row3 { display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:14px; align-items:end; }
 @media(max-width:900px){.row3{grid-template-columns:1fr;}}
@@ -967,12 +966,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .sb-logo svg { flex-shrink:0; }
 .sb-logo-text { font-family:'Space Grotesk',sans-serif; font-size:1.05rem; font-weight:600; color:var(--text); transition:opacity .2s; }
 .sidebar.collapsed .sb-logo-text { opacity:0; width:0; pointer-events:none; }
-.sidebar.collapsed .sb-logo svg { display:none; }
 .sidebar.collapsed .sb-top { justify-content:center; }
-.sb-hamburger { background:none; border:none; cursor:pointer; color:var(--text3); padding:5px; border-radius:6px; display:flex; flex-direction:column; gap:4px; flex-shrink:0; transition:color .15s; }
-.sb-hamburger:hover { color:var(--accent2); }
-.sb-hamburger span { display:block; width:18px; height:2px; background:currentColor; border-radius:2px; transition:width .2s; }
-.sidebar.collapsed .sb-hamburger span:nth-child(2) { width:12px; }
 .sb-nav { display:flex; flex-direction:column; gap:3px; padding:14px 10px; flex:1; }
 .sb-item {
   display:flex; align-items:center; gap:12px;
@@ -1066,7 +1060,14 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .note-title-input::placeholder { color:var(--text3); font-weight:600; }
 .note-meta { font-family:'Inter',sans-serif; font-size:.68rem; color:var(--text3); display:flex; align-items:center; justify-content:space-between; padding-bottom:8px; margin-bottom:2px; border-bottom:1px solid var(--border); flex-shrink:0; }
 .note-content-input { flex:1; min-height:0; background:transparent; border:none; outline:none; resize:none; font-family:'Inter',sans-serif; font-size:.90rem; line-height:1.65; color:var(--text2); overflow-y:auto; }
-.note-content-input::placeholder { color:var(--text3); }
+.note-content-input:empty::before { content:attr(data-placeholder); color:var(--text3); pointer-events:none; }
+.note-content-input ul { margin:0; padding-left:20px; }
+.note-content-input b, .note-content-input strong { color:var(--text); font-weight:700; }
+.note-content-input h1 { font-family:'Space Grotesk',sans-serif; font-size:1.3em; font-weight:700; color:var(--text); margin:.3em 0; }
+.note-toolbar { display:flex; gap:6px; flex-shrink:0; }
+.note-fmt-btn { display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:var(--surface2); border:1px solid var(--border2); border-radius:7px; color:var(--text2); cursor:pointer; font-family:'Inter',sans-serif; font-size:.8rem; transition:border-color .15s,color .15s,background .15s; }
+.note-fmt-btn:first-child { width:auto; padding:0 8px; font-size:.68rem; font-weight:700; }
+.note-fmt-btn:hover { border-color:var(--accent); color:var(--accent2); background:color-mix(in srgb, var(--accent) 8%, transparent); }
 .note-del-btn { display:inline-flex; align-items:center; gap:5px; background:none; border:1px solid var(--border2); color:var(--text3); font-family:'Inter',sans-serif; font-size:.72rem; padding:6px 10px; border-radius:8px; cursor:pointer; align-self:flex-end; transition:color .15s,border-color .15s,background .15s; }
 .note-del-btn:hover { color:#f87171; border-color:rgba(248,113,113,.4); background:rgba(248,113,113,.08); }
 .notes-empty { display:flex; align-items:flex-start; justify-content:center; text-align:center; padding-top:60px; color:var(--text3); font-family:'Inter',sans-serif; font-size:.85rem; height:calc(100vh - 230px); box-sizing:border-box; }
@@ -1408,22 +1409,9 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 </style>
 
 <script>
-// Sidebar — defined early so onclick handlers work
-let sidebarCollapsed = localStorage.getItem('sb_collapsed') !== '0'; // collapsed by default
-function toggleSidebar(){
-  sidebarCollapsed = !sidebarCollapsed;
-  localStorage.setItem('sb_collapsed', sidebarCollapsed ? '1' : '0');
-  document.getElementById('sidebar').classList.toggle('collapsed', sidebarCollapsed);
-  document.getElementById('mainContent').classList.toggle('collapsed', sidebarCollapsed);
-}
-// Elements start with collapsed class in HTML
-// Remove it only if user explicitly expanded (saved '0')
-if(!sidebarCollapsed){
-  document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('sidebar').classList.remove('collapsed');
-    document.getElementById('mainContent').classList.remove('collapsed');
-  });
-}
+// Sidebar is now permanently compact (icon-only) — the expand/collapse
+// feature was removed. Elements already start with the "collapsed" class
+// in HTML, so nothing further is needed here.
 let spLoaded = false;
 function switchView(name){
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -1635,9 +1623,6 @@ function injectStudyPlan(htmlStr){
       </svg>
       <span class="sb-logo-text">Meridian</span>
     </div>
-    <button class="sb-hamburger" onclick="toggleSidebar()" title="Toggle sidebar">
-      <span></span><span></span><span></span>
-    </button>
   </div>
   <div class="sb-nav">
     <button class="sb-item active" id="nav-dashboard" onclick="switchView('dashboard')">
@@ -1645,11 +1630,11 @@ function injectStudyPlan(htmlStr){
       <span class="sb-item-label">Dashboard</span>
     </button>
     <button class="sb-item" id="nav-studyplan" onclick="switchView('studyplan')">
-      <span class="sb-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/></svg></span>
+      <span class="sb-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M9 12l2 2 4-4"/><line x1="9" y1="17" x2="15" y2="17"/></svg></span>
       <span class="sb-item-label">Study Plan</span>
     </button>
     <button class="sb-item" id="nav-notes" onclick="switchView('notes')">
-      <span class="sb-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></svg></span>
+      <span class="sb-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
       <span class="sb-item-label">Notes</span>
     </button>
     <button class="sb-item" id="nav-settings" onclick="switchView('settings')">
@@ -1666,21 +1651,7 @@ function injectStudyPlan(htmlStr){
 
 <div class="header-row">
   <div>
-    <h1><svg width="32" height="32" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
-      <defs>
-        <linearGradient id="logoGradHeader" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#4F46E5"/>
-          <stop offset="100%" stop-color="#7C3AED"/>
-        </linearGradient>
-      </defs>
-      <path d="M 75 15 A 45 45 0 1 0 105 85 A 55 55 0 0 1 75 15 Z" fill="#FBBF24"/>
-      <path d="M 15 90 L 40 45 L 60 65 L 85 35 L 105 70" fill="none" stroke="url(#logoGradHeader)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="15" cy="90" r="7" fill="url(#logoGradHeader)"/>
-      <circle cx="40" cy="45" r="7" fill="url(#logoGradHeader)"/>
-      <circle cx="60" cy="65" r="7" fill="url(#logoGradHeader)"/>
-      <circle cx="85" cy="35" r="7" fill="url(#logoGradHeader)"/>
-      <circle cx="105" cy="70" r="7" fill="url(#logoGradHeader)"/>
-    </svg><span>Meridian</span></h1>
+    <h1><span>Meridian</span></h1>
     <div class="subtitle">Track · Reflect · Grow</div>
   </div>
   <div class="header-btns">
@@ -2192,8 +2163,18 @@ function injectStudyPlan(htmlStr){
           Delete
         </button>
       </div>
-      <textarea class="note-content-input" id="noteContentInput" placeholder="Start typing…" oninput="saveActiveNote()"></textarea>
+      <div class="note-toolbar">
+        <button type="button" class="note-fmt-btn" title="Heading" onmousedown="event.preventDefault()" onclick="toggleNoteHeading()">H1</button>
+        <button type="button" class="note-fmt-btn" title="Bold" onmousedown="event.preventDefault()" onclick="formatNote('bold')"><b>B</b></button>
+        <button type="button" class="note-fmt-btn" title="Italic" onmousedown="event.preventDefault()" onclick="formatNote('italic')"><i>i</i></button>
+        <button type="button" class="note-fmt-btn" title="Underline" onmousedown="event.preventDefault()" onclick="formatNote('underline')"><u>U</u></button>
+        <button type="button" class="note-fmt-btn" title="Bullet list" onmousedown="event.preventDefault()" onclick="formatNote('insertUnorderedList')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.4" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.4" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.4" fill="currentColor" stroke="none"/></svg>
+        </button>
+      </div>
+      <div class="note-content-input" id="noteContentInput" contenteditable="true" data-placeholder="Start typing…" oninput="saveActiveNote()"></div>
     </div>
+
 
     <div class="card notes-empty" id="notesEmptyState" style="display:none;">
       <p>No notes yet — click "New Note" to create your first one.</p>
@@ -2475,6 +2456,7 @@ async function supaLoad() {
     if (data.tags)             allTags        = data.tags;
     if (data.tag_colors)       tagColors      = data.tag_colors;
     if (data.goals)            goals          = data.goals;
+    if (data.notes)             { notesData = data.notes; notesSave(); if(typeof renderNotesList==='function') renderNotesList(); }
     if (data.study_plan_html)  localStorage.setItem('st_studyplan_html', data.study_plan_html);
     persistLocal();
     supaReady = true;
@@ -2496,6 +2478,7 @@ async function supaSync() {
       tags: allTags,
       tag_colors: tagColors,
       goals,
+      notes: notesData,
       updated_at: new Date().toISOString()
     };
     const res = await fetch(
@@ -3471,7 +3454,7 @@ function importData(ev){const file=ev.target.files[0];if(!file)return;const r=ne
 function clearAll(){studyLog={};events=[];sessions=[];persist();renderAll();renderCountdowns();renderTagCloud();renderRadar();renderCal();showToast('Cleared.');}
 
 // ── Notes ──────────────────────────────────────────
-function notesSave(){ localStorage.setItem('st_notes', JSON.stringify(notesData)); }
+function notesSave(){ localStorage.setItem('st_notes', JSON.stringify(notesData)); if(typeof scheduleSupa==='function') scheduleSupa(); }
 function formatNoteDate(ts){
   const d = new Date(ts);
   const now = new Date();
@@ -3480,13 +3463,28 @@ function formatNoteDate(ts){
   if(sameDay) return 'Edited today at '+time;
   return 'Edited '+d.toLocaleDateString([], {month:'short', day:'numeric'})+' at '+time;
 }
+// Notes have gone through a couple of formats over time (plain text, and
+// briefly an experimental markdown mode). Both are handled here so old
+// notes keep displaying correctly no matter when they were saved.
+function contentToHtml(content){
+  if(!content) return '';
+  if(/^\s*</.test(content)) return content; // already HTML
+  const d = document.createElement('div');
+  d.textContent = content;
+  return d.innerHTML.replace(/\n/g,'<br>');
+}
+function htmlToPlainText(html){
+  const d = document.createElement('div');
+  d.innerHTML = html;
+  return (d.textContent||'').replace(/\s+/g,' ').trim();
+}
 function renderNotesList(){
   const wrap = document.getElementById('notesList');
   if(!wrap) return;
   const sorted = [...notesData].sort((a,b)=>b.updatedAt-a.updatedAt);
   wrap.innerHTML = sorted.map(n=>{
     const title = n.title.trim() || 'Untitled note';
-    const snippet = n.content.trim().slice(0,80) || 'No additional text';
+    const snippet = htmlToPlainText(contentToHtml(n.content)).slice(0,80) || 'No additional text';
     const active = n.id===activeNoteId ? ' active' : '';
     return `<div class="note-item${active}" onclick="selectNote('${n.id}')">
       <div class="note-item-title">${escapeHtml(title)}</div>
@@ -3500,7 +3498,7 @@ function selectNote(id){
   if(!note) return;
   activeNoteId = id;
   document.getElementById('noteTitleInput').value = note.title;
-  document.getElementById('noteContentInput').value = note.content;
+  document.getElementById('noteContentInput').innerHTML = contentToHtml(note.content);
   document.getElementById('noteMetaLabel').textContent = formatNoteDate(note.updatedAt);
   document.getElementById('noteEditorCard').style.display = 'flex';
   document.getElementById('notesEmptyState').style.display = 'none';
@@ -3513,17 +3511,35 @@ function createNote(){
   selectNote(note.id);
   setTimeout(()=>document.getElementById('noteTitleInput').focus(),50);
 }
+function toggleNoteHeading(){
+  const editor = document.getElementById('noteContentInput');
+  editor.focus();
+  const current = document.queryCommandValue('formatBlock');
+  document.execCommand('formatBlock', false, /h1/i.test(current) ? 'div' : 'h1');
+  saveActiveNote();
+}
+function formatNote(cmd){
+  const editor = document.getElementById('noteContentInput');
+  editor.focus();
+  document.execCommand(cmd, false, null);
+  saveActiveNote();
+}
 function saveActiveNote(){
   if(!activeNoteId) return;
   const note = notesData.find(n=>n.id===activeNoteId);
   if(!note) return;
   note.title = document.getElementById('noteTitleInput').value;
-  note.content = document.getElementById('noteContentInput').value;
+  note.content = document.getElementById('noteContentInput').innerHTML;
   note.updatedAt = Date.now();
   notesSave();
   document.getElementById('noteMetaLabel').textContent = formatNoteDate(note.updatedAt);
   renderNotesList();
 }
+
+// ── Live markdown formatting for the note editor ──
+// As the person types recognizable markdown (e.g. **bold**, # heading),
+// the syntax characters are swapped out for real formatting immediately,
+// so the raw markdown is never left sitting in the note.
 function deleteActiveNote(){
   if(!activeNoteId) return;
   const idToDelete = activeNoteId;
