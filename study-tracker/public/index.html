@@ -2423,6 +2423,12 @@ async function restoreSession(){
   if(stored){
     await setSession(stored);
     if(currentUser) return; // session valid, skip login screen
+    // Access token may have simply expired — try the refresh token before
+    // forcing the person to log back in.
+    if(await refreshAccessToken()){
+      await setSession(accessToken);
+      if(currentUser) return;
+    }
   }
   showLoginScreen();
 }
@@ -2456,8 +2462,33 @@ function setSupaStatus(state) {
 let supaReady = false;
 let syncTimer = null;
 
+let hasUnsyncedChanges = false;
+
+async function refreshAccessToken(){
+  const refresh = localStorage.getItem('sb_refresh_token');
+  if(!refresh) return false;
+  try{
+    const res = await fetch(`${SUPA_URL}/auth/v1/token?grant_type=refresh_token`,{
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Content-Type':'application/json'},
+      body: JSON.stringify({ refresh_token: refresh })
+    });
+    if(!res.ok) return false;
+    const data = await res.json();
+    if(!data.access_token) return false;
+    accessToken = data.access_token;
+    localStorage.setItem('sb_access_token', accessToken);
+    if(data.refresh_token) localStorage.setItem('sb_refresh_token', data.refresh_token);
+    return true;
+  } catch(e){ return false; }
+}
+
 async function supaLoad() {
   if(!currentUser || isGuest){ setSupaStatus(isGuest ? 'guest' : 'error'); return; }
+  // If there are local changes that haven't successfully synced yet, pulling
+  // from the server right now would silently overwrite them. Push first.
+  if(hasUnsyncedChanges){ await supaSync(); }
+  if(hasUnsyncedChanges){ setSupaStatus('error'); return; } // still unsynced — don't clobber local data
   setSupaStatus('connecting');
   try {
     const res = await fetch(
@@ -2479,6 +2510,7 @@ async function supaLoad() {
     if (data.study_plan_html)  localStorage.setItem('st_studyplan_html', data.study_plan_html);
     persistLocal();
     supaReady = true;
+    hasUnsyncedChanges = false;
     setSupaStatus('ok');
     console.log('Loaded from Supabase ✓');
   } catch(e) { console.warn('Supabase unreachable, using localStorage:', e.message); setSupaStatus('error'); }
@@ -2500,7 +2532,7 @@ async function supaSync() {
       notes: notesData,
       updated_at: new Date().toISOString()
     };
-    const res = await fetch(
+    const doPost = () => fetch(
       `${SUPA_URL}/rest/v1/user_data`,
       {
         method: 'POST',
@@ -2513,8 +2545,12 @@ async function supaSync() {
         body: JSON.stringify(payload)
       }
     );
+    let res = await doPost();
+    if(res.status === 401 && await refreshAccessToken()){
+      res = await doPost(); // retry once with the freshly refreshed token
+    }
     if (!res.ok) { const t = await res.text(); console.warn('Supabase sync error:', res.status, t); setSupaStatus('error'); }
-    else setSupaStatus('ok');
+    else { setSupaStatus('ok'); hasUnsyncedChanges = false; }
   } catch(e) { console.warn('Supabase sync failed:', e.message); setSupaStatus('error'); }
 }
 
@@ -2524,7 +2560,7 @@ function scheduleSupa() {
 }
 
 function persistLocal(){localStorage.setItem('st_log',JSON.stringify(studyLog));localStorage.setItem('st_events',JSON.stringify(events));localStorage.setItem('st_archived_events',JSON.stringify(archivedEvents));localStorage.setItem('st_sess',JSON.stringify(sessions));localStorage.setItem('st_tags',JSON.stringify(allTags));localStorage.setItem('st_archived_tags',JSON.stringify(archivedTags));localStorage.setItem('st_goals',JSON.stringify(goals));}
-function persist(){ persistLocal(); scheduleSupa(); }
+function persist(){ persistLocal(); hasUnsyncedChanges = true; scheduleSupa(); }
 
 // ── Date helpers ───────────────────────────────────
 function toKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
@@ -2572,6 +2608,9 @@ async function init(){
   // Otherwise wait — renders fire from continueAsGuest / doLogin / doSignup
   todoRender(); // render todo on init
   setInterval(renderTimeProgress,60000);
+  // Proactively refresh the auth token during long sessions so a sync never
+  // fails just because the token quietly expired while the tab was open.
+  setInterval(()=>{ if(currentUser && !isGuest) refreshAccessToken(); }, 45*60*1000);
   // Add ripple to all buttons
   document.querySelectorAll('button').forEach(btn=>{btn.classList.add('ripple-wrap');btn.addEventListener('click',e=>{addRipple(btn,e);btn.classList.remove('btn-bounce');void btn.offsetWidth;btn.classList.add('btn-bounce');setTimeout(()=>btn.classList.remove('btn-bounce'),300);});});
   setTimeout(syncCdHeight,50);
@@ -3473,7 +3512,7 @@ function importData(ev){const file=ev.target.files[0];if(!file)return;const r=ne
 function clearAll(){studyLog={};events=[];sessions=[];persist();renderAll();renderCountdowns();renderTagCloud();renderRadar();renderCal();showToast('Cleared.');}
 
 // ── Notes ──────────────────────────────────────────
-function notesSave(){ localStorage.setItem('st_notes', JSON.stringify(notesData)); if(typeof scheduleSupa==='function') scheduleSupa(); }
+function notesSave(){ localStorage.setItem('st_notes', JSON.stringify(notesData)); hasUnsyncedChanges = true; if(typeof scheduleSupa==='function') scheduleSupa(); }
 function formatNoteDate(ts){
   const d = new Date(ts);
   const now = new Date();
