@@ -2682,7 +2682,7 @@ function logHours(){
     const fw=document.querySelector('.streak-flame-wrap');if(fw){fw.classList.remove('flame-pulse');void fw.offsetWidth;fw.classList.add('flame-pulse');setTimeout(()=>fw.classList.remove('flame-pulse'),500);}
   };
   if(tags.length===0){
-    showConfirm('No tags selected', 'You\'re logging without any tags. Continue anyway?', 'Log anyway', doLog, 'Add a tag', () => toggleTagDD('manual'), true);
+    showConfirm('No tags selected', 'You\'re logging without any tags. Continue anyway?', 'Log anyway', doLog, 'Add a tag', () => toggleTagDD('manual'), false);
   } else {
     doLog();
   }
@@ -3284,7 +3284,7 @@ function swLog(){
       () => { swLogCommit(hrs); },
       'Add a tag',
       () => { swRun=false; swIv=null; document.getElementById('swStart').textContent='Resume'; document.getElementById('swStart').className='t-btn start'; document.getElementById('swDot').classList.remove('show'); toggleTagDD('sw'); updateFloatingTimer(); },
-      true
+      false
     );
     return;
   }
@@ -3456,7 +3456,7 @@ function pmLog(){
       () => { pmLogCommit(hrs); },
       'Add a tag',
       () => { toggleTagDD('pm'); },
-      true
+      false
     );
     return;
   }
