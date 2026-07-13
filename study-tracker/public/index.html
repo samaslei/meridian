@@ -2462,7 +2462,10 @@ function setSupaStatus(state) {
 let supaReady = false;
 let syncTimer = null;
 
-let hasUnsyncedChanges = false;
+// Survives a page refresh: if a local save happened but the debounced
+// Supabase push hadn't fired yet before the page closed, we must not let
+// the next load's supaLoad() silently overwrite it with stale server data.
+let hasUnsyncedChanges = localStorage.getItem('st_unsynced') === '1';
 
 async function refreshAccessToken(){
   const refresh = localStorage.getItem('sb_refresh_token');
@@ -2510,7 +2513,7 @@ async function supaLoad() {
     if (data.study_plan_html)  localStorage.setItem('st_studyplan_html', data.study_plan_html);
     persistLocal();
     supaReady = true;
-    hasUnsyncedChanges = false;
+    setUnsynced(false);
     setSupaStatus('ok');
     console.log('Loaded from Supabase ✓');
   } catch(e) { console.warn('Supabase unreachable, using localStorage:', e.message); setSupaStatus('error'); }
@@ -2550,7 +2553,7 @@ async function supaSync() {
       res = await doPost(); // retry once with the freshly refreshed token
     }
     if (!res.ok) { const t = await res.text(); console.warn('Supabase sync error:', res.status, t); setSupaStatus('error'); }
-    else { setSupaStatus('ok'); hasUnsyncedChanges = false; }
+    else { setSupaStatus('ok'); setUnsynced(false); }
   } catch(e) { console.warn('Supabase sync failed:', e.message); setSupaStatus('error'); }
 }
 
@@ -2559,8 +2562,16 @@ function scheduleSupa() {
   syncTimer = setTimeout(supaSync, 1500); // debounce — sync 1.5s after last change
 }
 
+// Keeps the in-memory flag and a localStorage mirror of it in sync. The
+// mirror is what lets a fresh page load know "the last session made local
+// changes that may not have reached Supabase yet" — otherwise a refresh
+// that lands before the 1.5s debounce fires would let supaLoad() pull
+// stale server data over the top of a just-logged entry, silently
+// discarding it both locally and on Supabase.
+function setUnsynced(v){ hasUnsyncedChanges = v; localStorage.setItem('st_unsynced', v ? '1' : '0'); }
+
 function persistLocal(){localStorage.setItem('st_log',JSON.stringify(studyLog));localStorage.setItem('st_events',JSON.stringify(events));localStorage.setItem('st_archived_events',JSON.stringify(archivedEvents));localStorage.setItem('st_sess',JSON.stringify(sessions));localStorage.setItem('st_tags',JSON.stringify(allTags));localStorage.setItem('st_archived_tags',JSON.stringify(archivedTags));localStorage.setItem('st_goals',JSON.stringify(goals));}
-function persist(){ persistLocal(); hasUnsyncedChanges = true; scheduleSupa(); }
+function persist(){ persistLocal(); setUnsynced(true); scheduleSupa(); }
 
 // ── Date helpers ───────────────────────────────────
 function toKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
