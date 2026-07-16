@@ -323,12 +323,10 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .row1 { display:grid; grid-template-columns:1fr 2.2fr; gap:14px; margin-bottom:14px; align-items:start; }
 @media(max-width:1100px){.row1{grid-template-columns:1fr;}}
 
-.row2 { display:grid; grid-template-columns:1fr 380px; gap:14px; margin-bottom:14px; align-items:start; }
-@media(max-width:700px){.row2{grid-template-columns:1fr;}}
-.row2 > .countdown-col { display:flex; flex-direction:column; overflow:hidden; }
-.row2 > .countdown-col .countdown-box { flex:1; min-height:160px; }
-.row2-right { display:flex; flex-direction:column; gap:14px; }
-.countdown-col { display:flex; flex-direction:column; overflow:hidden; }
+/* Countdown + calendar stacked in one column, beside Live Tracking */
+.cd-cal-col { display:flex; flex-direction:column; gap:14px; height:100%; overflow:hidden; }
+.cd-cal-col .countdown-box { flex:1; min-height:160px; }
+.cd-cal-col .row2-input-card { flex-shrink:0; }
 .countdown-box { padding:14px; display:flex; flex-direction:column; gap:6px; box-sizing:border-box; overflow:hidden; position:relative; contain:layout style; }
 
 .row3 { display:grid; grid-template-columns:1fr; gap:14px; margin-bottom:14px; align-items:end; }
@@ -480,7 +478,7 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .timer-body { display:grid; grid-template-columns:1fr; gap:0; align-items:stretch; flex:1; min-height:0; }
 .timer-body::after { display:none; }
 
-/* Live Tracking + To-do sit as separate boxes side by side, stretched to match the graphs column's height */
+/* Live Tracking + the countdown/calendar stack sit side by side, stretched to match each other's height */
 .timer-todo-row { display:grid; grid-template-columns:1.6fr 1fr; gap:14px; align-items:stretch; align-self:stretch; }
 @media(max-width:900px){ .timer-todo-row { grid-template-columns:1fr; } }
 
@@ -1124,15 +1122,12 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 }
 .reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-duration:0.001ms !important; animation-delay:0s !important; transition-duration:0.001ms !important; }
 
-/* Row 1 — streak & chart, then Live Tracking & To-do */
+/* Row 1 — streak & chart, then Live Tracking & the countdown/calendar stack */
 .stats-col .streak-box { animation-delay:.05s; }
 .stats-col .chart-card { animation-delay:.11s; }
 .timer-todo-row .timer-card { animation-delay:.17s; }
-.timer-todo-row .todo-card { animation-delay:.23s; }
-
-/* Row 2 — countdowns, then calendar */
-.countdown-col .countdown-box { animation-delay:.29s; }
-.row2-right .input-card { animation-delay:.35s; }
+.cd-cal-col .countdown-box { animation-delay:.23s; }
+.cd-cal-col .row2-input-card { animation-delay:.29s; }
 
 /* Row 3 — milestone/quick stats */
 .row3 .quick-stats-card { animation-delay:.41s; }
@@ -1187,7 +1182,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   .glance-date,.glance-today { font-size:.73rem; }
 
   /* Rows */
-  .row1,.row2,.row3 { grid-template-columns:1fr!important; gap:10px; margin-bottom:10px; }
+  .row1,.row3 { grid-template-columns:1fr!important; gap:10px; margin-bottom:10px; }
   .quick-stats-card { align-self:auto; }
   .stats-col { gap:10px; }
 
@@ -1258,7 +1253,6 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 @media(min-width:641px) and (max-width:900px){
   body { padding:18px 20px 40px; overflow-x:hidden; }
   .row1 { grid-template-columns:1fr!important; }
-  .row2 { grid-template-columns:1fr!important; }
   .row2-input-card { flex-direction:column!important; gap:0!important; }
   .mini-cal { width:100%!important; flex-shrink:0; }
   .time-progress { border-top:1px solid var(--border); padding-top:16px; margin-top:16px; width:100%; }
@@ -1938,23 +1932,7 @@ function injectStudyPlan(htmlStr){
       </div>
     </div>
   </div>
-  <div class="todo-card">
-    <div class="todo-header">
-      <span class="todo-title" style="display:inline-flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M9 6h11"/><path d="M9 12h11"/><path d="M9 18h11"/><path d="M4 6l1.5 1.5L8 5"/><path d="M4 12l1.5 1.5L8 11"/><path d="M4 18l1.5 1.5L8 17"/></svg>To-do</span>
-      <button class="todo-clear-btn" onclick="todoClearDone()" title="Clear completed">Clear done</button>
-    </div>
-    <div class="todo-input-row">
-      <input class="todo-input" id="todoInput" placeholder="Add a task…" maxlength="120"
-        onkeydown="if(event.key==='Enter')todoAdd()">
-      <button class="todo-add-btn" onclick="todoAdd()">+</button>
-    </div>
-    <div class="todo-list" id="todoList"></div>
-  </div>
-  </div>
-</div>
-
-<div class="row2">
-  <div class="countdown-col">
+  <div class="cd-cal-col">
     <div class="countdown-box">
       <div class="countdown-header">
         <span class="section-title" style="margin:0;display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M6 2h12"/><path d="M6 22h12"/><path d="M6 2c0 6 6 6 6 10c0-4 6-4 6-10"/><path d="M6 22c0-6 6-6 6-10c0 4 6 4 6 10"/></svg>Countdowns</span>
@@ -1962,9 +1940,6 @@ function injectStudyPlan(htmlStr){
       </div>
       <div class="countdown-list" id="cdList"></div>
     </div>
-  </div>
-
-  <div class="row2-right">
     <div class="input-card row2-input-card">
       <div class="mini-cal" style="flex-shrink:0;width:100%;">
         <div class="mini-cal-header">
@@ -1979,6 +1954,7 @@ function injectStudyPlan(htmlStr){
         <div class="mini-cal-grid" id="calGrid"></div>
       </div>
     </div>
+  </div>
   </div>
 </div>
 
@@ -2584,17 +2560,6 @@ function fmt(h){return(h===Math.floor(h))?`${h}h`:`${h.toFixed(1)}h`;}
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-// ── Countdown/calendar height sync ──────────────────
-function syncCdHeight(){
-  const cal=document.querySelector('.row2-right');
-  const col=document.querySelector('.countdown-col');
-  if(cal&&col){
-    const h=cal.offsetHeight;
-    col.style.height=h+'px';
-    col.style.maxHeight=h+'px';
-  }
-}
-
 // ── Init ───────────────────────────────────────────
 async function init(){
   applyScheme(localStorage.getItem('st_scheme')||'indigo',false);
@@ -2624,14 +2589,6 @@ async function init(){
   setInterval(()=>{ if(currentUser && !isGuest) refreshAccessToken(); }, 45*60*1000);
   // Add ripple to all buttons
   document.querySelectorAll('button').forEach(btn=>{btn.classList.add('ripple-wrap');btn.addEventListener('click',e=>{addRipple(btn,e);btn.classList.remove('btn-bounce');void btn.offsetWidth;btn.classList.add('btn-bounce');setTimeout(()=>btn.classList.remove('btn-bounce'),300);});});
-  setTimeout(syncCdHeight,50);
-  window.addEventListener('resize',syncCdHeight);
-  // Keep the countdown box synced any time the calendar's own height changes
-  // (e.g. it renders late for guests, or switches between 5/6-week months).
-  const calElForObserver=document.querySelector('.row2-right');
-  if(calElForObserver&&window.ResizeObserver){
-    new ResizeObserver(syncCdHeight).observe(calElForObserver);
-  }
   document.addEventListener('click',e=>{
     if(!e.target.closest('#schemeWrap'))document.getElementById('schemePanel').classList.remove('open');
     if(!e.target.closest('.tag-dd-wrap'))document.querySelectorAll('.tag-dd').forEach(d=>d.classList.remove('open'));
@@ -4286,7 +4243,6 @@ function doRender(){
   try { updateFloatingTimer(); } catch(e){ console.error('updateFloatingTimer',e); }
   try { renderCal(); } catch(e){ console.error('renderCal',e); }
   try { renderTimeProgress(); } catch(e){ console.error('renderTimeProgress',e); }
-  try { setTimeout(syncCdHeight,0); } catch(e){ console.error('syncCdHeight',e); }
   const savedPlan = localStorage.getItem('st_studyplan_html');
   if(savedPlan) try { injectStudyPlan(savedPlan); } catch(e){ console.error('injectStudyPlan',e); }
 }
