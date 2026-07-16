@@ -323,8 +323,12 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .row1 { display:grid; grid-template-columns:1fr 2.2fr; gap:14px; margin-bottom:14px; align-items:start; }
 @media(max-width:1100px){.row1{grid-template-columns:1fr;}}
 
-/* Countdown + calendar stacked in one column, beside Live Tracking */
-.cd-cal-col { display:flex; flex-direction:column; gap:14px; height:100%; overflow:hidden; }
+/* Countdown + calendar stacked in one column, beside Live Tracking.
+   height:100% + min-height:0 is the same-frame fallback so there's no flash
+   of an oversized box before JS (syncCdCalHeight) sets an explicit pixel
+   height matching Live Tracking. The countdown list scrolls internally
+   for anything that doesn't fit. */
+.cd-cal-col { display:flex; flex-direction:column; gap:14px; height:100%; min-height:0; overflow:hidden; }
 .cd-cal-col .countdown-box { flex:1; min-height:160px; }
 .cd-cal-col .row2-input-card { flex-shrink:0; }
 .countdown-box { padding:14px; display:flex; flex-direction:column; gap:6px; box-sizing:border-box; overflow:hidden; position:relative; contain:layout style; }
@@ -2589,6 +2593,19 @@ async function init(){
   setInterval(()=>{ if(currentUser && !isGuest) refreshAccessToken(); }, 45*60*1000);
   // Add ripple to all buttons
   document.querySelectorAll('button').forEach(btn=>{btn.classList.add('ripple-wrap');btn.addEventListener('click',e=>{addRipple(btn,e);btn.classList.remove('btn-bounce');void btn.offsetWidth;btn.classList.add('btn-bounce');setTimeout(()=>btn.classList.remove('btn-bounce'),300);});});
+  setTimeout(syncCdCalHeight,50);
+  window.addEventListener('resize',syncCdCalHeight);
+  // Keep the column synced any time Live Tracking's own height changes
+  // (e.g. switching Stopwatch/Pomodoro tabs, or a responsive breakpoint).
+  const timerElForObserver=document.querySelector('.timer-card');
+  if(timerElForObserver&&window.ResizeObserver){
+    let rafPending=false;
+    new ResizeObserver(()=>{
+      if(rafPending) return;
+      rafPending=true;
+      requestAnimationFrame(()=>{ rafPending=false; syncCdCalHeight(); });
+    }).observe(timerElForObserver);
+  }
   document.addEventListener('click',e=>{
     if(!e.target.closest('#schemeWrap'))document.getElementById('schemePanel').classList.remove('open');
     if(!e.target.closest('.tag-dd-wrap'))document.querySelectorAll('.tag-dd').forEach(d=>d.classList.remove('open'));
@@ -4229,6 +4246,21 @@ function countUp(el,target,duration=600){const start=parseInt(el.textContent)||0
 const MILESTONES=[3,7,14,21,30,50,100,200,365];
 function checkStreakMilestone(streak){if(MILESTONES.includes(streak)){launchConfetti(50,20);const fw=document.querySelector('.streak-flame-wrap');if(fw){fw.classList.remove('milestone-burst');void fw.offsetWidth;fw.classList.add('milestone-burst');setTimeout(()=>fw.classList.remove('milestone-burst'),700);}showToast(`🎉 ${streak} day streak!`);}}
 
+// ── Countdown/calendar column height sync (mirrors Live Tracking's height) ──
+// One-directional only: timer-card's height never depends on cd-cal-col,
+// so this cannot feed back into a loop the way matching the streak box did.
+function syncCdCalHeight(){
+  const timer=document.querySelector('.timer-card');
+  const col=document.querySelector('.cd-cal-col');
+  if(timer&&col){
+    const h=timer.offsetHeight+'px';
+    if(col.style.height!==h){
+      col.style.height=h;
+      col.style.maxHeight=h;
+    }
+  }
+}
+
 function doRender(){
   try { jumpToToday(); } catch(e){ console.error('jumpToToday',e); }
   try { todoRender(); } catch(e){ console.error('todoRender',e); }
@@ -4243,6 +4275,7 @@ function doRender(){
   try { updateFloatingTimer(); } catch(e){ console.error('updateFloatingTimer',e); }
   try { renderCal(); } catch(e){ console.error('renderCal',e); }
   try { renderTimeProgress(); } catch(e){ console.error('renderTimeProgress',e); }
+  try { setTimeout(syncCdCalHeight,0); } catch(e){ console.error('syncCdCalHeight',e); }
   const savedPlan = localStorage.getItem('st_studyplan_html');
   if(savedPlan) try { injectStudyPlan(savedPlan); } catch(e){ console.error('injectStudyPlan',e); }
 }
