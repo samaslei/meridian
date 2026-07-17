@@ -336,6 +336,7 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
    doesn't fit. */
 .cd-cal-col { display:flex; flex-direction:column; gap:14px; height:100%; min-height:0; overflow:hidden; }
 .cd-cal-col .countdown-box { flex:1; min-height:160px; }
+.cd-cal-col.single-mode .deadlines-box { display:none; }
 .cd-cal-col .row2-input-card { flex-shrink:0; }
 .countdown-box { padding:14px; display:flex; flex-direction:column; gap:6px; box-sizing:border-box; overflow:hidden; position:relative; contain:layout style; }
 
@@ -412,6 +413,9 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .countdown-item:last-child { border-bottom:none; }
 .countdown-item:hover { background:color-mix(in srgb,var(--accent) 4%,transparent); border-radius:8px; }
 .cd-left { flex:1; min-width:0; display:flex; align-items:baseline; gap:6px; }
+.cd-kind-tag { font-family:'Inter',sans-serif; font-size:.58rem; font-weight:700; letter-spacing:.4px; padding:2px 5px; border-radius:4px; flex-shrink:0; color:var(--text3); background:var(--surface3); }
+.cd-kind-tag.deadline { color:#fb923c; background:color-mix(in srgb,#fb923c 15%,transparent); }
+.cd-kind-tag.event { color:var(--accent2); background:color-mix(in srgb,var(--accent) 12%,transparent); }
 .cd-name { font-family:'Space Grotesk',sans-serif; font-size:1.02rem; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.2; }
 .cd-date { font-family:'Inter',sans-serif; font-size:.60rem; color:var(--text3); white-space:nowrap; flex-shrink:0; position:relative; top:1px; }
 .cd-badge {
@@ -781,6 +785,12 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   background:color-mix(in srgb, var(--accent) 35%, transparent);
   z-index:0;
 }
+.mini-cal-cell.has-event.kind-deadline:not(.today-cal)::before {
+  background:color-mix(in srgb, #ef4444 35%, transparent);
+}
+.mini-cal-cell.has-event.kind-both:not(.today-cal)::before {
+  background:linear-gradient(90deg, color-mix(in srgb,#ef4444 40%,transparent) 50%, color-mix(in srgb,var(--accent) 40%,transparent) 50%);
+}
 .mini-cal-cell.has-study { color:var(--text); font-weight:600; }
 .mini-cal-cell.has-study::after { content:''; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:var(--accent2); }
 .mini-cal-cell.today-cal { color:#fff; font-weight:700; }
@@ -791,7 +801,9 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
   z-index:0;
 }
 .mini-cal-cell.today-cal::after { display:none; }
-.cal-tooltip { position:fixed; background:var(--tip-bg); border:1px solid var(--border2); border-radius:8px; padding:6px 10px; font-family:'Inter',sans-serif; font-size:.76rem; color:var(--text); pointer-events:none; opacity:0; transition:opacity .15s; z-index:9999; white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,.4); }
+.cal-tooltip { position:fixed; background:var(--tip-bg); border:1px solid var(--border2); border-radius:8px; padding:6px 10px; font-family:'Inter',sans-serif; font-size:.76rem; color:var(--text); pointer-events:none; opacity:0; transition:opacity .15s; z-index:9999; box-shadow:0 4px 20px rgba(0,0,0,.4); }
+.cal-tip-row { display:flex; align-items:center; gap:6px; white-space:nowrap; }
+.cal-tip-row + .cal-tip-row { margin-top:4px; }
 .cal-tooltip.show { opacity:1; }
 
 /* ── Time progress ── */
@@ -1110,6 +1122,7 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .sett-btn:hover { border-color:var(--accent); color:var(--text); }
 .sett-btn.danger { color:#f87171; border-color:rgba(248,113,113,.3); }
 .sett-btn.danger:hover { background:rgba(248,113,113,.08); border-color:#f87171; }
+.sett-btn.active { background:color-mix(in srgb,var(--accent) 15%,transparent); border-color:var(--accent); color:var(--accent2); font-weight:600; }
 .sett-divider { height:1px; background:var(--border); margin:2px 0; }
 .sett-select {
   background:var(--surface3) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='%23a5a5b5' d='M1 1l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 10px center;
@@ -2038,10 +2051,17 @@ function injectStudyPlan(htmlStr){
       <div class="mini-cal-grid" id="calGrid"></div>
     </div>
   </div>
-  <div class="countdown-box">
+  <div class="countdown-box deadlines-box">
     <div class="countdown-header">
-      <span class="section-title" style="margin:0;display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M6 2h12"/><path d="M6 22h12"/><path d="M6 2c0 6 6 6 6 10c0-4 6-4 6-10"/><path d="M6 22c0-6 6-6 6-10c0 4 6 4 6 10"/></svg>Countdowns</span>
-      <button class="add-event-btn" onclick="openCdModal()">+ Add</button>
+      <span class="section-title" style="margin:0;display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M12 6v6l4 2"/><circle cx="12" cy="13" r="8"/><path d="M9 2h6"/></svg>Deadlines</span>
+      <button class="add-event-btn" onclick="openCdModal(null,'deadline')">+ Add</button>
+    </div>
+    <div class="countdown-list" id="dlList"></div>
+  </div>
+  <div class="countdown-box events-box">
+    <div class="countdown-header">
+      <span class="section-title" style="margin:0;display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M6 2h12"/><path d="M6 22h12"/><path d="M6 2c0 6 6 6 6 10c0-4 6-4 6-10"/><path d="M6 22c0-6 6-6 6-10c0 4 6 4 6 10"/></svg><span id="cdBoxTitle">Upcoming Events</span></span>
+      <button class="add-event-btn" id="cdBoxAddBtn" onclick="openCdModal(null,'event')">+ Add</button>
     </div>
     <div class="countdown-list" id="cdList"></div>
   </div>
@@ -2104,6 +2124,14 @@ function injectStudyPlan(htmlStr){
       <div class="sett-row">
         <label>Sound effects</label>
         <button class="sett-btn" id="soundToggleBtn" onclick="toggleSoundEffects()">On</button>
+      </div>
+      <div class="sett-divider"></div>
+      <div class="sett-row" style="align-items:flex-start;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+          <label>Countdown layout</label>
+          <button class="sett-btn" id="cdLayoutToggleBtn" onclick="toggleCdLayout()">Split</button>
+        </div>
+        <p class="sett-hint">Show Deadlines and Upcoming Events as separate blocks, or combine them into one countdown block like before.</p>
       </div>
       <div class="sett-divider"></div>
       <div class="sett-row" style="align-items:flex-start;flex-direction:column;gap:8px;">
@@ -2217,6 +2245,13 @@ function injectStudyPlan(htmlStr){
 <div class="modal-overlay" id="cdOverlay" onclick="if(event.target===this)closeCdModal()">
   <div class="modal">
     <div class="modal-title" id="cdTitle">Add Countdown</div>
+    <div class="field" id="cdTypeField" style="display:none;">
+      <label class="lbl">Type</label>
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="sett-btn" id="cdTypeEventBtn" onclick="setModalType('event')" style="flex:1;">Event</button>
+        <button type="button" class="sett-btn" id="cdTypeDeadlineBtn" onclick="setModalType('deadline')" style="flex:1;">Deadline</button>
+      </div>
+    </div>
     <div class="field"><label class="lbl">Event Name</label><input type="text" id="evName" placeholder="e.g. Final Exam"></div>
     <div class="field"><label class="lbl">Date</label><input type="date" id="evDate"></div>
     <div class="modal-actions">
@@ -2233,6 +2268,8 @@ function injectStudyPlan(htmlStr){
 let studyLog  = JSON.parse(localStorage.getItem('st_log')   ||'{}');
 let events    = JSON.parse(localStorage.getItem('st_events')||'[]');
 let archivedEvents = JSON.parse(localStorage.getItem('st_archived_events')||'[]');
+let deadlines = JSON.parse(localStorage.getItem('st_deadlines')||'[]');
+let archivedDeadlines = JSON.parse(localStorage.getItem('st_archived_deadlines')||'[]');
 let sessions  = JSON.parse(localStorage.getItem('st_sess')  ||'[]');
 let allTags   = JSON.parse(localStorage.getItem('st_tags')  ||'[]');
 let archivedTags = JSON.parse(localStorage.getItem('st_archived_tags')||'[]');
@@ -2243,7 +2280,8 @@ const TAG_PAL=['#5eead4','#818cf8','#fb7185','#fbbf24','#34d399','#f472b6','#60a
 function tagColor(t){if(!tagColors[t]){const used=Object.values(tagColors);tagColors[t]=TAG_PAL.find(x=>!used.includes(x))||TAG_PAL[Object.keys(tagColors).length%TAG_PAL.length];localStorage.setItem('st_tagcol',JSON.stringify(tagColors));}return tagColors[t];}
 
 let weekOff=0,yearOff=0,chartType=localStorage.getItem('st_chart')||'bar';
-let editingId=null,toastTimer,manualOpen=false,calOffset=0;
+let editingId=null,editingType='event',toastTimer,manualOpen=false,calOffset=0;
+let cdLayoutMode=localStorage.getItem('st_cd_layout')||'split'; // 'split' | 'single'
 const activeTags={sw:[],pm:[],manual:[]};
 
 // ── Supabase ───────────────────────────────────────
@@ -2578,7 +2616,7 @@ function scheduleSupa() {
 // discarding it both locally and on Supabase.
 function setUnsynced(v){ hasUnsyncedChanges = v; localStorage.setItem('st_unsynced', v ? '1' : '0'); }
 
-function persistLocal(){localStorage.setItem('st_log',JSON.stringify(studyLog));localStorage.setItem('st_events',JSON.stringify(events));localStorage.setItem('st_archived_events',JSON.stringify(archivedEvents));localStorage.setItem('st_sess',JSON.stringify(sessions));localStorage.setItem('st_tags',JSON.stringify(allTags));localStorage.setItem('st_archived_tags',JSON.stringify(archivedTags));localStorage.setItem('st_goals',JSON.stringify(goals));}
+function persistLocal(){localStorage.setItem('st_log',JSON.stringify(studyLog));localStorage.setItem('st_events',JSON.stringify(events));localStorage.setItem('st_archived_events',JSON.stringify(archivedEvents));localStorage.setItem('st_deadlines',JSON.stringify(deadlines));localStorage.setItem('st_archived_deadlines',JSON.stringify(archivedDeadlines));localStorage.setItem('st_sess',JSON.stringify(sessions));localStorage.setItem('st_tags',JSON.stringify(allTags));localStorage.setItem('st_archived_tags',JSON.stringify(archivedTags));localStorage.setItem('st_goals',JSON.stringify(goals));}
 function persist(){ persistLocal(); setUnsynced(true); scheduleSupa(); }
 
 // ── Date helpers ───────────────────────────────────
@@ -2599,6 +2637,7 @@ async function init(){
   applyTheme((localStorage.getItem('st_theme')||'dark')==='dark'?'dark':'light',false);
   loadNickname();
   loadReduceMotion();
+  loadCdLayout();
   loadCardOpacity();
   loadSoundEffects();
   loadTimerSoundSelect();
@@ -2730,7 +2769,11 @@ function renderCal(){
   const evtMap={};
   events.forEach(ev=>{
     const d=new Date(ev.date+'T12:00:00');
-    if(d.getFullYear()===yr&&d.getMonth()===mo) evtMap[d.getDate()]=(evtMap[d.getDate()]||[]).concat(ev);
+    if(d.getFullYear()===yr&&d.getMonth()===mo) evtMap[d.getDate()]=(evtMap[d.getDate()]||[]).concat({...ev,__kind:'event'});
+  });
+  deadlines.forEach(ev=>{
+    const d=new Date(ev.date+'T12:00:00');
+    if(d.getFullYear()===yr&&d.getMonth()===mo) evtMap[d.getDate()]=(evtMap[d.getDate()]||[]).concat({...ev,__kind:'deadline'});
   });
   // leading days from prev month
   const prevDim=new Date(yr,mo,0).getDate();
@@ -2746,9 +2789,17 @@ function renderCal(){
     if(evtMap[d]){
       cell.classList.add('has-event');
       const evList=evtMap[d];
+      const hasEvent=evList.some(e=>e.__kind==='event');
+      const hasDeadline=evList.some(e=>e.__kind==='deadline');
+      cell.classList.add(hasEvent&&hasDeadline?'kind-both':hasDeadline?'kind-deadline':'kind-event');
       cell.addEventListener('mouseenter',e2=>{
         const tip=document.getElementById('hovTip');
-        tip.textContent=evList.map(ev=>{const diff=Math.round((new Date(ev.date+'T00:00:00').getTime()-new Date(toKey(today())+'T00:00:00').getTime())/86400000);const badge=diff<0?`${Math.abs(diff)} day${Math.abs(diff)===1?'':'s'} ago`:diff===0?'Today!':diff===1?'Tomorrow':`in ${diff} days`;return `${ev.name} — ${badge}`;}).join(' · ');
+        tip.innerHTML=evList.map(ev=>{
+          const diff=Math.round((new Date(ev.date+'T00:00:00').getTime()-new Date(toKey(today())+'T00:00:00').getTime())/86400000);
+          const badge=diff<0?`${Math.abs(diff)} day${Math.abs(diff)===1?'':'s'} ago`:diff===0?'Today!':diff===1?'Tomorrow':`in ${diff} days`;
+          const tag=`<span class="cd-kind-tag ${ev.__kind}">${ev.__kind==='deadline'?'DL':'EV'}</span>`;
+          return `<div class="cal-tip-row">${tag}<span>${ev.name} — ${badge}</span></div>`;
+        }).join('');
         tip.classList.add('show');moveHovTip(e2);
       });
       cell.addEventListener('mousemove',moveHovTip);
@@ -3100,45 +3151,94 @@ function renderRadar(){
   wrap.innerHTML=`<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}"><path d="${oPath}" fill="${acc}" fill-opacity=".03" stroke="${mut}" stroke-width=".8" opacity=".25"/><path d="${dPath}" fill="${acc}" fill-opacity=".17" stroke="${acc}" stroke-width="1.8" stroke-linejoin="round"/>${dots}${grid}${lbls}</svg>`;
 }
 
-// ── Countdowns ─────────────────────────────────────
-function openCdModal(ev){editingId=ev?ev.id:null;document.getElementById('cdTitle').textContent=ev?'Edit Countdown':'Add Countdown';document.getElementById('cdSaveBtn').textContent=ev?'Save':'Add Event';document.getElementById('cdDelBtn').style.display=ev?'inline-block':'none';document.getElementById('evName').value=ev?ev.name:'';document.getElementById('evDate').value=ev?ev.date:'';document.getElementById('cdOverlay').classList.add('open');setTimeout(()=>document.getElementById('evName').focus(),50);}
+// ── Countdowns & Deadlines ─────────────────────────
+function openCdModal(ev,type){
+  editingType=type||editingType||'event';
+  editingId=ev?ev.id:null;
+  const showPicker=cdLayoutMode==='single'&&!ev;
+  document.getElementById('cdTypeField').style.display=showPicker?'flex':'none';
+  if(showPicker) updateModalTypeButtons();
+  refreshModalLabels();
+  document.getElementById('evName').value=ev?ev.name:'';
+  document.getElementById('evDate').value=ev?ev.date:'';
+  document.getElementById('cdOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('evName').focus(),50);
+}
+function setModalType(type){
+  editingType=type;
+  updateModalTypeButtons();
+  refreshModalLabels();
+}
+function updateModalTypeButtons(){
+  const eb=document.getElementById('cdTypeEventBtn'),db=document.getElementById('cdTypeDeadlineBtn');
+  if(eb) eb.classList.toggle('active',editingType==='event');
+  if(db) db.classList.toggle('active',editingType==='deadline');
+}
+function refreshModalLabels(){
+  const isDl=editingType==='deadline';
+  const isEdit=editingId!==null;
+  document.getElementById('cdTitle').textContent=isEdit?(isDl?'Edit Deadline':'Edit Event'):(isDl?'Add Deadline':'Add Event');
+  document.getElementById('cdSaveBtn').textContent=isEdit?'Save':(isDl?'Add Deadline':'Add Event');
+  document.getElementById('cdDelBtn').style.display=isEdit?'inline-block':'none';
+  document.getElementById('evName').placeholder=isDl?'e.g. Essay Draft Due':'e.g. Final Exam';
+}
 function closeCdModal(){document.getElementById('cdOverlay').classList.remove('open');editingId=null;}
-function saveEvent(){const n=document.getElementById('evName').value.trim(),d=document.getElementById('evDate').value;if(!n||!d)return showToast('Enter name and date!');if(editingId!==null){const ev=events.find(e=>e.id===editingId);if(ev){ev.name=n;ev.date=d;}}else events.push({name:n,date:d,id:Date.now()});events.sort((a,b)=>a.date.localeCompare(b.date));persist();renderCountdowns();renderCal();closeCdModal();showToast(editingId?`Updated!`:`Added!`);}
-function deleteEvent(){if(editingId===null)return;events=events.filter(e=>e.id!==editingId);persist();renderCountdowns();renderCal();closeCdModal();showToast('Deleted.');}
-function markDone(id){
-  const ev=events.find(e=>e.id===id);if(!ev)return;
-  ev.doneAt=new Date().toISOString();
-  archivedEvents.unshift(ev);
-  events=events.filter(e=>e.id!==id);
-  persist();renderCountdowns();renderCal();
-  showToast(`✅ "${ev.name}" archived!`);
+function saveEvent(){
+  const n=document.getElementById('evName').value.trim(),d=document.getElementById('evDate').value;
+  if(!n||!d)return showToast('Enter name and date!');
+  const isDl=editingType==='deadline';
+  const arr=isDl?deadlines:events;
+  if(editingId!==null){const it=arr.find(e=>e.id===editingId);if(it){it.name=n;it.date=d;}}
+  else arr.push({name:n,date:d,id:Date.now()});
+  arr.sort((a,b)=>a.date.localeCompare(b.date));
+  persist();renderCountdowns();renderDeadlines();renderCal();closeCdModal();
+  showToast(editingId?`Updated!`:`Added!`);
+}
+function deleteEvent(){
+  if(editingId===null)return;
+  const isDl=editingType==='deadline';
+  if(isDl) deadlines=deadlines.filter(e=>e.id!==editingId);
+  else events=events.filter(e=>e.id!==editingId);
+  persist();renderCountdowns();renderDeadlines();renderCal();closeCdModal();showToast('Deleted.');
+}
+function markDone(id,kind){
+  kind=kind||'event';
+  const isDl=kind==='deadline';
+  const arr=isDl?deadlines:events, arch=isDl?archivedDeadlines:archivedEvents;
+  const it=arr.find(e=>e.id===id);if(!it)return;
+  it.doneAt=new Date().toISOString();
+  arch.unshift(it);
+  if(isDl) deadlines=deadlines.filter(e=>e.id!==id); else events=events.filter(e=>e.id!==id);
+  persist();renderCountdowns();renderDeadlines();renderCal();
+  showToast(`✅ "${it.name}" archived!`);
   launchConfetti(50,40);
 }
-function unarchiveEvent(id){
-  const ev=archivedEvents.find(e=>e.id===id);if(!ev)return;
-  delete ev.doneAt;
-  events.push(ev);events.sort((a,b)=>a.date.localeCompare(b.date));
-  archivedEvents=archivedEvents.filter(e=>e.id!==id);
-  persist();renderCountdowns();renderCal();showToast('↩ Restored!');
+function unarchiveEvent(id,kind){
+  kind=kind||'event';
+  const isDl=kind==='deadline';
+  const arch=isDl?archivedDeadlines:archivedEvents;
+  const it=arch.find(e=>e.id===id);if(!it)return;
+  delete it.doneAt;
+  if(isDl){ deadlines.push(it); deadlines.sort((a,b)=>a.date.localeCompare(b.date)); archivedDeadlines=archivedDeadlines.filter(e=>e.id!==id); }
+  else { events.push(it); events.sort((a,b)=>a.date.localeCompare(b.date)); archivedEvents=archivedEvents.filter(e=>e.id!==id); }
+  persist();renderCountdowns();renderDeadlines();renderCal();showToast('↩ Restored!');
 }
-function deleteArchived(id){
-  archivedEvents=archivedEvents.filter(e=>e.id!==id);
-  persist();renderCountdowns();showToast('Deleted.');
+function deleteArchived(id,kind){
+  kind=kind||'event';
+  if(kind==='deadline'){ archivedDeadlines=archivedDeadlines.filter(e=>e.id!==id); persist();renderDeadlines(); }
+  else { archivedEvents=archivedEvents.filter(e=>e.id!==id); persist();renderCountdowns(); }
+  showToast('Deleted.');
 }
-let archiveOpen=false;
+let archiveOpen=false, dlArchiveOpen=false;
 
-// ── Countdown date tooltip (position:fixed so the scrolling list can never clip it) ──
+// ── Countdown/deadline date tooltip (position:fixed so scrolling lists can never clip it) ──
 function initCdTooltip(){
   if(document.getElementById('cdDateTooltip')) return;
   const tip=document.createElement('div');
   tip.id='cdDateTooltip';
   tip.className='cd-date-tooltip';
   document.body.appendChild(tip);
-  const list=document.getElementById('cdList');
-  if(!list) return;
-  list.addEventListener('mouseover',e=>{
-    const badge=e.target.closest('.cd-badge');
-    if(!badge||!badge.dataset.date) return;
+  const showTip=badge=>{
     tip.textContent=badge.dataset.date;
     tip.classList.add('show');
     const r=badge.getBoundingClientRect();
@@ -3151,19 +3251,79 @@ function initCdTooltip(){
     if(left>maxLeft) left=maxLeft;
     tip.style.top=top+'px';
     tip.style.left=left+'px';
+  };
+  const hideTip=()=>tip.classList.remove('show');
+  ['cdList','dlList'].forEach(id=>{
+    const list=document.getElementById(id);
+    if(!list) return;
+    list.addEventListener('mouseover',e=>{
+      const badge=e.target.closest('.cd-badge');
+      if(!badge||!badge.dataset.date) return;
+      showTip(badge);
+    });
+    list.addEventListener('mouseout',e=>{
+      if(e.target.closest('.cd-badge')) hideTip();
+    });
+    // Hide immediately if the list scrolls out from under a hovered badge
+    list.addEventListener('scroll',hideTip);
   });
-  list.addEventListener('mouseout',e=>{
-    const badge=e.target.closest('.cd-badge');
-    if(badge) tip.classList.remove('show');
-  });
-  // Hide immediately if the list scrolls out from under a hovered badge
-  list.addEventListener('scroll',()=>tip.classList.remove('show'));
 }
 function renderCountdowns(){
   const list=document.getElementById('cdList');list.innerHTML='';
   const tm=new Date(toKey(today())+'T00:00:00').getTime();
-  if(!events.length&&!archivedEvents.length){list.innerHTML='<div class="cd-empty">No events yet</div>';return;}
-  events.forEach(ev=>{
+  const combined=cdLayoutMode==='single';
+  const items=combined
+    ?[...events.map(e=>({...e,__kind:'event'})),...deadlines.map(e=>({...e,__kind:'deadline'}))].sort((a,b)=>a.date.localeCompare(b.date))
+    :events.map(e=>({...e,__kind:'event'}));
+  const archItems=combined
+    ?[...archivedEvents.map(e=>({...e,__kind:'event'})),...archivedDeadlines.map(e=>({...e,__kind:'deadline'}))]
+    :archivedEvents.map(e=>({...e,__kind:'event'}));
+  if(!items.length&&!archItems.length){list.innerHTML=`<div class="cd-empty">No ${combined?'countdowns':'events'} yet</div>`;return;}
+  items.forEach(ev=>{
+    const diff=Math.round((new Date(ev.date+'T00:00:00').getTime()-tm)/86400000);
+    const passed=diff<0,soon=diff>=0&&diff<=7;
+    const cls=passed?'passed':soon?'soon':'';
+    const badge=passed?`${Math.abs(diff)}<span class="cd-badge-unit"> day${Math.abs(diff)===1?'':'s'} ago</span>`
+      :diff===0?'Today!'
+      :diff===1?'Tomorrow'
+      :`${diff}<span class="cd-badge-unit"> days</span>`;
+    const dateStr=new Date(ev.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const kindTag=combined?`<span class="cd-kind-tag ${ev.__kind}">${ev.__kind==='deadline'?'DL':'EV'}</span>`:'';
+    const item=document.createElement('div');item.className='countdown-item';
+    item.innerHTML=`<button class="cd-done-btn" title="Mark done">✓</button><div class="cd-left">${kindTag}<div class="cd-name">${ev.name}</div></div><div class="cd-badge ${cls}" data-date="${dateStr}">${badge}</div><button class="cd-edit" title="Edit">✎</button>`;
+    item.querySelector('.cd-done-btn').addEventListener('click',()=>markDone(ev.id,ev.__kind));
+    item.querySelector('.cd-edit').addEventListener('click',()=>openCdModal(ev,ev.__kind));
+    list.appendChild(item);
+  });
+  if(archItems.length){
+    const toggle=document.createElement('button');
+    toggle.className='cd-archive-toggle';
+    toggle.textContent=archiveOpen?`▲ Hide archive (${archItems.length})`:`▼ Archive (${archItems.length})`;
+    toggle.addEventListener('click',()=>{archiveOpen=!archiveOpen;renderCountdowns();});
+    list.appendChild(toggle);
+    if(archiveOpen){
+      const sec=document.createElement('div');sec.className='cd-archive-section';
+      const hdr=document.createElement('div');hdr.className='cd-archive-header';hdr.textContent='Completed';sec.appendChild(hdr);
+      archItems.forEach(ev=>{
+        const dateStr=new Date(ev.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        const doneStr=ev.doneAt?new Date(ev.doneAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+        const kindTag=combined?`<span class="cd-kind-tag ${ev.__kind}">${ev.__kind==='deadline'?'DL':'EV'}</span>`:'';
+        const item=document.createElement('div');item.className='countdown-item archived';
+        item.innerHTML=`<div class="cd-left">${kindTag}<div class="cd-name">${ev.name}</div><div class="cd-date">${dateStr}${doneStr?` · done ${doneStr}`:''}</div></div><button class="cd-unarchive" title="Restore">↩</button><button class="cd-unarchive" title="Delete" style="color:#fb7185;">✕</button>`;
+        item.querySelectorAll('.cd-unarchive')[0].addEventListener('click',()=>unarchiveEvent(ev.id,ev.__kind));
+        item.querySelectorAll('.cd-unarchive')[1].addEventListener('click',()=>deleteArchived(ev.id,ev.__kind));
+        sec.appendChild(item);
+      });
+      list.appendChild(sec);
+    }
+  }
+}
+
+function renderDeadlines(){
+  const list=document.getElementById('dlList');if(!list)return;list.innerHTML='';
+  const tm=new Date(toKey(today())+'T00:00:00').getTime();
+  if(!deadlines.length&&!archivedDeadlines.length){list.innerHTML='<div class="cd-empty">No deadlines yet</div>';return;}
+  deadlines.forEach(ev=>{
     const diff=Math.round((new Date(ev.date+'T00:00:00').getTime()-tm)/86400000);
     const passed=diff<0,soon=diff>=0&&diff<=7;
     const cls=passed?'passed':soon?'soon':'';
@@ -3174,26 +3334,26 @@ function renderCountdowns(){
     const dateStr=new Date(ev.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const item=document.createElement('div');item.className='countdown-item';
     item.innerHTML=`<button class="cd-done-btn" title="Mark done">✓</button><div class="cd-left"><div class="cd-name">${ev.name}</div></div><div class="cd-badge ${cls}" data-date="${dateStr}">${badge}</div><button class="cd-edit" title="Edit">✎</button>`;
-    item.querySelector('.cd-done-btn').addEventListener('click',()=>markDone(ev.id));
-    item.querySelector('.cd-edit').addEventListener('click',()=>openCdModal(ev));
+    item.querySelector('.cd-done-btn').addEventListener('click',()=>markDone(ev.id,'deadline'));
+    item.querySelector('.cd-edit').addEventListener('click',()=>openCdModal(ev,'deadline'));
     list.appendChild(item);
   });
-  if(archivedEvents.length){
+  if(archivedDeadlines.length){
     const toggle=document.createElement('button');
     toggle.className='cd-archive-toggle';
-    toggle.textContent=archiveOpen?`▲ Hide archive (${archivedEvents.length})`:`▼ Archive (${archivedEvents.length})`;
-    toggle.addEventListener('click',()=>{archiveOpen=!archiveOpen;renderCountdowns();});
+    toggle.textContent=dlArchiveOpen?`▲ Hide archive (${archivedDeadlines.length})`:`▼ Archive (${archivedDeadlines.length})`;
+    toggle.addEventListener('click',()=>{dlArchiveOpen=!dlArchiveOpen;renderDeadlines();});
     list.appendChild(toggle);
-    if(archiveOpen){
+    if(dlArchiveOpen){
       const sec=document.createElement('div');sec.className='cd-archive-section';
       const hdr=document.createElement('div');hdr.className='cd-archive-header';hdr.textContent='Completed';sec.appendChild(hdr);
-      archivedEvents.forEach(ev=>{
+      archivedDeadlines.forEach(ev=>{
         const dateStr=new Date(ev.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
         const doneStr=ev.doneAt?new Date(ev.doneAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
         const item=document.createElement('div');item.className='countdown-item archived';
         item.innerHTML=`<div class="cd-left"><div class="cd-name">${ev.name}</div><div class="cd-date">${dateStr}${doneStr?` · done ${doneStr}`:''}</div></div><button class="cd-unarchive" title="Restore">↩</button><button class="cd-unarchive" title="Delete" style="color:#fb7185;">✕</button>`;
-        item.querySelectorAll('.cd-unarchive')[0].addEventListener('click',()=>unarchiveEvent(ev.id));
-        item.querySelectorAll('.cd-unarchive')[1].addEventListener('click',()=>deleteArchived(ev.id));
+        item.querySelectorAll('.cd-unarchive')[0].addEventListener('click',()=>unarchiveEvent(ev.id,'deadline'));
+        item.querySelectorAll('.cd-unarchive')[1].addEventListener('click',()=>deleteArchived(ev.id,'deadline'));
         sec.appendChild(item);
       });
       list.appendChild(sec);
@@ -3540,9 +3700,9 @@ function pmCycleAdj(delta){
 function updateTimerStats(){const dk=toKey(today()),ts=sessions.filter(s=>s.date===dk),tot=ts.reduce((a,s)=>a+(s.hours||0),0);document.getElementById('swToday').textContent=fmt(tot);document.getElementById('swSessCount').textContent=ts.length;}
 
 // ── Export / Import ────────────────────────────────
-function exportData(){const blob=new Blob([JSON.stringify({studyLog,events,sessions,tags:allTags,archivedTags,tagColors,goals},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`meridian-${toKey(today())}.json`;a.click();showToast('Exported!');}
-function importData(ev){const file=ev.target.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);const isOldFormat=Object.keys(d).every(k=>/^\d{4}-\d{2}-\d{2}$/.test(k));if(isOldFormat){studyLog=d;}else{if(!d.studyLog&&!d.sessions){showToast('Invalid file.');return;}if(d.studyLog)studyLog=d.studyLog;if(d.events)events=d.events;if(d.sessions)sessions=d.sessions;if(d.tags)allTags=d.tags;if(d.archivedTags)archivedTags=d.archivedTags;if(d.tagColors)tagColors=d.tagColors;if(d.goals)goals=d.goals;localStorage.setItem('st_events',JSON.stringify(events));localStorage.setItem('st_sess',JSON.stringify(sessions));localStorage.setItem('st_tags',JSON.stringify(allTags));localStorage.setItem('st_archived_tags',JSON.stringify(archivedTags));localStorage.setItem('st_tagcol',JSON.stringify(tagColors));localStorage.setItem('st_goals',JSON.stringify(goals));}localStorage.setItem('st_log',JSON.stringify(studyLog));persist();renderAll();renderCountdowns();renderTagCloud();renderRadar();renderCal();showToast('Imported!');setTimeout(()=>window.location.reload(),800);}catch(err){showToast('Invalid file.');}ev.target.value='';};r.readAsText(file);}
-function clearAll(){studyLog={};events=[];sessions=[];persist();renderAll();renderCountdowns();renderTagCloud();renderRadar();renderCal();showToast('Cleared.');}
+function exportData(){const blob=new Blob([JSON.stringify({studyLog,events,deadlines,sessions,tags:allTags,archivedTags,tagColors,goals},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`meridian-${toKey(today())}.json`;a.click();showToast('Exported!');}
+function importData(ev){const file=ev.target.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{try{const d=JSON.parse(e.target.result);const isOldFormat=Object.keys(d).every(k=>/^\d{4}-\d{2}-\d{2}$/.test(k));if(isOldFormat){studyLog=d;}else{if(!d.studyLog&&!d.sessions){showToast('Invalid file.');return;}if(d.studyLog)studyLog=d.studyLog;if(d.events)events=d.events;if(d.deadlines)deadlines=d.deadlines;if(d.sessions)sessions=d.sessions;if(d.tags)allTags=d.tags;if(d.archivedTags)archivedTags=d.archivedTags;if(d.tagColors)tagColors=d.tagColors;if(d.goals)goals=d.goals;localStorage.setItem('st_events',JSON.stringify(events));localStorage.setItem('st_deadlines',JSON.stringify(deadlines));localStorage.setItem('st_sess',JSON.stringify(sessions));localStorage.setItem('st_tags',JSON.stringify(allTags));localStorage.setItem('st_archived_tags',JSON.stringify(archivedTags));localStorage.setItem('st_tagcol',JSON.stringify(tagColors));localStorage.setItem('st_goals',JSON.stringify(goals));}localStorage.setItem('st_log',JSON.stringify(studyLog));persist();renderAll();renderCountdowns();renderDeadlines();renderTagCloud();renderRadar();renderCal();showToast('Imported!');setTimeout(()=>window.location.reload(),800);}catch(err){showToast('Invalid file.');}ev.target.value='';};r.readAsText(file);}
+function clearAll(){studyLog={};events=[];deadlines=[];sessions=[];persist();renderAll();renderCountdowns();renderDeadlines();renderTagCloud();renderRadar();renderCal();showToast('Cleared.');}
 
 // ── Notes ──────────────────────────────────────────
 function notesSave(){ localStorage.setItem('st_notes', JSON.stringify(notesData)); hasUnsyncedChanges = true; if(typeof scheduleSupa==='function') scheduleSupa(); }
@@ -4135,6 +4295,24 @@ function loadNickname(){
   const el = document.getElementById('nicknameInput');
   if(el) el.value = val;
 }
+function toggleCdLayout(){
+  applyCdLayout(cdLayoutMode==='split'?'single':'split');
+}
+function loadCdLayout(){
+  applyCdLayout(cdLayoutMode);
+}
+function applyCdLayout(mode){
+  cdLayoutMode=mode;
+  localStorage.setItem('st_cd_layout',mode);
+  const col=document.querySelector('.cd-cal-col');
+  if(col) col.classList.toggle('single-mode',mode==='single');
+  const titleEl=document.getElementById('cdBoxTitle');
+  if(titleEl) titleEl.textContent=mode==='single'?'Countdowns':'Upcoming Events';
+  const btn=document.getElementById('cdLayoutToggleBtn');
+  if(btn) btn.textContent=mode==='single'?'Single':'Split';
+  renderCountdowns();
+  renderDeadlines();
+}
 function toggleReduceMotion(){
   const on = !document.documentElement.classList.contains('reduce-motion');
   document.documentElement.classList.toggle('reduce-motion', on);
@@ -4300,6 +4478,7 @@ function doRender(){
   try { renderGlance(); } catch(e){ console.error('renderGlance',e); }
   try { renderAll(); } catch(e){ console.error('renderAll',e); }
   try { renderCountdowns(); } catch(e){ console.error('renderCountdowns',e); }
+  try { renderDeadlines(); } catch(e){ console.error('renderDeadlines',e); }
   try { renderTagCloud(); } catch(e){ console.error('renderTagCloud',e); }
   try { renderRadar(); } catch(e){ console.error('renderRadar',e); }
   try { updateTimerStats(); } catch(e){ console.error('updateTimerStats',e); }
