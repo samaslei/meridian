@@ -320,14 +320,20 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 /* ══════════════════
    ROW LAYOUTS
    ══════════════════ */
-.row1 { display:grid; grid-template-columns:1fr 2.2fr; gap:14px; margin-bottom:14px; align-items:start; }
-@media(max-width:1100px){.row1{grid-template-columns:1fr;}}
+/* Outer layout: left stack (Live Tracking row + milestone + heatmap) beside
+   the calendar/countdown sidebar, which spans the full height of that stack
+   via plain CSS grid stretch (align-items:stretch) — reliable here since
+   this is a simple top-level 2-column grid, not nested inside another grid. */
+.dash-flex { display:grid; grid-template-columns:2.8fr 1fr; gap:14px; align-items:stretch; }
+@media(max-width:1100px){ .dash-flex { grid-template-columns:1fr; } }
+.dash-left { min-width:0; }
 
-/* Countdown + calendar stacked in one column, beside Live Tracking.
-   height:100% + min-height:0 is the same-frame fallback so there's no flash
-   of an oversized box before JS (syncCdCalHeight) sets an explicit pixel
-   height matching Live Tracking. The countdown list scrolls internally
-   for anything that doesn't fit. */
+.row1 { display:grid; grid-template-columns:1fr 1.4fr; gap:14px; margin-bottom:14px; align-items:start; }
+@media(max-width:900px){.row1{grid-template-columns:1fr;}}
+
+/* Calendar on top, countdown below, filling down to match the bottom of the
+   heatmap card. The countdown list scrolls internally for anything that
+   doesn't fit. */
 .cd-cal-col { display:flex; flex-direction:column; gap:14px; height:100%; min-height:0; overflow:hidden; }
 .cd-cal-col .countdown-box { flex:1; min-height:160px; }
 .cd-cal-col .row2-input-card { flex-shrink:0; }
@@ -490,10 +496,6 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .timer-card-title { font-family:'Inter',sans-serif; font-size:.70rem; text-transform:uppercase; letter-spacing:0.6px; color:var(--text3); }
 .timer-body { display:grid; grid-template-columns:1fr; gap:0; align-items:stretch; flex:1; min-height:0; }
 .timer-body::after { display:none; }
-
-/* Live Tracking + the countdown/calendar stack sit side by side, stretched to match each other's height */
-.timer-todo-row { display:grid; grid-template-columns:1.6fr 1fr; gap:14px; align-items:stretch; align-self:stretch; }
-@media(max-width:900px){ .timer-todo-row { grid-template-columns:1fr; } }
 
 /* Timer mode toggle */
 .timer-mode-toggle { display:flex; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:3px; gap:2px; }
@@ -771,19 +773,22 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 .mini-cal-dow { font-family:'Inter',sans-serif; font-size:.65rem; color:var(--text3); text-align:center; padding:1px 0; text-transform:uppercase; letter-spacing:.5px; }
 .mini-cal-cell { aspect-ratio:1.9; border-radius:6px; display:flex; align-items:center; justify-content:center; font-family:'Space Grotesk',sans-serif; font-size:.82rem; font-weight:500; color:var(--text3); position:relative; cursor:default; transition:background .12s; }
 .mini-cal-cell.other-month { opacity:.3; }
+.cal-day-num { position:relative; z-index:1; }
 .mini-cal-cell.has-event { cursor:pointer; }
 .mini-cal-cell.has-event:not(.today-cal)::before {
   content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  height:65%; aspect-ratio:1; border-radius:50%;
+  height:78%; aspect-ratio:1; border-radius:50%;
   background:color-mix(in srgb, var(--accent) 35%, transparent);
+  z-index:0;
 }
 .mini-cal-cell.has-study { color:var(--text); font-weight:600; }
 .mini-cal-cell.has-study::after { content:''; position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:var(--accent2); }
 .mini-cal-cell.today-cal { color:#fff; font-weight:700; }
 .mini-cal-cell.today-cal::before {
   content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  height:72%; aspect-ratio:1; border-radius:6px;
+  height:85%; aspect-ratio:1; border-radius:6px;
   background:var(--accent); box-shadow:0 0 12px var(--accent-glow);
+  z-index:0;
 }
 .mini-cal-cell.today-cal::after { display:none; }
 .cal-tooltip { position:fixed; background:var(--tip-bg); border:1px solid var(--border2); border-radius:8px; padding:6px 10px; font-family:'Inter',sans-serif; font-size:.76rem; color:var(--text); pointer-events:none; opacity:0; transition:opacity .15s; z-index:9999; white-space:nowrap; box-shadow:0 4px 20px rgba(0,0,0,.4); }
@@ -1144,12 +1149,14 @@ input[type=date]::-webkit-calendar-picker-indicator { filter:var(--cal-inv); cur
 }
 .reduce-motion *, .reduce-motion *::before, .reduce-motion *::after { animation-duration:0.001ms !important; animation-delay:0s !important; transition-duration:0.001ms !important; }
 
-/* Row 1 — streak & chart, then Live Tracking & the countdown/calendar stack */
+/* Row 1 — streak & chart, then Live Tracking */
 .stats-col .streak-box { animation-delay:.05s; }
 .stats-col .chart-card { animation-delay:.11s; }
-.timer-todo-row .timer-card { animation-delay:.17s; }
-.cd-cal-col .countdown-box { animation-delay:.23s; }
-.cd-cal-col .row2-input-card { animation-delay:.29s; }
+.row1 .timer-card { animation-delay:.17s; }
+
+/* Calendar/countdown sidebar */
+.cd-cal-col .row2-input-card { animation-delay:.23s; }
+.cd-cal-col .countdown-box { animation-delay:.29s; }
 
 /* Row 3 — milestone/quick stats */
 .row3 .quick-stats-card { animation-delay:.41s; }
@@ -1733,6 +1740,8 @@ function injectStudyPlan(htmlStr){
   <span class="glance-today">This week: <span id="glanceWeek">0h</span> · This month: <span id="glanceMonth">0h</span></span>
 </div>
 
+<div class="dash-flex">
+<div class="dash-left">
 <div class="row1">
 
   <div class="stats-col">
@@ -1765,7 +1774,6 @@ function injectStudyPlan(htmlStr){
       <div class="week-total" id="weekTotal"></div>
     </div>
   </div>
-  <div class="timer-todo-row">
   <div class="timer-card" style="margin-bottom:0;">
     <div class="timer-card-header" style="flex-direction:column;align-items:stretch;gap:8px;">
       <div style="display:flex;align-items:center;gap:10px;">
@@ -1954,30 +1962,6 @@ function injectStudyPlan(htmlStr){
       </div>
     </div>
   </div>
-  <div class="cd-cal-col">
-    <div class="countdown-box">
-      <div class="countdown-header">
-        <span class="section-title" style="margin:0;display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M6 2h12"/><path d="M6 22h12"/><path d="M6 2c0 6 6 6 6 10c0-4 6-4 6-10"/><path d="M6 22c0-6 6-6 6-10c0 4 6 4 6 10"/></svg>Countdowns</span>
-        <button class="add-event-btn" onclick="openCdModal()">+ Add</button>
-      </div>
-      <div class="countdown-list" id="cdList"></div>
-    </div>
-    <div class="input-card row2-input-card">
-      <div class="mini-cal" style="flex-shrink:0;width:100%;">
-        <div class="mini-cal-header">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-right:3px;"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><path d="M8 2v4"/><path d="M16 2v4"/></svg>
-          <span class="mini-cal-month-label" id="calMonth"></span>
-          <button class="mini-cal-today-btn" onclick="calGoToday()">Today</button>
-          <div class="mini-cal-navs">
-            <button class="mini-cal-nav" onclick="calPrev()">‹</button>
-            <button class="mini-cal-nav" onclick="calNext()">›</button>
-          </div>
-        </div>
-        <div class="mini-cal-grid" id="calGrid"></div>
-      </div>
-    </div>
-  </div>
-  </div>
 </div>
 
 <div class="row3">
@@ -2036,6 +2020,32 @@ function injectStudyPlan(htmlStr){
       <div class="legend-lbl">More</div>
     </div>
   </div>
+</div>
+
+</div>
+<div class="cd-cal-col">
+  <div class="input-card row2-input-card">
+    <div class="mini-cal" style="flex-shrink:0;width:100%;">
+      <div class="mini-cal-header">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-right:3px;"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><path d="M8 2v4"/><path d="M16 2v4"/></svg>
+        <span class="mini-cal-month-label" id="calMonth"></span>
+        <button class="mini-cal-today-btn" onclick="calGoToday()">Today</button>
+        <div class="mini-cal-navs">
+          <button class="mini-cal-nav" onclick="calPrev()">‹</button>
+          <button class="mini-cal-nav" onclick="calNext()">›</button>
+        </div>
+      </div>
+      <div class="mini-cal-grid" id="calGrid"></div>
+    </div>
+  </div>
+  <div class="countdown-box">
+    <div class="countdown-header">
+      <span class="section-title" style="margin:0;display:flex;align-items:center;gap:5px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M6 2h12"/><path d="M6 22h12"/><path d="M6 2c0 6 6 6 6 10c0-4 6-4 6-10"/><path d="M6 22c0-6 6-6 6-10c0 4 6 4 6 10"/></svg>Countdowns</span>
+      <button class="add-event-btn" onclick="openCdModal()">+ Add</button>
+    </div>
+    <div class="countdown-list" id="cdList"></div>
+  </div>
+</div>
 </div>
 
 </div></div><div class="view" id="view-studyplan">
@@ -2612,19 +2622,6 @@ async function init(){
   setInterval(()=>{ if(currentUser && !isGuest) refreshAccessToken(); }, 45*60*1000);
   // Add ripple to all buttons
   document.querySelectorAll('button').forEach(btn=>{btn.classList.add('ripple-wrap');btn.addEventListener('click',e=>{addRipple(btn,e);btn.classList.remove('btn-bounce');void btn.offsetWidth;btn.classList.add('btn-bounce');setTimeout(()=>btn.classList.remove('btn-bounce'),300);});});
-  setTimeout(syncCdCalHeight,50);
-  window.addEventListener('resize',syncCdCalHeight);
-  // Keep the column synced any time Live Tracking's own height changes
-  // (e.g. switching Stopwatch/Pomodoro tabs, or a responsive breakpoint).
-  const timerElForObserver=document.querySelector('.timer-card');
-  if(timerElForObserver&&window.ResizeObserver){
-    let rafPending=false;
-    new ResizeObserver(()=>{
-      if(rafPending) return;
-      rafPending=true;
-      requestAnimationFrame(()=>{ rafPending=false; syncCdCalHeight(); });
-    }).observe(timerElForObserver);
-  }
   document.addEventListener('click',e=>{
     if(!e.target.closest('#schemeWrap'))document.getElementById('schemePanel').classList.remove('open');
     if(!e.target.closest('.tag-dd-wrap'))document.querySelectorAll('.tag-dd').forEach(d=>d.classList.remove('open'));
@@ -2745,7 +2742,7 @@ function renderCal(){
     const key=`${yr}-${String(mo+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const cell=document.createElement('div');cell.className='mini-cal-cell';
     if(key===tk)cell.classList.add('today-cal');
-    cell.textContent=d;
+    cell.innerHTML='<span class="cal-day-num">'+d+'</span>';
     if(evtMap[d]){
       cell.classList.add('has-event');
       const evList=evtMap[d];
@@ -4297,21 +4294,6 @@ function countUp(el,target,duration=600){const start=parseInt(el.textContent)||0
 const MILESTONES=[3,7,14,21,30,50,100,200,365];
 function checkStreakMilestone(streak){if(MILESTONES.includes(streak)){launchConfetti(50,20);const fw=document.querySelector('.streak-flame-wrap');if(fw){fw.classList.remove('milestone-burst');void fw.offsetWidth;fw.classList.add('milestone-burst');setTimeout(()=>fw.classList.remove('milestone-burst'),700);}showToast(`🎉 ${streak} day streak!`);}}
 
-// ── Countdown/calendar column height sync (mirrors Live Tracking's height) ──
-// One-directional only: timer-card's height never depends on cd-cal-col,
-// so this cannot feed back into a loop the way matching the streak box did.
-function syncCdCalHeight(){
-  const timer=document.querySelector('.timer-card');
-  const col=document.querySelector('.cd-cal-col');
-  if(timer&&col){
-    const h=timer.offsetHeight+'px';
-    if(col.style.height!==h){
-      col.style.height=h;
-      col.style.maxHeight=h;
-    }
-  }
-}
-
 function doRender(){
   try { jumpToToday(); } catch(e){ console.error('jumpToToday',e); }
   try { todoRender(); } catch(e){ console.error('todoRender',e); }
@@ -4326,7 +4308,6 @@ function doRender(){
   try { updateFloatingTimer(); } catch(e){ console.error('updateFloatingTimer',e); }
   try { renderCal(); } catch(e){ console.error('renderCal',e); }
   try { renderTimeProgress(); } catch(e){ console.error('renderTimeProgress',e); }
-  try { setTimeout(syncCdCalHeight,0); } catch(e){ console.error('syncCdCalHeight',e); }
   const savedPlan = localStorage.getItem('st_studyplan_html');
   if(savedPlan) try { injectStudyPlan(savedPlan); } catch(e){ console.error('injectStudyPlan',e); }
 }
