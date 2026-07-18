@@ -452,6 +452,33 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .cd-archive-header { font-family:'Inter',sans-serif; font-size:.70rem; color:var(--text3); text-transform:uppercase; letter-spacing:.5px; padding:4px 2px; }
 .cd-weekday-header { font-family:'Inter',sans-serif; font-size:.66rem; font-weight:700; color:var(--accent2); text-transform:uppercase; letter-spacing:.6px; padding:6px 2px 2px; }
 .cd-weekday-header:not(:first-child) { margin-top:10px; padding-top:2px; }
+.cd-weekday-count { margin-left:6px; font-weight:600; color:var(--text3); text-transform:none; letter-spacing:0; }
+.cd-cat-tag--outline { background:transparent; font-weight:500; }
+.cd-cat-tag--solid { font-weight:700; border:none; }
+.dl-stats-row { display:flex; gap:8px; margin-bottom:10px; }
+.dl-stat-card {
+  flex:1; border-radius:8px; padding:7px 10px; cursor:pointer; text-align:left;
+  background:var(--surface2); border:1px solid transparent;
+  transition:border-color .15s,background .15s;
+}
+.dl-stat-card:hover { border-color:var(--border2); }
+.dl-stat-card.active { border-color:currentColor; }
+.dl-stat-card.overdue { color:#f87171; background:color-mix(in srgb,#f87171 10%,var(--surface2)); }
+.dl-stat-card.week { color:#fbbf24; background:color-mix(in srgb,#fbbf24 10%,var(--surface2)); }
+.dl-stat-card.later { color:var(--text2); }
+.dl-stat-label { font-family:'Inter',sans-serif; font-size:.62rem; text-transform:uppercase; letter-spacing:.4px; opacity:.85; }
+.dl-stat-num { font-family:'Inter',sans-serif; font-size:1.05rem; font-weight:700; margin-top:1px; }
+.dl-chips-row { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+.dl-chip {
+  font-family:'Inter',sans-serif; font-size:.68rem; padding:4px 10px; border-radius:999px;
+  background:none; border:1px solid var(--border2); color:var(--text3); cursor:pointer;
+  transition:all .15s;
+}
+.dl-chip:hover { border-color:var(--accent); color:var(--accent2); }
+.dl-chip.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+.countdown-item.urgency-overdue { border-left:3px solid #f87171; border-radius:0; padding-left:9px; }
+.countdown-item.urgency-week { border-left:3px solid #fbbf24; border-radius:0; padding-left:9px; }
+.countdown-item.urgency-later { border-left:3px solid var(--border2); border-radius:0; padding-left:9px; }
 .countdown-item.archived { opacity:.4; background:transparent; }
 .countdown-item.archived .cd-name { text-decoration:line-through; }
 .cd-unarchive { background:none; border:none; cursor:pointer; font-size:.7rem; color:var(--text3); padding:0; flex-shrink:0; transition:color .15s; }
@@ -663,6 +690,18 @@ h1 { font-size:1.85rem; font-weight:700; letter-spacing:-0.6px; font-family:'Spa
 .tag-create-row { border-top:1px solid var(--border); margin-top:5px; padding-top:5px; }
 .tag-create-btn { background:transparent; border:none; color:var(--accent2); cursor:pointer; font-family:'Inter',sans-serif; font-size:.73rem; padding:3px 0; width:100%; text-align:left; }
 .tag-create-btn:hover { opacity:.8; }
+.dl-manage-label { font-family:'Inter',sans-serif; font-size:.63rem; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+.dl-subject-add-row { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+.dl-subject-add-row .tag-search { margin-bottom:0; }
+.dl-subject-add-btn {
+  flex-shrink:0; width:26px; height:26px; border-radius:6px;
+  background:var(--surface2); border:1px solid var(--border2); color:var(--text2);
+  cursor:pointer; font-size:.95rem; line-height:1; display:flex; align-items:center; justify-content:center;
+  transition:border-color .15s,color .15s,background .15s;
+}
+.dl-subject-add-btn:hover { border-color:var(--accent); color:var(--accent2); background:var(--accent-glow); }
+.dl-manage-list .tag-opt-del { opacity:.55; }
+.dl-manage-list .tag-opt-del:hover { opacity:1; }
 .cd-cat-ellipsis-btn { background:var(--surface); border:1px solid var(--border2); border-radius:6px; color:var(--text3); cursor:pointer; font-family:'Inter',sans-serif; font-size:.85rem; font-weight:700; padding:2px 8px; line-height:1.4; transition:border-color .15s,color .15s; }
 .cd-cat-ellipsis-btn:hover { border-color:var(--accent); color:var(--accent2); }
 .cd-cat-popover {
@@ -2086,6 +2125,13 @@ function injectStudyPlan(htmlStr){
         <button class="add-event-btn" onclick="openCdModal(null,'deadline')">+ Add</button>
       </div>
     </div>
+    <div class="dl-stats-row" id="dlStatsRow"></div>
+    <div class="dl-chips-row" id="dlChipsRow">
+      <button class="dl-chip active" data-f="all">All</button>
+      <button class="dl-chip" data-f="overdue">Overdue</button>
+      <button class="dl-chip" data-f="week">This week</button>
+      <button class="dl-chip" data-f="later">Later</button>
+    </div>
     <div class="countdown-list" id="dlList"></div>
   </div>
   <div class="countdown-box events-box">
@@ -2278,16 +2324,26 @@ function injectStudyPlan(htmlStr){
   <div class="tag-create-row"><button class="tag-create-btn" id="cdCatPopCreateBtn" onclick="createCdCategoryFromPopover()">+ Create new category</button></div>
 </div>
 
+<div class="cd-cat-popover" id="cdSubjectPopover">
+  <input class="tag-search" id="cdSubjectPopSearch" placeholder="Type a new subject…" oninput="filterCdSubjectPopover(this.value)" onkeydown="if(event.key==='Enter')createCdSubjectFromPopover()">
+  <div class="tag-opts" id="cdSubjectPopOpts"></div>
+  <div class="tag-create-row"><button class="tag-create-btn" id="cdSubjectPopCreateBtn" onclick="createCdSubjectFromPopover()">+ Create new subject</button></div>
+</div>
+
 <div class="cd-cat-popover" id="dlGroupPopover" style="min-width:220px;">
+  <div class="dl-manage-label">Category</div>
   <div class="dl-group-opts" id="dlGroupOpts">
     <div class="tag-opt dl-group-opt" data-mode="none"><div class="tag-opt-dot" style="background:transparent;border:1px dashed var(--text3);"></div><span class="tag-opt-name">No categorization</span></div>
     <div class="tag-opt dl-group-opt" data-mode="subject"><div class="tag-opt-dot" style="background:transparent;border:1px dashed var(--text3);"></div><span class="tag-opt-name">By subject</span></div>
     <div class="tag-opt dl-group-opt" data-mode="week"><div class="tag-opt-dot" style="background:transparent;border:1px dashed var(--text3);"></div><span class="tag-opt-name">By week</span></div>
   </div>
-  <div id="dlSubjectManage" style="display:none;border-top:1px solid var(--border);margin-top:6px;padding-top:6px;">
-    <input class="tag-search" id="dlSubjectAddInput" placeholder="Add a subject…" onkeydown="if(event.key==='Enter')addDlSubject()">
-    <div class="tag-opts" id="dlSubjectListOpts"></div>
-    <div class="tag-create-row"><button class="tag-create-btn" onclick="addDlSubject()">+ Add subject</button></div>
+  <div id="dlSubjectManage" style="display:none;border-top:1px solid var(--border);margin-top:8px;padding-top:8px;">
+    <div class="dl-manage-label">Manage Subjects</div>
+    <div class="dl-subject-add-row">
+      <input class="tag-search" id="dlSubjectAddInput" placeholder="Add a subject…" onkeydown="if(event.key==='Enter')addDlSubject()">
+      <button type="button" class="dl-subject-add-btn" onclick="addDlSubject()" title="Add subject">+</button>
+    </div>
+    <div class="tag-opts dl-manage-list" id="dlSubjectListOpts"></div>
   </div>
 </div>
 
@@ -2312,6 +2368,14 @@ function injectStudyPlan(htmlStr){
         <button type="button" class="cd-cat-ellipsis-btn" onclick="toggleCdCatPopover(event)" title="Choose category">⋯</button>
       </div>
     </div>
+    <div class="field">
+      <label class="lbl">Subject <span style="color:var(--text3);font-weight:400;">(optional)</span></label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span id="evSubjectChip" class="cd-cat-tag" style="display:none;font-size:.8rem;padding:5px 10px;"></span>
+        <span id="evSubjectEmpty" style="font-family:'Inter',sans-serif;font-size:.82rem;color:var(--text3);">No subject</span>
+        <button type="button" class="cd-cat-ellipsis-btn" onclick="toggleCdSubjectPopover(event)" title="Choose subject">⋯</button>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="modal-delete" id="cdDelBtn" onclick="deleteEvent()" style="display:none">Delete</button>
       <button class="modal-cancel" onclick="closeCdModal()">Cancel</button>
@@ -2330,7 +2394,9 @@ let deadlines = JSON.parse(localStorage.getItem('st_deadlines')||'[]');
 let archivedDeadlines = JSON.parse(localStorage.getItem('st_archived_deadlines')||'[]');
 let cdCategories = JSON.parse(localStorage.getItem('st_cd_categories')||'[]');
 let cdCategoryColors = JSON.parse(localStorage.getItem('st_cd_category_colors')||'{}');
-let dlGroupMode = localStorage.getItem('st_dl_group_mode')||'week';
+let cdSubjects = JSON.parse(localStorage.getItem('st_cd_subjects')||'[]');
+let cdSubjectColors = JSON.parse(localStorage.getItem('st_cd_subject_colors')||'{}');
+let dlGroupMode = localStorage.getItem('st_dl_group_mode')||'none';
 let sessions  = JSON.parse(localStorage.getItem('st_sess')  ||'[]');
 let allTags   = JSON.parse(localStorage.getItem('st_tags')  ||'[]');
 let archivedTags = JSON.parse(localStorage.getItem('st_archived_tags')||'[]');
@@ -2343,9 +2409,16 @@ function cdCategoryColor(t){if(!cdCategoryColors[t]){const used=Object.values(cd
 function cdCatTagHtml(cat){
   if(!cat) return '';
   const c=cdCategoryColor(cat);
-  return `<span class="cd-cat-tag" style="background:${c}22;border:1px solid ${c}55;color:${c};" title="${cat}">${cat}</span>`;
+  return `<span class="cd-cat-tag cd-cat-tag--outline" style="border:1px solid ${c}66;color:${c};" title="${cat}">${cat}</span>`;
+}
+function cdSubjectColor(t){if(!cdSubjectColors[t]){const used=Object.values(cdSubjectColors);cdSubjectColors[t]=TAG_PAL.find(x=>!used.includes(x))||TAG_PAL[Object.keys(cdSubjectColors).length%TAG_PAL.length];localStorage.setItem('st_cd_subject_colors',JSON.stringify(cdSubjectColors));}return cdSubjectColors[t];}
+function cdSubjectTagHtml(subj){
+  if(!subj) return '';
+  const c=cdSubjectColor(subj);
+  return `<span class="cd-cat-tag cd-cat-tag--solid" style="background:${c};color:#0a0a10;" title="${subj}">${subj}</span>`;
 }
 let selectedCdCategory='';
+let selectedCdSubject='';
 function updateCdCategoryChip(){
   const chip=document.getElementById('evCategoryChip'),empty=document.getElementById('evCategoryEmpty');
   if(selectedCdCategory){
@@ -2358,6 +2431,79 @@ function updateCdCategoryChip(){
     chip.style.display='none';
     empty.style.display='inline';
   }
+}
+function updateCdSubjectChip(){
+  const chip=document.getElementById('evSubjectChip'),empty=document.getElementById('evSubjectEmpty');
+  if(selectedCdSubject){
+    const c=cdSubjectColor(selectedCdSubject);
+    chip.textContent=selectedCdSubject;
+    chip.style.background=`${c}22`;chip.style.border=`1px solid ${c}55`;chip.style.color=c;
+    chip.style.display='inline-flex';
+    empty.style.display='none';
+  } else {
+    chip.style.display='none';
+    empty.style.display='inline';
+  }
+}
+function toggleCdSubjectPopover(e){
+  e.stopPropagation();
+  const pop=document.getElementById('cdSubjectPopover');
+  const wasOpen=pop.classList.contains('open');
+  document.querySelectorAll('.tag-dd,.cd-cat-popover').forEach(d=>d.classList.remove('open'));
+  if(wasOpen) return;
+  const r=e.currentTarget.getBoundingClientRect();
+  pop.style.top=(r.bottom+6)+'px';
+  let left=r.right-190;
+  if(left<8) left=8;
+  const maxLeft=window.innerWidth-198;
+  if(left>maxLeft) left=maxLeft;
+  pop.style.left=left+'px';
+  pop.classList.add('open');
+  filterCdSubjectPopover('');
+  const inp=document.getElementById('cdSubjectPopSearch');
+  inp.value='';
+  setTimeout(()=>inp.focus(),50);
+}
+function filterCdSubjectPopover(q){
+  const opts=document.getElementById('cdSubjectPopOpts');opts.innerHTML='';
+  const noneRow=document.createElement('div');noneRow.className='tag-opt';
+  noneRow.innerHTML=`<div class="tag-opt-dot" style="background:transparent;border:1px dashed var(--text3);"></div><span class="tag-opt-name" style="color:var(--text3);">No subject</span>`;
+  noneRow.addEventListener('click',()=>{selectedCdSubject='';updateCdSubjectChip();document.getElementById('cdSubjectPopover').classList.remove('open');});
+  opts.appendChild(noneRow);
+  cdSubjects.filter(t=>t.toLowerCase().includes(q.toLowerCase())).forEach(t=>{
+    const row=document.createElement('div');row.className='tag-opt';
+    const c=cdSubjectColor(t);
+    row.innerHTML=`<div class="tag-opt-dot" style="background:${c}"></div><span class="tag-opt-name">${t}</span><button class="tag-opt-del" title="Remove subject">🗑</button>`;
+    row.addEventListener('click',()=>{selectedCdSubject=t;updateCdSubjectChip();document.getElementById('cdSubjectPopover').classList.remove('open');});
+    row.querySelector('.tag-opt-del').addEventListener('click',ev=>{ev.stopPropagation();deleteCdSubject(t);});
+    opts.appendChild(row);
+  });
+  const cb=document.getElementById('cdSubjectPopCreateBtn');
+  const v=q.trim();
+  cb.textContent=v?`+ Create "${v}"`:'+ Create new subject';
+  cb.style.display=v?'block':'none';
+}
+function createCdSubjectFromPopover(){
+  const inp=document.getElementById('cdSubjectPopSearch');
+  const v=inp.value.trim();
+  if(!v) return;
+  if(!cdSubjects.includes(v)){
+    cdSubjects.push(v);
+    cdSubjectColor(v);
+    localStorage.setItem('st_cd_subjects',JSON.stringify(cdSubjects));
+  }
+  selectedCdSubject=v;
+  updateCdSubjectChip();
+  inp.value='';
+  document.getElementById('cdSubjectPopover').classList.remove('open');
+}
+function deleteCdSubject(t){
+  cdSubjects=cdSubjects.filter(c=>c!==t);
+  localStorage.setItem('st_cd_subjects',JSON.stringify(cdSubjects));
+  if(selectedCdSubject===t){selectedCdSubject='';updateCdSubjectChip();}
+  filterCdSubjectPopover(document.getElementById('cdSubjectPopSearch').value);
+  if(typeof renderDlSubjectList==='function') renderDlSubjectList();
+  showToast('Subject removed.');
 }
 function toggleCdCatPopover(e){
   e.stopPropagation();
@@ -2457,15 +2603,15 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 function renderDlSubjectList(){
   const opts=document.getElementById('dlSubjectListOpts');opts.innerHTML='';
-  if(!cdCategories.length){
+  if(!cdSubjects.length){
     opts.innerHTML='<div style="font-family:\'Inter\',sans-serif;font-size:.72rem;color:var(--text3);padding:4px 2px;">No subjects yet</div>';
     return;
   }
-  cdCategories.forEach(t=>{
+  cdSubjects.forEach(t=>{
     const row=document.createElement('div');row.className='tag-opt';
-    const c=cdCategoryColor(t);
+    const c=cdSubjectColor(t);
     row.innerHTML=`<div class="tag-opt-dot" style="background:${c}"></div><span class="tag-opt-name">${t}</span><button class="tag-opt-del" title="Remove subject">🗑</button>`;
-    row.querySelector('.tag-opt-del').addEventListener('click',ev=>{ev.stopPropagation();deleteCdCategory(t);renderDlSubjectList();renderDeadlines();});
+    row.querySelector('.tag-opt-del').addEventListener('click',ev=>{ev.stopPropagation();deleteCdSubject(t);renderDlSubjectList();renderDeadlines();});
     opts.appendChild(row);
   });
 }
@@ -2473,10 +2619,10 @@ function addDlSubject(){
   const inp=document.getElementById('dlSubjectAddInput');
   const v=inp.value.trim();
   if(!v) return;
-  if(!cdCategories.includes(v)){
-    cdCategories.push(v);
-    cdCategoryColor(v);
-    localStorage.setItem('st_cd_categories',JSON.stringify(cdCategories));
+  if(!cdSubjects.includes(v)){
+    cdSubjects.push(v);
+    cdSubjectColor(v);
+    localStorage.setItem('st_cd_subjects',JSON.stringify(cdSubjects));
   }
   inp.value='';
   renderDlSubjectList();
@@ -3385,6 +3531,8 @@ function openCdModal(ev,type){
   document.getElementById('evDate').value=ev?ev.date:'';
   selectedCdCategory=ev?(ev.category||''):'';
   updateCdCategoryChip();
+  selectedCdSubject=ev?(ev.subject||''):'';
+  updateCdSubjectChip();
   document.getElementById('cdOverlay').classList.add('open');
   setTimeout(()=>document.getElementById('evName').focus(),50);
 }
@@ -3410,11 +3558,12 @@ function closeCdModal(){document.getElementById('cdOverlay').classList.remove('o
 function saveEvent(){
   const n=document.getElementById('evName').value.trim(),d=document.getElementById('evDate').value;
   const cat=selectedCdCategory;
+  const subj=selectedCdSubject;
   if(!n||!d)return showToast('Enter name and date!');
   const isDl=editingType==='deadline';
   const arr=isDl?deadlines:events;
-  if(editingId!==null){const it=arr.find(e=>e.id===editingId);if(it){it.name=n;it.date=d;it.category=cat||undefined;}}
-  else arr.push({name:n,date:d,id:Date.now(),category:cat||undefined});
+  if(editingId!==null){const it=arr.find(e=>e.id===editingId);if(it){it.name=n;it.date=d;it.category=cat||undefined;it.subject=subj||undefined;}}
+  else arr.push({name:n,date:d,id:Date.now(),category:cat||undefined,subject:subj||undefined});
   arr.sort((a,b)=>a.date.localeCompare(b.date));
   persist();renderCountdowns();renderDeadlines();renderCal();closeCdModal();
   showToast(editingId?`Updated!`:`Added!`);
@@ -3508,6 +3657,7 @@ function renderCountdowns(){
     const diff=Math.round((new Date(ev.date+'T00:00:00').getTime()-tm)/86400000);
     const passed=diff<0,soon=diff>=0&&diff<=7;
     const cls=passed?'passed':soon?'soon':'';
+    const urgCls=passed?'urgency-overdue':soon?'urgency-week':'urgency-later';
     const badge=passed?`${Math.abs(diff)}<span class="cd-badge-unit"> day${Math.abs(diff)===1?'':'s'} ago</span>`
       :diff===0?'Today!'
       :diff===1?'Tomorrow'
@@ -3515,8 +3665,8 @@ function renderCountdowns(){
     const dateStr=new Date(ev.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const kindTag=combined?`<span class="cd-kind-tag ${ev.__kind}">${ev.__kind==='deadline'?'DL':'EV'}</span>`:'';
     const showDone=diff<=0;
-    const item=document.createElement('div');item.className='countdown-item';
-    item.innerHTML=`${showDone?'<button class="cd-done-btn" title="Mark done">✓</button>':''}<div class="cd-left">${kindTag}${cdCatTagHtml(ev.category)}<div class="cd-name">${ev.name}</div></div><div class="cd-badge ${cls}" data-date="${dateStr}">${badge}</div><button class="cd-edit" title="Edit">✎</button>`;
+    const item=document.createElement('div');item.className=`countdown-item ${urgCls}`;
+    item.innerHTML=`${showDone?'<button class="cd-done-btn" title="Mark done">✓</button>':''}<div class="cd-left">${kindTag}${cdCatTagHtml(ev.category)}${cdSubjectTagHtml(ev.subject)}<div class="cd-name">${ev.name}</div></div><div class="cd-badge ${cls}" data-date="${dateStr}">${badge}</div><button class="cd-edit" title="Edit">✎</button>`;
     if(showDone) item.querySelector('.cd-done-btn').addEventListener('click',()=>markDone(ev.id,ev.__kind));
     item.querySelector('.cd-edit').addEventListener('click',()=>openCdModal(ev,ev.__kind));
     list.appendChild(item);
@@ -3545,33 +3695,59 @@ function renderCountdowns(){
   }
 }
 
+let dlUrgencyFilter='all';
 function renderDeadlines(){
   const list=document.getElementById('dlList');if(!list)return;list.innerHTML='';
   const tm=new Date(toKey(today())+'T00:00:00').getTime();
+  const urgencyOf=ev=>{
+    const diff=Math.round((new Date(ev.date+'T00:00:00').getTime()-tm)/86400000);
+    return diff<0?'overdue':diff<=7?'week':'later';
+  };
+  const counts={overdue:0,week:0,later:0};
+  deadlines.forEach(ev=>counts[urgencyOf(ev)]++);
+  const statsRow=document.getElementById('dlStatsRow');
+  if(statsRow){
+    statsRow.innerHTML=`
+      <button class="dl-stat-card overdue ${dlUrgencyFilter==='overdue'?'active':''}" data-f="overdue"><div class="dl-stat-label">Overdue</div><div class="dl-stat-num">${counts.overdue}</div></button>
+      <button class="dl-stat-card week ${dlUrgencyFilter==='week'?'active':''}" data-f="week"><div class="dl-stat-label">This week</div><div class="dl-stat-num">${counts.week}</div></button>
+      <button class="dl-stat-card later ${dlUrgencyFilter==='later'?'active':''}" data-f="later"><div class="dl-stat-label">Later</div><div class="dl-stat-num">${counts.later}</div></button>
+    `;
+    statsRow.querySelectorAll('.dl-stat-card').forEach(el=>el.addEventListener('click',()=>{
+      dlUrgencyFilter=(dlUrgencyFilter===el.dataset.f)?'all':el.dataset.f;
+      renderDeadlines();
+    }));
+  }
+  document.querySelectorAll('.dl-chip').forEach(el=>{
+    el.classList.toggle('active',el.dataset.f===dlUrgencyFilter);
+    el.onclick=()=>{dlUrgencyFilter=el.dataset.f;renderDeadlines();};
+  });
   if(!deadlines.length&&!archivedDeadlines.length){list.innerHTML='<div class="cd-empty">No deadlines yet</div>';return;}
+  const deadlinesFiltered=dlUrgencyFilter==='all'?deadlines:deadlines.filter(ev=>urgencyOf(ev)===dlUrgencyFilter);
+  if(!deadlinesFiltered.length){list.innerHTML='<div class="cd-empty">Nothing here.</div>';}
   const WD=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   function buildDlItem(ev){
     const diff=Math.round((new Date(ev.date+'T00:00:00').getTime()-tm)/86400000);
     const passed=diff<0,soon=diff>=0&&diff<=7;
     const cls=passed?'passed':soon?'soon':'';
+    const urgCls=passed?'urgency-overdue':soon?'urgency-week':'urgency-later';
     const badge=passed?`${Math.abs(diff)}<span class="cd-badge-unit"> day${Math.abs(diff)===1?'':'s'} ago</span>`
       :diff===0?'Today!'
       :diff===1?'Tomorrow'
       :`${diff}<span class="cd-badge-unit"> days</span>`;
     const dateStr=new Date(ev.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const showDone=diff<=0;
-    const item=document.createElement('div');item.className='countdown-item';
-    item.innerHTML=`${showDone?'<button class="cd-done-btn" title="Mark done">✓</button>':''}<div class="cd-left">${cdCatTagHtml(ev.category)}<div class="cd-name">${ev.name}</div></div><div class="cd-badge ${cls}" data-date="${dateStr}">${badge}</div><button class="cd-edit" title="Edit">✎</button>`;
+    const item=document.createElement('div');item.className=`countdown-item ${urgCls}`;
+    item.innerHTML=`${showDone?'<button class="cd-done-btn" title="Mark done">✓</button>':''}<div class="cd-left">${cdCatTagHtml(ev.category)}${cdSubjectTagHtml(ev.subject)}<div class="cd-name">${ev.name}</div></div><div class="cd-badge ${cls}" data-date="${dateStr}">${badge}</div><button class="cd-edit" title="Edit">✎</button>`;
     if(showDone) item.querySelector('.cd-done-btn').addEventListener('click',()=>markDone(ev.id,'deadline'));
     item.querySelector('.cd-edit').addEventListener('click',()=>openCdModal(ev,'deadline'));
     return item;
   }
   if(dlGroupMode==='none'){
-    [...deadlines].sort((a,b)=>a.date.localeCompare(b.date)).forEach(ev=>list.appendChild(buildDlItem(ev)));
+    [...deadlinesFiltered].sort((a,b)=>a.date.localeCompare(b.date)).forEach(ev=>list.appendChild(buildDlItem(ev)));
   } else if(dlGroupMode==='subject'){
     const groupsMap=new Map();
-    deadlines.forEach(ev=>{
-      const label=ev.category||'Uncategorized';
+    deadlinesFiltered.forEach(ev=>{
+      const label=ev.subject||'Uncategorized';
       if(!groupsMap.has(label)) groupsMap.set(label,[]);
       groupsMap.get(label).push(ev);
     });
@@ -3584,14 +3760,14 @@ function renderDeadlines(){
     });
     sortedLabels.forEach(label=>{
       const grp=groupsMap.get(label).sort((a,b)=>a.date.localeCompare(b.date));
-      const hdr=document.createElement('div');hdr.className='cd-weekday-header';hdr.textContent=label;
+      const hdr=document.createElement('div');hdr.className='cd-weekday-header';hdr.innerHTML=`${label} <span class="cd-weekday-count">· ${grp.length}</span>`;
       list.appendChild(hdr);
       grp.forEach(ev=>list.appendChild(buildDlItem(ev)));
     });
   } else {
     // 'week' — group by weekday name, ordered by each group's nearest date
     const groupsMap=new Map();
-    deadlines.forEach(ev=>{
+    deadlinesFiltered.forEach(ev=>{
       const diff0=Math.round((new Date(ev.date+'T00:00:00').getTime()-tm)/86400000);
       let label;
       if(diff0===0) label='Today';
@@ -3608,7 +3784,7 @@ function renderDeadlines(){
     });
     sortedLabels.forEach(label=>{
       const grp=groupsMap.get(label).sort((a,b)=>a.date.localeCompare(b.date));
-      const hdr=document.createElement('div');hdr.className='cd-weekday-header';hdr.textContent=label;
+      const hdr=document.createElement('div');hdr.className='cd-weekday-header';hdr.innerHTML=`${label} <span class="cd-weekday-count">· ${grp.length}</span>`;
       list.appendChild(hdr);
       grp.forEach(ev=>list.appendChild(buildDlItem(ev)));
     });
